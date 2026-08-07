@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<!-- The page claims it makes no network requests. This enforces that claim at the browser
+     level rather than merely asserting it: default-src 'none' blocks every fetch, font,
+     tile, analytics beacon, and remote image the page could ever attempt. WebCrypto is
+     unaffected by CSP, so key generation and signing still work. Delivered as a meta tag
+     so the guarantee travels with the file — GitHub Pages cannot set response headers. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'" />
+<meta name="referrer" content="no-referrer" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="A public ledger of verified requests from unhoused people in San Diego. Every entry is ECDSA-signed, every AI transform is disclosed, and the page verifies itself in your browser with zero network requests." />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#05090f" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#efe9dd" media="(prefers-color-scheme: light)" />
+<meta property="og:title" content="On Record · San Diego" />
+<meta property="og:description" content="Signed requests, disclosed AI, and a seal you can break yourself. Verifiable in the browser, offline." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="On Record" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="On Record · San Diego" />
+<meta name="twitter:description" content="Signed requests, disclosed AI, and a seal you can break yourself. Verifiable in the browser, offline." />
+<title>On Record · San Diego</title>
+
+<!-- Structured data. Deliberately describes the page as a demonstration Dataset of
+     COMPOSITE records: schema.org is how a crawler learns this is not a directory of
+     real people, so the disclaimer travels with the link instead of living only in
+     prose a scraper will skip. `type="application/ld+json"` is a data block, not an
+     executed script, so the default-src 'none' CSP above does not touch it. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://writerslogic.github.io/onrecord/#website",
+      "url": "https://writerslogic.github.io/onrecord/",
+      "name": "On Record",
+      "alternateName": "On Record · San Diego",
+      "description": "A public ledger of verified requests from unhoused people in San Diego. Every entry is ECDSA-signed, every AI transform is disclosed, and the page verifies itself in your browser with zero network requests.",
+      "inLanguage": "en-US",
+      "isFamilyFriendly": true,
+      "publisher": { "@id": "https://writerslogic.github.io/onrecord/#project" }
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://writerslogic.github.io/onrecord/#app",
+      "name": "On Record",
+      "url": "https://writerslogic.github.io/onrecord/",
+      "applicationCategory": "GovernmentApplication",
+      "browserRequirements": "Requires JavaScript and WebCrypto (SubtleCrypto ECDSA P-256).",
+      "operatingSystem": "Any",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": [
+        "ECDSA P-256 signing of every record in the browser",
+        "C2PA-style provenance manifests per entry",
+        "Disclosed AI transforms with a word-level diff",
+        "Tamper demonstration that visibly breaks the seal",
+        "Offline verification with zero network requests"
+      ],
+      "permissions": "none",
+      "about": { "@id": "https://writerslogic.github.io/onrecord/#dataset" }
+    },
+    {
+      "@type": "Dataset",
+      "@id": "https://writerslogic.github.io/onrecord/#dataset",
+      "name": "On Record — composite request ledger, San Diego County",
+      "description": "Composite, advocate-mediated, consent-verified request records. Every entry is a composite built from advocate intake notes across multiple people; no entry describes a real, identifiable individual. Locations are neighborhood centroids only — no precise location exists anywhere in the data. Service sites, hours, and bed counts are demonstration data on a simulated feed.",
+      "creator": { "@id": "https://writerslogic.github.io/onrecord/#project" },
+      "license": "https://github.com/writerslogic/onrecord/blob/main/LICENSE",
+      "isAccessibleForFree": true,
+      "inLanguage": "en-US",
+      "keywords": ["homelessness", "provenance", "C2PA", "digital signatures", "civic accountability", "San Diego"],
+      "spatialCoverage": {
+        "@type": "Place",
+        "name": "San Diego County, California",
+        "address": {
+          "@type": "PostalAddress",
+          "addressRegion": "CA",
+          "addressCountry": "US"
+        }
+      },
+      "measurementTechnique": "Advocate-mediated intake with recorded consent, canonicalized to fixed field order, SHA-256 hashed, ECDSA P-256 signed",
+      "variableMeasured": [
+        { "@type": "PropertyValue", "name": "Request category", "description": "What the person is asking for (identification documents, shelter, medical, storage, and similar)." },
+        { "@type": "PropertyValue", "name": "Response status", "description": "Whether any institution answered the request." },
+        { "@type": "PropertyValue", "name": "Seal state", "description": "Whether the record's signature still verifies against its canonicalized content." }
+      ],
+      "disambiguatingDescription": "Demonstration data. Not a directory of people, not a live feed, and not an accusation against any named organization. Do not route anyone using this page."
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://writerslogic.github.io/onrecord/#project",
+      "name": "On Record",
+      "url": "https://writerslogic.github.io/onrecord/",
+      "description": "An open-source demonstration of signed, provenance-tracked civic records."
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://writerslogic.github.io/onrecord/#faq",
+      "isPartOf": { "@id": "https://writerslogic.github.io/onrecord/#website" },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Are these real people?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual, and no precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the page prove a record has not been edited?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "On load the page generates an ECDSA P-256 keypair in your browser with WebCrypto. Every record and message is canonicalized to a fixed field order, hashed with SHA-256, and signed. Verifying re-canonicalizes the live record and re-checks the signature, so an edit made after sealing cannot pass. Nothing leaves your device: no network requests, no fonts, no map tiles, no analytics."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is the AI use disclosed?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each story shows the unedited intake fragments alongside the AI-shaped version, plus a word-level diff. The transform is grammar only, and the diff demonstrates that no content words were added."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can someone use this without an ID, phone, or account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. There is no account. At intake an advocate prints a claim card carrying a record number and four words. Those words are stretched with PBKDF2 into a key that signs the holder's updates, so the system can confirm it is them without ever storing a name, a number, or a password. If the card is lost, an advocate restores access in person and the restore is logged and signed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use this to find services or route someone to a shelter?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+/* ==========================================================
+   ON RECORD
+   serif      = the person speaking
+   sans caps  = the institution
+   mono       = the machine (crypto, manifests, proof)
+   ========================================================== */
+:root{
+  --bg:#05090f; --land:#222a38; --land-2:#28303f; --land-line:#39435a; --land-hi:#2f394a;
+  --water:#05090f; --water-2:#0c1526; --park:#1b2b23; --street:#39435a;
+  --panel:rgba(17,20,28,.93); --panel-solid:#11141c; --panel-2:#171b25;
+  --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.18);
+  /* --muted / --faint carry small (10-11px) text, so both are held to WCAG AA 4.5:1
+     against every surface they land on: --bg, --panel-solid, and --panel-2. */
+  --ink:#f1ece2; --ink-2:#cfc7ba; --muted:#9a9384; --faint:#8a8374;
+  --amber:#f2a93b; --amber-2:#ffca6e; --amber-dim:rgba(242,169,59,.16);
+  --teal:#69b9c9; --teal-dim:rgba(105,185,201,.14);
+  --seal:#e0563f; --broken:#ff5f4d; --broken-dim:rgba(255,95,77,.14);
+  --ok:#5fd39a; --ok-dim:rgba(95,211,154,.14);
+  --shadow:0 26px 70px -34px rgba(0,0,0,.95);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --r:14px; --topH:88px;
+}
+:root[data-theme="dark"]{color-scheme:dark}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#efe9dd; --land:#e6ddcb; --land-2:#ddd3bf; --land-line:#c2b69e; --land-hi:#d5c9b1;
+    --water:#c5d1d9; --water-2:#b6c6d2; --park:#cbd8bd; --street:#b6ab93;
+    --panel:rgba(251,248,242,.95); --panel-solid:#fbf8f2; --panel-2:#f2ece1;
+    --line:rgba(40,34,24,.13); --line-strong:rgba(40,34,24,.26);
+    --ink:#1d1a14; --ink-2:#3b352a; --muted:#5c5545; --faint:#6f6759;
+    --amber:#a75f0c; --amber-2:#c07a19; --amber-dim:rgba(167,95,12,.13);
+    --teal:#1c6a7c; --teal-dim:rgba(28,106,124,.12);
+    --seal:#a8402c; --broken:#bd2f1c; --broken-dim:rgba(189,47,28,.1);
+    --ok:#1f7a52; --ok-dim:rgba(31,122,82,.12);
+    --shadow:0 20px 48px -30px rgba(60,44,20,.55);
+  }
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#efe9dd; --land:#e6ddcb; --land-2:#ddd3bf; --land-line:#c2b69e; --land-hi:#d5c9b1;
+  --water:#c5d1d9; --water-2:#b6c6d2; --park:#cbd8bd; --street:#b6ab93;
+  --panel:rgba(251,248,242,.95); --panel-solid:#fbf8f2; --panel-2:#f2ece1;
+  --line:rgba(40,34,24,.13); --line-strong:rgba(40,34,24,.26);
+  --ink:#1d1a14; --ink-2:#3b352a; --muted:#5c5545; --faint:#6f6759;
+  --amber:#a75f0c; --amber-2:#c07a19; --amber-dim:rgba(167,95,12,.13);
+  --teal:#1c6a7c; --teal-dim:rgba(28,106,124,.12);
+  --seal:#a8402c; --broken:#bd2f1c; --broken-dim:rgba(189,47,28,.1);
+  --ok:#1f7a52; --ok-dim:rgba(31,122,82,.12);
+  --shadow:0 20px 48px -30px rgba(60,44,20,.55);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;max-width:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+.eyebrow{font-size:10px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.mono{font-family:var(--mono);font-size:11px}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px;border-radius:4px}
+/* SVG ignores outline in several engines; markers get a painted focus ring instead. */
+svg :focus-visible{outline:none}
+svg .pin:focus-visible .core,svg .spot:focus-visible .body,svg .svc:focus-visible .body{stroke:var(--amber);stroke-width:2.5}
+svg .pin:focus-visible,svg .cluster:focus-visible,svg .spot:focus-visible,svg .svc:focus-visible{
+  filter:drop-shadow(0 0 0 var(--amber)) drop-shadow(0 0 6px var(--amber))}
+
+/* Skip link: first tab stop, so keyboard users can jump the map to the record list. */
+.skip{position:absolute;left:8px;top:-60px;z-index:200;background:var(--panel-solid);color:var(--ink);
+  border:1px solid var(--amber);border-radius:8px;padding:9px 14px;font-size:12.5px;font-weight:650;
+  letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:top .18s}
+.skip:focus{top:8px}
+
+/* top chrome */
+.banner{height:32px;display:flex;align-items:center;gap:9px;padding:0 14px;background:linear-gradient(90deg,var(--amber-dim),transparent 65%);border-bottom:1px solid var(--line);font-size:11.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden}
+.banner .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);flex:none}
+.banner span{overflow:hidden;text-overflow:ellipsis}
+.banner b{color:var(--ink);font-weight:650}
+.banner button{background:none;border:0;color:var(--amber);font-size:11px;text-decoration:underline;padding:0 4px;flex:none}
+.topbar{height:56px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 14px;border-bottom:1px solid var(--line);background:var(--panel-solid)}
+.brand{display:flex;align-items:baseline;gap:10px;flex:none}
+.brand h1{font-family:var(--serif);font-weight:400;font-size:25px;margin:0;letter-spacing:-.015em;line-height:1}
+.brand h1 em{font-style:italic;color:var(--amber)}
+.brand .loc{font-size:10px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
+.top-right{display:flex;align-items:center;gap:8px;flex:none}
+.keychip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--panel-2)}
+.keychip .pulse{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.keychip.ready .pulse{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.ghost{background:transparent;border:1px solid var(--line-strong);color:var(--ink-2);border-radius:999px;padding:6px 12px;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:650;transition:.2s}
+.ghost:hover{border-color:var(--amber);color:var(--amber)}
+.ghost[aria-pressed="true"]{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+.rail{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;justify-content:center}
+.rail::-webkit-scrollbar{display:none}
+.step{display:flex;align-items:center;gap:6px;flex:none;border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 6px;font-size:10.5px;color:var(--faint);transition:.3s;white-space:nowrap}
+.step .n{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line-strong);font-family:var(--mono);font-size:9px}
+.step.next{border-color:var(--amber);color:var(--amber)}
+.step.next .n{border-color:var(--amber)}
+.step.done{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 38%,transparent)}
+.step.done .n{border-color:var(--ok)}
+@media (max-width:1280px){.rail{display:none}}
+
+/* stage */
+.stage{position:fixed;top:var(--topH);left:0;right:0;bottom:0}
+.mapholder{position:absolute;inset:0;background:var(--water);overflow:hidden;touch-action:none}
+svg.map{display:block;width:100%;height:100%;cursor:grab}
+svg.map.dragging{cursor:grabbing}
+
+/* map paint */
+.bgfill{fill:var(--water)}
+.landmass{fill:var(--land);stroke:var(--land-line);stroke-width:1.2}
+.waterbody{fill:var(--water-2)}
+.island{fill:var(--land);stroke:var(--land-line);stroke-width:1}
+.fwy{fill:none;stroke:var(--land-line);stroke-width:2.4;stroke-linecap:round;opacity:.9}
+.park{fill:var(--park);stroke:none}
+.river{fill:none;stroke:var(--water-2);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.lake{fill:var(--water-2)}
+.airport{fill:var(--land-hi);stroke:var(--land-line);stroke-width:.7}
+.runway{stroke:var(--land-line);stroke-width:1.5;opacity:.85;stroke-linecap:round}
+.fwy,.fwy-cap,.arterial,.river,.border-line,.runway,.grid line{vector-effect:non-scaling-stroke}
+.grid line{stroke:var(--street);stroke-width:.5;opacity:0;transition:opacity .4s}
+.map[data-level="detail"] .grid line{opacity:.34}
+.svc{cursor:pointer;opacity:0;pointer-events:none;transition:opacity .35s}
+.map:not([data-level="county"]) .svc{opacity:1;pointer-events:auto}
+.svc.dim{opacity:.12 !important;pointer-events:none}
+.svc .plate{fill:var(--panel-solid);stroke:var(--ok);stroke-width:1.2;rx:4}
+.svc.shelter .plate{stroke:var(--amber)}
+.svc.clinic .plate{stroke:var(--teal)}
+.svc .ic{stroke:var(--ok);stroke-width:1.4;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.svc.shelter .ic{stroke:var(--amber)}
+.svc.clinic .ic{stroke:var(--teal)}
+.svc.selected .plate{stroke-width:2.6}
+.svc .sl{font-size:7.5px;fill:var(--ink-2);text-anchor:middle;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
+.svc .sb{font-family:var(--mono);font-size:7px;text-anchor:middle;paint-order:stroke;stroke:var(--land);stroke-width:2.8;pointer-events:none;opacity:0;transition:opacity .3s}
+.map[data-level="detail"] .svc .sl,.map[data-level="detail"] .svc .sb{opacity:1}
+.arterial{fill:none;stroke:var(--street);stroke-width:.9;opacity:.55;stroke-linecap:round;transition:opacity .35s,stroke-width .35s}
+.map:not([data-level="county"]) .arterial{opacity:.95;stroke-width:1.15}
+.stlabel{fill:var(--muted);font-size:7px;letter-spacing:.05em;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round}
+.map:not([data-level="county"]) .stlabel{opacity:.95}
+.shield rect{fill:var(--panel-solid);stroke:var(--land-line);stroke-width:1}
+.shield text{fill:var(--muted);font-family:var(--mono);font-size:8px;font-weight:700;text-anchor:middle;dominant-baseline:central}
+.fwy-cap{fill:none;stroke:var(--land-hi);stroke-width:4.4;stroke-linecap:round;opacity:.5}
+.border-line{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:7 5;opacity:.75}
+.geo-label{fill:var(--faint);font-size:9px;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s}
+.map:not([data-level="county"]) .geo-label{opacity:1}
+.water-label{fill:var(--teal);opacity:.5;letter-spacing:.3em;text-anchor:middle;pointer-events:none;user-select:none;font-size:9px}
+.water-label.big{font-size:13px}
+
+.district,.district .shape{cursor:pointer}
+.district .shape{fill:rgba(255,255,255,.032);stroke:var(--line-strong);stroke-width:.9;transition:fill .3s,stroke .3s}
+.district.has .shape{fill:var(--amber-dim);stroke:color-mix(in srgb,var(--amber) 55%,transparent)}
+.district:hover .shape{fill:var(--land-hi);stroke:var(--amber);stroke-width:1.4}
+.district.has:hover .shape{fill:color-mix(in srgb,var(--amber) 26%,transparent)}
+.district.focused .shape{fill:color-mix(in srgb,var(--amber) 24%,transparent);stroke:var(--amber);stroke-width:1.6}
+.district.muted{opacity:.4;transition:opacity .5s}
+.district .dlabel{fill:var(--muted);font-size:8px;font-weight:650;letter-spacing:.12em;text-transform:uppercase;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s}
+.district.has .dlabel{fill:var(--amber);opacity:1}
+.map:not([data-level="county"]) .district .dlabel{opacity:1}
+.district.focused .dlabel{fill:var(--amber)}
+
+.cluster{cursor:pointer;transition:opacity .35s}
+.cluster .disc{fill:color-mix(in srgb,var(--amber) 24%,var(--panel-solid));stroke:var(--amber);stroke-width:1.4}
+.cluster .halo{fill:url(#glow);opacity:.7}
+.cluster .ripple{fill:var(--amber);opacity:.16;transform-box:fill-box;transform-origin:center;animation:ripple 3.8s ease-out infinite}
+.cluster .num{fill:var(--amber-2);font-family:var(--mono);font-size:12px;font-weight:600;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+/* visibility:hidden (not just opacity:0) removes the marker from the a11y tree and the
+   tab order too; delaying it by the fade keeps the transition looking the same. */
+.cluster.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+.cluster:hover .disc{fill:color-mix(in srgb,var(--amber) 44%,var(--panel-solid))}
+
+.pin{cursor:pointer;transition:opacity .35s}
+.pin.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+/* .dim is filtered-out-but-still-drawn: keep it visible, but take it out of the tab order
+   via the tabindex/aria-hidden sync in refreshMarkers(). */
+.pin.dim{opacity:.13;pointer-events:none}
+.pin .ripple{fill:var(--amber);opacity:.24;transform-box:fill-box;transform-origin:center;animation:ripple 3.4s ease-out infinite}
+.pin .halo{fill:url(#glow);opacity:.9}
+.pin .core{fill:var(--amber-2);stroke:rgba(0,0,0,.4);stroke-width:.7}
+.pin .bead{fill:#fff8ea;opacity:.9}
+.pin .ring{fill:none;stroke:var(--amber);stroke-width:1.5;opacity:0;transition:opacity .25s}
+.pin:hover .core{fill:#fff}
+.pin.selected .ring,.pin:focus-visible .ring{opacity:1}
+.pin .plabel{font-size:9px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
+.map:not([data-level="county"]) .pin .plabel{opacity:1}
+.pin.broken .core{fill:var(--broken)}
+.pin.broken .halo{fill:url(#glowbad)}
+.pin.broken .ripple{fill:var(--broken);opacity:.32;animation-duration:1.1s}
+.pin.broken .ring{stroke:var(--broken);opacity:1}
+.pin.st-answered .core{fill:var(--ok)}
+@keyframes ripple{0%{transform:scale(.6);opacity:.3}70%{transform:scale(2.5);opacity:0}100%{opacity:0}}
+
+.heat{pointer-events:none;transition:opacity .4s}
+.heat circle{fill:url(#heatgrad)}
+.spot{cursor:pointer;transition:opacity .35s}
+.spot .plate{fill:color-mix(in srgb,var(--teal) 22%,var(--panel-solid));stroke:var(--teal);stroke-width:1.4}
+.spot .cnt{fill:var(--teal);font-family:var(--mono);font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.spot .scap{font-size:7px;fill:var(--teal);opacity:.85;text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:2.6;pointer-events:none;opacity:0;transition:opacity .3s}
+.map:not([data-level="county"]) .spot .scap{opacity:.9}
+.spot:hover .plate{fill:var(--teal-dim)}
+.spot.selected .plate{stroke-width:2.4}
+.spot .slabel{font-size:8.5px;fill:var(--teal);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3;pointer-events:none;opacity:0;transition:opacity .3s}
+.map:not([data-level="county"]) .spot .slabel{opacity:1}
+.layer-off{opacity:0 !important;pointer-events:none}
+
+/* floating map ui */
+.crumbs{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:5px;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 8px;box-shadow:var(--shadow);max-width:calc(100% - 24px);overflow:hidden}
+.crumbs button{background:none;border:0;padding:4px 8px;border-radius:999px;font-size:11.5px;color:var(--muted);white-space:nowrap}
+.crumbs button:hover{color:var(--ink);background:var(--panel-2)}
+.crumbs button[aria-current="true"]{color:var(--amber);font-weight:650}
+.crumbs .sep{color:var(--faint);font-size:10px}
+.layers{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:4px;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:var(--shadow);z-index:6;transition:right .3s}
+.stage.panel-open .layers{right:calc(min(430px,44vw) + 24px)}
+.layers .lb{display:flex;align-items:center;gap:8px;background:none;border:0;padding:5px 7px;border-radius:8px;font-size:11px;color:var(--muted);width:100%;text-align:left}
+.layers .lb:hover{background:var(--panel-2);color:var(--ink)}
+.layers .lb i{width:9px;height:9px;border-radius:50%;flex:none;opacity:.25}
+.layers .ky{width:14px;height:14px;flex:none;opacity:.35}
+.layers .lb[aria-pressed="true"] .ky{opacity:1}
+.hint{position:absolute;top:58px;left:12px;z-index:6;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid color-mix(in srgb,var(--amber) 45%,transparent);color:var(--amber);border-radius:999px;padding:6px 13px;font-size:11px;box-shadow:var(--shadow);transition:opacity .4s}
+.hint.gone{opacity:0;pointer-events:none}
+.district:hover .shape{stroke:var(--amber);stroke-width:1.5}
+.layers .lb[aria-pressed="true"]{color:var(--ink)}
+.layers .lb[aria-pressed="true"] i{opacity:1}
+.mapkey{position:absolute;left:320px;bottom:12px;z-index:5;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:12px;padding:10px 12px;box-shadow:var(--shadow);font-size:10.5px;color:var(--muted);max-width:288px;display:flex;flex-direction:column;gap:5px}
+.mapkey .kr{display:flex;align-items:center;gap:8px;line-height:1.35}
+.mapkey .kd{width:9px;height:9px;border-radius:50%;flex:none}
+.mapkey .kg{width:11px;height:9px;border-radius:3px;border:1.4px solid;flex:none}
+@media (max-width:1320px){.mapkey{display:none}}
+.zoomctl{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;z-index:5;transition:right .3s}
+.stage.panel-open .zoomctl{right:calc(min(430px,44vw) + 24px)}
+.zoomctl button{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);font-size:17px;display:grid;place-items:center;color:var(--ink-2)}
+.zoomctl button:hover{border-color:var(--amber);color:var(--amber)}
+.zoomctl button.reset{font-size:9.5px;letter-spacing:.06em;font-weight:700;text-transform:uppercase}
+
+/* panels */
+.panel{position:absolute;top:12px;bottom:12px;display:flex;flex-direction:column;background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel.left{left:12px;top:60px;width:296px}
+.panel.right{right:12px;width:min(430px,44vw)}
+.panel.right.collapsed{display:none}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.pbody{flex:1;overflow-y:auto;overscroll-behavior:contain}
+.pclose{background:none;border:1px solid var(--line);border-radius:8px;width:26px;height:26px;display:grid;place-items:center;color:var(--muted);font-size:14px}
+.pclose:hover{border-color:var(--broken);color:var(--broken)}
+.tabs{display:flex;gap:3px;flex-wrap:wrap}
+.tab{background:transparent;border:1px solid transparent;border-radius:999px;padding:5px 10px;font-size:10px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);transition:.2s}
+.tab[aria-selected="true"]{background:var(--amber-dim);color:var(--amber);border-color:color-mix(in srgb,var(--amber) 34%,transparent)}
+.tab.tl[aria-selected="true"]{background:var(--teal-dim);color:var(--teal);border-color:color-mix(in srgb,var(--teal) 34%,transparent)}
+
+.filters{padding:9px 11px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
+.fchips{display:flex;flex-wrap:wrap;gap:4px}
+.fchip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 9px;font-size:10.5px;color:var(--muted);transition:.2s}
+.fchip:hover{border-color:var(--line-strong);color:var(--ink)}
+.fchip[aria-pressed="true"]{background:var(--amber-dim);border-color:var(--amber);color:var(--amber)}
+select{width:100%;background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:12px}
+.reclist{list-style:none;margin:0;padding:6px}
+.recitem{width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:11px;padding:9px 10px;display:flex;gap:9px;align-items:flex-start;transition:.18s}
+.recitem:hover{background:var(--panel-2);border-color:var(--line)}
+.recitem[aria-current="true"]{background:var(--amber-dim);border-color:color-mix(in srgb,var(--amber) 40%,transparent)}
+.recitem.tl[aria-current="true"]{background:var(--teal-dim);border-color:color-mix(in srgb,var(--teal) 40%,transparent)}
+.recitem .sdot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:none;background:var(--amber)}
+.recitem .sdot.answered{background:var(--ok)}
+.recitem .sdot.unanswered{background:var(--broken)}
+.recitem .sdot.broken{background:var(--broken);box-shadow:0 0 0 3px var(--broken-dim)}
+.recitem .sdot.tl{background:var(--teal)}
+.recitem .z{font-size:12.5px;font-weight:600;color:var(--ink)}
+.recitem .c{font-size:11px;color:var(--muted);margin-top:1px}
+.recitem .m{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:3px}
+.recitem.filtered{display:none}
+.listempty{padding:24px 16px;text-align:center;font-size:12px;color:var(--faint)}
+.withheld{padding:9px 11px;border-top:1px solid var(--line);font-size:10.5px;color:var(--faint);line-height:1.5}
+.withheld b{color:var(--ink-2)}
+
+/* story */
+.story{padding:16px}
+.story-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.zone-name{font-family:var(--serif);font-size:21px;margin:0}
+.statuspill{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:5px 10px;border:1px solid;white-space:nowrap}
+.st-unanswered,.st-no_response{color:var(--broken);border-color:color-mix(in srgb,var(--broken) 42%,transparent);background:var(--broken-dim)}
+.st-answered,.st-agreed{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 42%,transparent);background:var(--ok-dim)}
+.st-acknowledged,.st-requested,.st-proposed,.st-awaiting{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 42%,transparent);background:var(--amber-dim)}
+.ask{margin:13px 0;padding:12px 13px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--amber)}
+.ask .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ask h3{margin:5px 0 0;font-size:14.5px;font-weight:600;line-height:1.35}
+.amount{font-family:var(--mono);font-size:16px;color:var(--amber)}
+.togglerow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:16px}
+.toggle{display:inline-flex;border:1px solid var(--line-strong);border-radius:999px;padding:3px;gap:2px}
+.toggle button{background:transparent;border:0;border-radius:999px;padding:6px 12px;font-size:10.5px;font-weight:650;color:var(--faint);transition:.2s}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:var(--panel-solid)}
+blockquote{margin:11px 0 0;padding:0 0 0 15px;border-left:2px solid var(--line-strong);font-family:var(--serif);font-size:17px;line-height:1.6;color:var(--ink)}
+blockquote.raw{font-style:italic;color:var(--ink-2)}
+.fade{animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.attrib{margin-top:9px;font-size:11px;color:var(--faint)}
+.diffbox{margin-top:13px;padding:11px 12px;border:1px dashed var(--line-strong);border-radius:11px;background:var(--panel-2)}
+.diffbox .k{font-size:11.5px;color:var(--muted);margin:0}
+.diffbox .k b{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{font-family:var(--mono);font-size:10px;padding:3px 7px;border-radius:6px;border:1px solid var(--line);color:var(--ink-2);background:var(--panel-solid)}
+.chip.fact{border-color:color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ok)}
+.chip.added{border-color:var(--line-strong);color:var(--muted)}
+.chip.flag{border-color:var(--broken);color:var(--broken)}
+
+/* seal */
+.sealchip{width:100%;margin-top:15px;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;text-align:left;border:1px solid color-mix(in srgb,var(--ok) 34%,transparent);background:linear-gradient(100deg,var(--ok-dim),transparent 65%);transition:.3s}
+.sealchip:hover{border-color:var(--ok)}
+.sealchip.broken{border-color:var(--broken);background:linear-gradient(100deg,var(--broken-dim),transparent 65%);animation:shake .5s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translateX(-2px)}20%,80%{transform:translateX(3px)}30%,50%,70%{transform:translateX(-5px)}40%,60%{transform:translateX(5px)}}
+.sealchip .glyph{width:29px;height:29px;flex:none}
+.sealchip .txt{flex:1;min-width:0}
+.sealchip .l1{font-size:11.5px;font-weight:650;color:var(--ok)}
+.sealchip.broken .l1{color:var(--broken)}
+.sealchip .l2{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sealchip .caret{color:var(--faint);font-size:10px;transition:transform .3s}
+.sealchip[aria-expanded="true"] .caret{transform:rotate(90deg)}
+.manifest{margin-top:9px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);overflow:hidden}
+.manifest-head{padding:9px 12px;border-bottom:1px solid var(--line)}
+pre.json{margin:0;padding:12px;font-family:var(--mono);font-size:10px;line-height:1.62;color:var(--ink-2);overflow-x:auto;max-height:220px;overflow-y:auto}
+pre.json .key{color:var(--amber)}
+pre.json .str{color:var(--ink)}
+pre.json .num{color:var(--ok)}
+.actions{display:flex;gap:7px;padding:10px 12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.btn{border-radius:9px;padding:9px 13px;font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;border:1px solid;transition:.2s}
+.btn-verify{background:var(--ok-dim);border-color:color-mix(in srgb,var(--ok) 45%,transparent);color:var(--ok)}
+.btn-tamper{background:var(--broken-dim);border-color:color-mix(in srgb,var(--broken) 45%,transparent);color:var(--broken)}
+.btn-restore{background:transparent;border-color:var(--line-strong);color:var(--muted)}
+.btn-send{background:var(--teal-dim);border-color:color-mix(in srgb,var(--teal) 50%,transparent);color:var(--teal)}
+.btn:hover{filter:brightness(1.25)}
+.btn:disabled{opacity:.4;cursor:not-allowed;filter:none}
+.verifylog{margin:0;padding:0 12px 12px;font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--muted)}
+.verifylog div{display:flex;gap:7px}
+.verifylog .ok{color:var(--ok)}
+.verifylog .bad{color:var(--broken)}
+.verifylog .lbl{color:var(--faint);min-width:104px;flex:none}
+.jump{margin-top:14px;width:100%;border:1px solid var(--line-strong);background:transparent;border-radius:11px;padding:11px;font-size:11.5px;font-weight:650;color:var(--ink-2);transition:.2s}
+.jump:hover{border-color:var(--amber);color:var(--amber)}
+/* neighborhood panel + services */
+.area{padding:16px}
+.area h2{font-family:var(--serif);font-size:22px;margin:0;font-weight:400}
+.bedbox{margin:13px 0;border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);border-radius:12px;overflow:hidden;background:linear-gradient(150deg,var(--amber-dim),transparent 70%)}
+.bedbox .bh{padding:9px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.bedbox .bb{padding:13px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.bedbox .big{font-family:var(--serif);font-size:44px;line-height:.9;color:var(--amber)}
+.bedbox .of{font-size:12.5px;color:var(--ink-2)}
+.bedbox .tick{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto}
+.bedbox .sgn{padding:0 13px 12px;font-family:var(--mono);font-size:9.5px;color:var(--ok)}
+.svccard{margin-top:9px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);overflow:hidden}
+.svccard .sh{padding:10px 12px;display:flex;justify-content:space-between;gap:9px;align-items:flex-start;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.svccard .nm{font-size:13.5px;font-weight:600;color:var(--ink)}
+.svccard .kd{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:2px}
+.svccard .bd{font-family:var(--mono);font-size:13px;color:var(--amber);white-space:nowrap}
+.svccard .bd.zero{color:var(--broken)}
+.svccard .sb2{padding:10px 12px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid color-mix(in srgb,var(--ok) 36%,transparent);color:var(--ok);background:var(--ok-dim)}
+.svcmeta{margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.5}
+.svcmeta b{color:var(--ink-2)}
+.sample{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line-strong);border-radius:4px;padding:2px 5px;margin-left:6px}
+.arow{width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin-top:7px;display:flex;gap:9px;align-items:flex-start;transition:.18s}
+.arow:hover{border-color:var(--amber);background:var(--panel-2)}
+.arow .t{font-size:12.5px;color:var(--ink);font-weight:600}
+.arow .d{font-size:11px;color:var(--muted);margin-top:1px}
+.nodata{margin-top:12px;padding:12px;border:1px dashed var(--line-strong);border-radius:11px;font-size:12px;color:var(--muted);line-height:1.55}
+.nodata b{color:var(--ink-2)}
+.needchips{display:flex;flex-wrap:wrap;gap:4px}
+.needchip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:4px 8px;font-size:10px;color:var(--muted);transition:.2s}
+.needchip[aria-pressed="true"]{background:var(--ok-dim);border-color:var(--ok);color:var(--ok)}
+.empty{padding:28px 20px;text-align:center;color:var(--muted)}
+.empty .mark{font-family:var(--serif);font-size:32px;color:var(--amber);opacity:.6;line-height:1}
+.empty p{margin:11px auto 0;max-width:32ch;font-size:12.5px}
+
+/* common ground */
+.cg{padding:16px}
+.cg h2{font-family:var(--serif);font-size:20px;margin:0;font-weight:400}
+.ledger{margin:13px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ledger .lh{padding:9px 12px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+.ledger .lg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.ledger .lc{background:var(--panel-solid);padding:11px 10px;text-align:center}
+.ledger .lc .v{font-family:var(--mono);font-size:19px;color:var(--seal)}
+.ledger .lc .l{font-size:9px;color:var(--faint);letter-spacing:.07em;text-transform:uppercase;margin-top:3px;line-height:1.3}
+.ledger .note{padding:11px 12px;font-size:12.5px;line-height:1.55;color:var(--ink-2);border-top:1px solid var(--line)}
+.ledger .note b{color:var(--ink)}
+.thread{margin-top:6px;display:flex;flex-direction:column;gap:11px}
+.msg{border-radius:12px;padding:11px 12px;border:1px solid var(--line);background:var(--panel-2);max-width:94%}
+.msg.housed{align-self:flex-start;border-left:3px solid var(--muted)}
+.msg.unhoused{align-self:flex-end;border-right:3px solid var(--amber);background:linear-gradient(255deg,var(--amber-dim),transparent 70%)}
+.msg .who{display:flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:6px;flex-wrap:wrap}
+.msg.unhoused .who{color:var(--amber);justify-content:flex-end}
+.msg p{margin:0;font-family:var(--serif);font-size:15px;line-height:1.55;color:var(--ink)}
+.msg .meta{margin-top:7px;font-family:var(--mono);font-size:9.5px;color:var(--faint);display:flex;gap:7px;flex-wrap:wrap}
+.msg.unhoused .meta{justify-content:flex-end}
+.msg .sg{color:var(--ok)}
+.msg.pending{border-style:dashed}
+.msg .claimflag{margin-top:8px;font-size:10px;color:var(--broken);border:1px solid var(--broken);border-radius:6px;padding:4px 7px;display:inline-block}
+.res{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.res .rh{padding:9px 12px;background:var(--panel-2);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.res .rb{padding:12px}
+.res .rb h4{margin:0 0 6px;font-size:14px;font-weight:600}
+.res .rb p{margin:0;font-size:12px;color:var(--muted);line-height:1.55}
+.composer{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.composer .ch{padding:9px 12px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+.pipe{display:flex;align-items:center;gap:6px;padding:10px 12px;font-size:9.5px;color:var(--faint);flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.pipe span{border:1px solid var(--line);border-radius:999px;padding:3px 8px;white-space:nowrap}
+.pipe .arw{border:0;padding:0;color:var(--line-strong)}
+textarea{width:100%;background:var(--panel-solid);border:0;border-bottom:1px solid var(--line);padding:12px;font-family:var(--serif);font-size:15px;line-height:1.5;resize:vertical;min-height:76px;color:var(--ink)}
+textarea:focus{outline:none;background:var(--panel-2)}
+.rules{padding:10px 12px;font-size:10.5px;color:var(--faint);line-height:1.55;border-bottom:1px solid var(--line)}
+.rules b{color:var(--muted)}
+.cfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;flex-wrap:wrap}
+.count{font-family:var(--mono);font-size:10px;color:var(--faint)}
+.count.over{color:var(--broken)}
+.gate{margin-top:12px;padding:11px 12px;border:1px dashed var(--line-strong);border-radius:11px;font-size:11.5px;color:var(--muted);line-height:1.55}
+.gate b{color:var(--ink-2)}
+
+/* dashboard */
+.dash{padding:16px}
+.headline{border:1px solid var(--line);border-radius:13px;padding:16px;background:linear-gradient(150deg,var(--broken-dim),transparent 60%)}
+.bignum{font-family:var(--serif);font-size:clamp(46px,8vw,68px);line-height:.9;color:var(--broken);letter-spacing:-.03em}
+.bignum small{font-size:.4em}
+.headline p{margin:9px 0 0;font-size:12.5px;color:var(--ink-2)}
+.defn{margin-top:8px;font-size:10.5px;color:var(--faint)}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:11px}
+.metric{border:1px solid var(--line);border-radius:11px;padding:10px;background:var(--panel-2)}
+.metric .v{font-family:var(--mono);font-size:17px;color:var(--ink)}
+.metric .l{font-size:9px;color:var(--faint);letter-spacing:.09em;text-transform:uppercase;margin-top:3px;line-height:1.3}
+.barsec{margin-top:20px}
+.barsec h4{margin:0 0 11px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:650}
+.bar{margin-bottom:10px}
+.bar button.top{width:100%;background:none;border:0;padding:0;display:flex;justify-content:space-between;gap:9px;font-size:11.5px;margin-bottom:5px;color:var(--ink)}
+.bar button.top:hover span:first-child{color:var(--amber)}
+.bar .top span:last-child{font-family:var(--mono);color:var(--muted);font-size:10.5px}
+.track{height:7px;border-radius:99px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--amber),var(--seal));width:0;transition:width .9s cubic-bezier(.16,1,.3,1)}
+.fill.none{background:var(--ok)}
+.money{margin-top:20px;border:1px solid var(--line);border-radius:13px;overflow:hidden}
+.money .mh{padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.money .mb{padding:12px}
+.mline{display:flex;gap:11px;justify-content:space-between;align-items:baseline;padding:8px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.mline:last-of-type{border-bottom:0}
+.mline .amt{font-family:var(--mono);font-size:14px;color:var(--amber);white-space:nowrap}
+.mline .amt.unv{color:var(--muted)}
+.mline .desc{font-size:12px;color:var(--ink-2);flex:1;min-width:170px}
+.src{font-family:var(--mono);font-size:9px;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:5px;white-space:nowrap}
+.alleged{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--broken);border:1px solid var(--broken);border-radius:4px;padding:2px 5px;margin-left:5px}
+.disclaim{margin:11px 0 0;font-size:10.5px;color:var(--faint);line-height:1.6}
+.integrity{margin-top:14px;padding:10px 12px;border-radius:11px;font-size:11.5px;border:1px solid color-mix(in srgb,var(--ok) 34%,transparent);background:var(--ok-dim);color:var(--ok)}
+.integrity.bad{border-color:var(--broken);background:var(--broken-dim);color:var(--broken)}
+.footnote{margin-top:14px;font-size:10.5px;color:var(--faint);line-height:1.65}
+.footnote b{color:var(--muted)}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:20px;z-index:60}
+.modal[hidden]{display:none}
+.modal .box{max-width:600px;max-height:86vh;overflow-y:auto;background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.claimrow{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
+.fld{flex:1;min-width:130px}
+.fld label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.fld input,.fld select{width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:13px;color:var(--ink)}
+.fld input{font-family:var(--mono);letter-spacing:.04em}
+.card3{margin-top:14px;border:1px dashed var(--amber);border-radius:12px;padding:13px;background:var(--amber-dim)}
+.card3 .w{font-family:var(--mono);font-size:16px;color:var(--amber);letter-spacing:.08em;margin-top:6px}
+.claimerr{margin-top:10px;font-size:12px;color:var(--broken)}
+.unlocked{margin-top:14px;border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);border-radius:12px;overflow:hidden}
+.unlocked .uh{padding:10px 12px;background:var(--ok-dim);border-bottom:1px solid var(--line);color:var(--ok);font-size:12px}
+.unlocked .ub{padding:12px}
+.offer{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;background:var(--panel-2)}
+.offer .oh{font-size:11px;color:var(--amber);letter-spacing:.08em;text-transform:uppercase}
+.offer p{margin:5px 0 0;font-family:var(--serif);font-size:14px}
+.upd{border-left:3px solid var(--amber);padding:8px 10px;margin-top:8px;background:var(--panel-2);border-radius:0 10px 10px 0}
+.upd p{margin:0;font-family:var(--serif);font-size:14.5px}
+.upd .m{margin-top:5px;font-family:var(--mono);font-size:9.5px;color:var(--ok)}
+input[type="text"]{width:100%;background:var(--panel-2);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;font-family:var(--mono);font-size:15px;color:var(--ink);letter-spacing:.04em}
+input[type="text"]:focus{outline:none;border-color:var(--amber)}
+.card-print{margin-top:12px;border:1px dashed var(--line-strong);border-radius:12px;padding:14px;background:var(--panel-2)}
+.card-print .ph{font-family:var(--mono);font-size:19px;color:var(--amber);letter-spacing:.06em}
+.card-print .pn{font-family:var(--mono);font-size:15px;color:var(--ink);margin-top:5px}
+.card-print .cap{font-size:10.5px;color:var(--faint);margin-top:9px;line-height:1.5}
+.reply{margin-top:9px;border:1px solid var(--line);border-left:3px solid var(--ok);border-radius:10px;padding:10px 12px;background:var(--panel-2)}
+.reply .rf{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ok);margin-bottom:5px}
+.reply.mine{border-left-color:var(--amber)}
+.reply.mine .rf{color:var(--amber)}
+.reply p{margin:0;font-family:var(--serif);font-size:14.5px;line-height:1.5;color:var(--ink)}
+.reply .rm{margin-top:6px;font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+.modal h3{margin:0 0 10px;font-family:var(--serif);font-size:21px;font-weight:400}
+.modal p{margin:0 0 10px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
+
+@media (max-width:960px){
+  :root{--topH:auto}
+  .stage{position:static}
+  .mapholder{position:relative;inset:auto;height:58dvh;min-height:340px}
+  .panel{position:static;width:auto;margin:10px;border-radius:var(--r)}
+  .panel.left{width:auto;margin-top:10px}
+  .panel.right{width:auto}
+  .panel.right.collapsed{display:flex}
+  .pbody{max-height:none;overflow:visible}
+  .topbar{height:auto;padding:10px 12px;flex-wrap:wrap}
+  .stage.panel-open .zoomctl,.stage.panel-open .layers{right:12px}
+  body{overflow-y:auto}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#reclist">Skip to the record list</a>
+
+<noscript>
+  <div class="banner" style="height:auto;padding:12px 14px;white-space:normal">
+    <strong>This page needs JavaScript.</strong> Every record here is signed and verified in your
+    own browser with WebCrypto, so there is no server-rendered copy to fall back to. The full
+    protocol is written up in
+    <a href="https://github.com/writerslogic/onrecord/blob/main/docs/protocol.md" style="color:var(--amber)">docs/protocol.md</a>.
+  </div>
+</noscript>
+
+<header>
+  <div class="banner">
+    <span class="dot" aria-hidden="true"></span>
+    <span><b>Composite, advocate-mediated, consent-verified stories.</b> No real individuals located. Pins are neighborhood-level only.</span>
+    <button type="button" id="moreinfo">How this works</button>
+  </div>
+
+  <div class="topbar">
+    <div class="brand"><h1>On <em>Record</em></h1><span class="loc">Neighborhoods, not addresses</span></div>
+    <nav class="rail" id="rail" aria-label="Demo progress"></nav>
+    <div class="top-right">
+      <div class="keychip" id="bedchip"><span class="pulse" aria-hidden="true" style="background:var(--amber);box-shadow:0 0 10px var(--amber)"></span><span class="mono" id="bedtext">beds…</span></div>
+      <div class="keychip" id="keychip"><span class="pulse" aria-hidden="true"></span><span class="mono" id="keytext">generating key…</span></div>
+      <button class="ghost" id="claimbtn" type="button" style="border-color:var(--amber);color:var(--amber)">My request</button>
+      <button class="ghost" id="accessbtn" type="button" style="border-color:var(--amber);color:var(--amber)">Your request</button>
+      <button class="ghost" id="panelbtn" type="button" aria-pressed="true">Panel</button>
+      <button class="ghost" id="themebtn" type="button">Light</button>
+    </div>
+  </div>
+</header>
+
+<main class="stage" id="stage">
+  <div class="mapholder" id="mapholder">
+    <div class="crumbs" id="crumbs"></div>
+    <div class="hint" id="maphint">Click any neighbourhood to zoom in</div>
+    <div class="layers" role="group" aria-label="Map layers">
+      <div class="eyebrow" style="padding:2px 7px 5px">Key · tap to toggle</div>
+      <button class="lb" id="lay-asks" type="button" aria-pressed="true"><svg viewBox="0 0 14 14" class="ky"><circle cx="7" cy="7" r="4.5" fill="var(--amber)"/></svg>A person&#8217;s ask</button>
+      <button class="lb" id="lay-spots" type="button" aria-pressed="true"><svg viewBox="0 0 14 14" class="ky"><path d="M1.5 2h11v7.5h-4l-2 2.5l-1-2.5h-4z" fill="none" stroke="var(--teal)" stroke-width="1.4"/></svg>Neighbours talking</button>
+      <button class="lb" id="lay-svc" type="button" aria-pressed="true"><svg viewBox="0 0 14 14" class="ky"><rect x="2" y="2" width="10" height="10" rx="2.5" fill="none" stroke="var(--ok)" stroke-width="1.5"/></svg>Services &amp; beds</button>
+      <button class="lb" id="lay-heat" type="button" aria-pressed="true"><svg viewBox="0 0 14 14" class="ky"><circle cx="7" cy="7" r="5.5" fill="var(--seal)" opacity=".5"/></svg>Displacement heat</button>
+    </div>
+    <div class="mapkey" id="mapkey">
+      <div class="eyebrow" style="margin-bottom:6px">What the markers mean</div>
+      <div class="kr"><span class="kd" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span>A recorded ask from one person</div>
+      <div class="kr"><span class="kg" style="border-color:var(--teal);background:color-mix(in srgb,var(--teal) 22%,transparent)"></span>Exchange: neighbours talking about one block</div>
+      <div class="kr"><span class="kg" style="border-color:var(--ok)"></span>Service site: showers, mail, ID help, clinic</div>
+      <div class="kr"><span class="kg" style="border-color:var(--amber)"></span>Shelter, with tonight&#8217;s signed bed count</div>
+      <div class="kr"><span class="kd" style="background:var(--broken);box-shadow:0 0 8px var(--broken)"></span>Seal broken, excluded from every metric</div>
+      <div class="kr" style="color:var(--faint);margin-top:5px">Click any neighbourhood to zoom in. Pins are neighbourhood-level only.</div>
+    </div>
+    <div class="zoomctl">
+      <button type="button" id="zin" aria-label="Zoom in">+</button>
+      <button type="button" id="zout" aria-label="Zoom out">&minus;</button>
+      <button type="button" id="zreset" class="reset" aria-label="Reset to county view">All</button>
+    </div>
+  </div>
+
+  <aside class="panel left" aria-label="Index">
+    <h2 class="sr">Record index</h2>
+    <div class="phead">
+      <div class="tabs" role="tablist" aria-label="Index view">
+        <button class="tab" role="tab" id="lt-asks" aria-selected="true" aria-controls="reclist" type="button">Asks</button>
+        <button class="tab tl" role="tab" id="lt-spots" aria-selected="false" aria-controls="spotlist" tabindex="-1" type="button">Exchanges</button>
+        <button class="tab" role="tab" id="lt-svc" aria-selected="false" aria-controls="svclist" tabindex="-1" type="button">Services</button>
+      </div>
+      <button class="ghost" id="clearfilters" type="button" style="padding:4px 8px">Clear</button>
+    </div>
+    <div class="filters" id="needfilters" hidden><div class="eyebrow">Filter by what someone needs</div><div class="needchips" id="needchips"></div></div>
+    <div class="filters" id="filters">
+      <div class="fchips" role="group" aria-label="Status filter">
+        <button class="fchip" data-status="all" aria-pressed="true" type="button">All</button>
+        <button class="fchip" data-status="unanswered" aria-pressed="false" type="button">Unanswered</button>
+        <button class="fchip" data-status="answered" aria-pressed="false" type="button">Answered</button>
+      </div>
+      <select id="catfilter" aria-label="Filter by category"></select>
+    </div>
+    <div class="pbody">
+      <!-- The tabpanel role lives on the wrapper, not the <ul>, so the list keeps its
+           "list, N items" semantics instead of being overridden to a panel. -->
+      <div role="tabpanel" id="panel-asks" aria-labelledby="lt-asks" tabindex="0">
+        <ul class="reclist" id="reclist"></ul>
+      </div>
+      <div role="tabpanel" id="panel-spots" aria-labelledby="lt-spots" tabindex="0" hidden>
+        <ul class="reclist" id="spotlist"></ul>
+      </div>
+      <div role="tabpanel" id="panel-svc" aria-labelledby="lt-svc" tabindex="0" hidden>
+        <ul class="reclist" id="svclist"></ul>
+      </div>
+      <div class="listempty" id="listempty" hidden>No records match these filters.</div>
+    </div>
+    <div class="withheld" id="withheld"></div>
+  </aside>
+
+  <aside class="panel right" id="rightpanel" aria-label="Detail">
+    <div class="phead">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-area" aria-selected="false" type="button">Neighborhood</button>
+        <button class="tab" role="tab" id="tab-story" aria-selected="false" type="button">Story</button>
+        <button class="tab tl" role="tab" id="tab-cg" aria-selected="false" type="button">Common ground</button>
+        <button class="tab" role="tab" id="tab-dash" aria-selected="true" type="button">Accountability</button>
+      </div>
+      <button class="pclose" id="closepanel" type="button" aria-label="Hide panel">&times;</button>
+    </div>
+    <div class="pbody">
+      <div id="panel-area" role="tabpanel" hidden></div>
+      <div id="panel-story" role="tabpanel" hidden></div>
+      <div id="panel-cg" role="tabpanel" hidden></div>
+      <div id="panel-dash" role="tabpanel"></div>
+    </div>
+  </aside>
+</div>
+
+<div class="modal" id="claimmodal" hidden role="dialog" aria-modal="true" aria-labelledby="claimtitle">
+  <div class="box">
+    <h3 id="claimtitle">Open or check a request</h3>
+    <p>No phone, no email, no ID, no account. At intake an advocate prints a claim card: a record number and four words. Bring it to any record kiosk on the map, or an advocate brings the kiosk to you.</p>
+    <div id="claimstage"></div>
+  </div>
+</div>
+
+<div class="modal" id="access" hidden role="dialog" aria-modal="true" aria-labelledby="acctitle">
+  <div class="box">
+    <h3 id="acctitle">Your request</h3>
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="tab" id="ac-have" aria-selected="true" type="button">I have a code</button>
+      <button class="tab" id="ac-need" aria-selected="false" type="button">I don&#8217;t have one</button>
+    </div>
+
+    <div id="ac-pane-have">
+      <p>Enter the three words and the four digits from your card. No name, no phone, no email, no ID. We never stored the words, so nobody here can look them up or hand them to anyone.</p>
+      <label class="eyebrow" for="acphrase">Three words</label>
+      <input id="acphrase" type="text" autocomplete="off" spellcheck="false" placeholder="river copper lantern" />
+      <label class="eyebrow" for="acpin" style="margin-top:9px;display:block">Four digits</label>
+      <input id="acpin" type="text" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="4417" />
+      <div class="cfoot" style="padding:12px 0 0">
+        <span class="count" id="acstatus">Try the demo card: <b style="color:var(--amber)">river copper lantern</b> &#183; <b style="color:var(--amber)">4417</b></span>
+        <button class="btn btn-verify" id="acopen" type="button">Open my request</button>
+      </div>
+      <div id="acresult"></div>
+    </div>
+
+    <div id="ac-pane-need" hidden>
+      <p><b>Any site on this map with document help can issue a card.</b> It takes about three minutes and costs nothing. You do not need ID, an address, a phone, or an email. An advocate writes down what you are asking for, reads it back to you, records your consent, and hands you a paper card with three words and four digits on it.</p>
+      <p>Bring the card back to any partner site, any kiosk, or any borrowed phone or library computer. Typing the words proves you are the same person who filed it, without proving who you are. If you lose the card, no one can recover it for you, but any advocate who knows you can verify you in person and issue a new one, which moves the record to the new card.</p>
+      <div class="eyebrow" style="margin-top:14px">Sites on this map that issue cards</div>
+      <div id="acissuers"></div>
+      <div class="eyebrow" style="margin-top:14px">Try it</div>
+      <p style="margin-top:6px">Generate a card the way an advocate would, so you can see what a person walks away holding.</p>
+      <button class="btn btn-send" id="acgen" type="button">Make a demo card</button>
+      <div id="acgenout"></div>
+    </div>
+
+    <button class="btn btn-restore" id="acclose" type="button" style="margin-top:16px">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modaltitle">
+  <div class="box">
+    <h3 id="modaltitle">How this works</h3>
+    <p><b>The stories.</b> Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual. No precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only.</p>
+    <p><b>The proof.</b> On load this page generates an ECDSA P-256 keypair in your browser with WebCrypto. Every record and every message is canonicalized to a fixed field order, hashed with SHA-256, and signed. Verify re-canonicalizes the live record and re-checks the signature, so an edit made after sealing cannot pass. Nothing leaves your device: no network requests, no fonts, no map tiles, no analytics.</p>
+    <p><b>Common ground.</b> Friction points are places where two groups of neighbors collide. Anyone with an address can post to a place, never to a person. Posts route through advocate review that strips names and locations before publication. People living outside post only through advocate-mediated intake with recorded consent, because an open channel would let anyone speak in their name and would ask them to identify themselves in public to be heard.</p>
+    <p><b>The service directory.</b> Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page. In a real deployment each count would come from a coordinated-entry system and be signed on arrival, which is the point: a signed count cannot be revised after the night it described.</p>
+    <p><b>Getting in without an ID.</b> Requiring an account to use a service that helps people replace lost documents would repeat the exact trap the records describe. So there is no account. At intake an advocate prints a claim card: a record number and four words. Those words are stretched with PBKDF2 into a key that signs the holder's updates, so the system can tell it is them without ever storing a name, a number, or a password. Any site marked <b>Record kiosk</b> can open a record. If the card is lost, and it will be, an advocate restores access in person and the restore is logged and signed.</p>
+    <p><b>What this is not.</b> Not a directory of people. Not a live feed. Not an accusation against any named organization. Figures marked ALLEGED are unverified placeholders, excluded from all signed data and every metric, and must be sourced before publication.</p>
+    <button class="btn btn-restore" id="closemodal" type="button">Close</button>
+  </div>
+</div>
+
+<div class="sr" id="live" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   1. PROJECTION  (real lon/lat -> SVG, mercator-corrected)
+   ========================================================= */
+const LON0 = -117.32, LON1 = -116.82, LAT_TOP = 32.88;
+const VBW = 900;
+const KX = VBW / (LON1 - LON0);
+const KY = KX / Math.cos(32.75 * Math.PI / 180);
+const VBH = Math.round((LAT_TOP - 32.51) * KY);
+function PX(lon){ return (lon - LON0) * KX; }
+function PY(lat){ return (LAT_TOP - lat) * KY; }
+function path(pts, close){
+  let d = "";
+  for(let i=0;i<pts.length;i++) d += (i?" L ":"M ") + PX(pts[i][0]).toFixed(1) + " " + PY(pts[i][1]).toFixed(1);
+  return d + (close === false ? "" : " Z");
+}
+
+/* coastline traced from real geography */
+const COAST = [[-117.280,32.880],[-117.272,32.856],[-117.279,32.846],[-117.262,32.833],[-117.257,32.818],
+[-117.256,32.800],[-117.255,32.780],[-117.253,32.762],[-117.252,32.750],[-117.254,32.738],[-117.256,32.720],
+[-117.254,32.700],[-117.248,32.680],[-117.241,32.665],[-117.233,32.680],[-117.228,32.700],[-117.222,32.716],
+[-117.216,32.728],[-117.208,32.734],[-117.196,32.730],[-117.183,32.722],[-117.170,32.712],[-117.156,32.701],
+[-117.144,32.690],[-117.130,32.679],[-117.116,32.665],[-117.106,32.649],[-117.101,32.631],[-117.106,32.615],
+[-117.116,32.604],[-117.125,32.592],[-117.132,32.578],[-117.130,32.564],[-117.126,32.548],[-117.124,32.5343],
+[-116.60,32.5343],[-116.60,32.95],[-117.29,32.95]];
+const CORONADO = [[-117.213,32.694],[-117.200,32.703],[-117.183,32.701],[-117.172,32.691],[-117.170,32.681],
+[-117.163,32.660],[-117.155,32.640],[-117.145,32.620],[-117.135,32.600],[-117.131,32.582],[-117.139,32.586],
+[-117.148,32.615],[-117.158,32.641],[-117.168,32.666],[-117.180,32.684],[-117.196,32.691],[-117.210,32.689]];
+const BAY = [[-117.220,32.680],[-117.222,32.700],[-117.216,32.720],[-117.209,32.732],[-117.196,32.727],
+[-117.182,32.719],[-117.170,32.709],[-117.156,32.699],[-117.144,32.688],[-117.130,32.677],[-117.116,32.663],
+[-117.106,32.647],[-117.101,32.630],[-117.106,32.614],[-117.116,32.603],[-117.124,32.591],[-117.134,32.600],
+[-117.144,32.620],[-117.154,32.641],[-117.163,32.660],[-117.170,32.679],[-117.178,32.691],[-117.196,32.698],
+[-117.210,32.699],[-117.214,32.692]];
+const MBAY = [[-117.245,32.772],[-117.236,32.794],[-117.216,32.800],[-117.206,32.788],[-117.209,32.772],[-117.226,32.766]];
+const FWY = {
+  "5":[[-117.24,32.87],[-117.22,32.83],[-117.205,32.79],[-117.19,32.76],[-117.175,32.735],[-117.165,32.715],[-117.145,32.695],[-117.115,32.665],[-117.095,32.640],[-117.075,32.610],[-117.060,32.575],[-117.045,32.545]],
+  "8":[[-117.252,32.745],[-117.22,32.762],[-117.19,32.765],[-117.15,32.772],[-117.10,32.780],[-117.05,32.785],[-117.00,32.790],[-116.94,32.800],[-116.84,32.806]],
+  "805":[[-117.14,32.87],[-117.135,32.83],[-117.13,32.79],[-117.12,32.755],[-117.11,32.720],[-117.095,32.690],[-117.075,32.650],[-117.055,32.610],[-117.046,32.556]],
+  "94":[[-117.160,32.712],[-117.13,32.715],[-117.09,32.725],[-117.04,32.738],[-116.98,32.745],[-116.90,32.750]],
+  "15":[[-117.10,32.87],[-117.10,32.82],[-117.105,32.78],[-117.11,32.745],[-117.115,32.720]]
+};
+const GEO_LABELS = [["La Jolla",-117.258,32.845],["Pacific Beach",-117.240,32.800],["Clairemont",-117.194,32.823],
+["Kearny Mesa",-117.130,32.823],["Mission Valley",-117.165,32.775],["Old Town",-117.196,32.755],
+["Point Loma",-117.242,32.712],["North Park",-117.122,32.747],["Golden Hill",-117.132,32.718],
+["Barrio Logan",-117.142,32.690],["National City",-117.098,32.674],["Lemon Grove",-117.032,32.737],
+["Spring Valley",-116.985,32.739],["Santee",-116.975,32.843],["Otay Mesa",-116.960,32.570],
+["San Ysidro",-117.040,32.553],["Imperial Beach",-117.115,32.577],["Tijuana",-116.980,32.522],
+["Coronado",-117.181,32.690],["Mira Mesa",-117.140,32.876]];
+
+/* =========================================================
+   2. DISTRICTS — outlines follow real edges: coast, river,
+   freeways, and the boundary streets locals actually use.
+   8 carry records, 18 give context.
+   ========================================================= */
+const DISTRICTS = {
+"la-jolla":{label:"La Jolla", poly:[[-117.2775,32.8455],[-117.2605,32.8325],[-117.2555,32.8185],[-117.244,32.816],[-117.236,32.828],[-117.238,32.845],[-117.248,32.860],[-117.2705,32.8555]]},
+"pacific-beach":{label:"Pacific Beach", poly:[[-117.2545,32.800],[-117.2535,32.782],[-117.240,32.780],[-117.226,32.785],[-117.224,32.803],[-117.232,32.811],[-117.2495,32.8115]]},
+"mission-beach":{label:"Mission Beach", poly:[[-117.2538,32.780],[-117.2478,32.7795],[-117.2452,32.766],[-117.2512,32.7625]]},
+"clairemont":{label:"Clairemont", poly:[[-117.226,32.803],[-117.205,32.800],[-117.185,32.804],[-117.176,32.816],[-117.180,32.838],[-117.205,32.845],[-117.224,32.840]]},
+"kearny-mesa":{label:"Kearny Mesa", poly:[[-117.176,32.812],[-117.150,32.806],[-117.126,32.808],[-117.116,32.822],[-117.122,32.842],[-117.150,32.846],[-117.172,32.838]]},
+"ocean-beach":{label:"Ocean Beach", poly:[[-117.2512,32.7585],[-117.240,32.7565],[-117.2335,32.748],[-117.2355,32.7365],[-117.2492,32.7355],[-117.2532,32.7445]]},
+"point-loma":{label:"Point Loma", poly:[[-117.2532,32.7335],[-117.240,32.732],[-117.2305,32.722],[-117.2285,32.706],[-117.238,32.6935],[-117.2482,32.6975],[-117.2522,32.716]]},
+"mission-valley":{label:"Mission Valley", poly:[[-117.200,32.766],[-117.170,32.762],[-117.140,32.764],[-117.130,32.774],[-117.140,32.786],[-117.172,32.788],[-117.198,32.782]]},
+"hillcrest":{label:"Hillcrest", poly:[[-117.178,32.744],[-117.160,32.742],[-117.152,32.748],[-117.154,32.760],[-117.166,32.766],[-117.178,32.760]]},
+"north-park":{label:"North Park", poly:[[-117.140,32.734],[-117.116,32.734],[-117.106,32.742],[-117.108,32.756],[-117.126,32.760],[-117.138,32.752]]},
+"balboa-park":{label:"Balboa Park", poly:[[-117.1585,32.7175],[-117.1345,32.7175],[-117.132,32.732],[-117.136,32.7455],[-117.1585,32.7455]]},
+"south-park":{label:"South Park", poly:[[-117.140,32.706],[-117.120,32.708],[-117.116,32.720],[-117.124,32.730],[-117.138,32.728]]},
+"little-italy":{label:"Little Italy", poly:[[-117.176,32.720],[-117.164,32.722],[-117.162,32.734],[-117.172,32.736],[-117.178,32.730]]},
+"downtown":{label:"Downtown", poly:[[-117.180,32.719],[-117.169,32.707],[-117.158,32.701],[-117.152,32.708],[-117.162,32.720],[-117.172,32.724]]},
+"east-village":{label:"East Village", poly:[[-117.158,32.716],[-117.138,32.712],[-117.134,32.702],[-117.146,32.694],[-117.157,32.702]]},
+"barrio-logan":{label:"Barrio Logan", poly:[[-117.157,32.700],[-117.146,32.692],[-117.134,32.684],[-117.126,32.690],[-117.134,32.700],[-117.148,32.704]]},
+"coronado":{label:"Coronado", poly:[[-117.192,32.694],[-117.180,32.700],[-117.172,32.694],[-117.170,32.682],[-117.180,32.678],[-117.190,32.684]]},
+"national-city":{label:"National City", poly:[[-117.122,32.686],[-117.100,32.680],[-117.080,32.666],[-117.074,32.676],[-117.086,32.690],[-117.110,32.692]]},
+"chula-vista":{label:"Chula Vista", poly:[[-117.104,32.652],[-117.070,32.646],[-117.040,32.632],[-117.030,32.610],[-117.056,32.602],[-117.088,32.612],[-117.100,32.634]]},
+"imperial-beach":{label:"Imperial Beach", poly:[[-117.1285,32.5875],[-117.108,32.584],[-117.100,32.572],[-117.112,32.5655],[-117.1265,32.5705]]},
+"san-ysidro":{label:"San Ysidro", poly:[[-117.062,32.564],[-117.036,32.560],[-117.020,32.548],[-117.030,32.540],[-117.056,32.544]]},
+"la-mesa":{label:"La Mesa", poly:[[-117.046,32.756],[-117.020,32.750],[-117.000,32.756],[-116.998,32.774],[-117.012,32.788],[-117.038,32.784]]},
+"el-cajon":{label:"El Cajon", poly:[[-116.992,32.782],[-116.964,32.774],[-116.936,32.780],[-116.928,32.796],[-116.940,32.814],[-116.972,32.816],[-116.990,32.802]]},
+"lemon-grove":{label:"Lemon Grove", poly:[[-117.050,32.730],[-117.028,32.724],[-117.014,32.732],[-117.020,32.746],[-117.040,32.750]]},
+"spring-valley":{label:"Spring Valley", poly:[[-117.012,32.726],[-116.988,32.718],[-116.964,32.726],[-116.958,32.744],[-116.976,32.758],[-117.004,32.752]]},
+"santee":{label:"Santee", poly:[[-117.006,32.828],[-116.982,32.824],[-116.956,32.830],[-116.944,32.844],[-116.960,32.860],[-116.994,32.856]]}
+};
+for(const k in DISTRICTS){
+  const p = DISTRICTS[k].poly;
+  const xs = p.map(q=>PX(q[0])), ys = p.map(q=>PY(q[1]));
+  const x0=Math.min.apply(null,xs), x1=Math.max.apply(null,xs);
+  const y0=Math.min.apply(null,ys), y1=Math.max.apply(null,ys);
+  DISTRICTS[k].cx=(x0+x1)/2; DISTRICTS[k].cy=(y0+y1)/2;
+  DISTRICTS[k].w=x1-x0; DISTRICTS[k].h=y1-y0;
+}
+
+/* parks, water, airport */
+const PARKS = [
+ {n:"Balboa Park", p:[[-117.1585,32.7175],[-117.1345,32.7175],[-117.132,32.732],[-117.136,32.7455],[-117.1585,32.7455]]},
+ {n:"Mission Bay Park", p:[[-117.2545,32.762],[-117.2385,32.7605],[-117.2145,32.763],[-117.2025,32.772],[-117.2005,32.795],[-117.2125,32.806],[-117.2385,32.808],[-117.2525,32.802]]},
+ {n:"Mission Trails", p:[[-117.072,32.798],[-117.036,32.792],[-117.008,32.802],[-117.004,32.834],[-117.028,32.852],[-117.062,32.846]]},
+ {n:"Presidio", p:[[-117.200,32.752],[-117.190,32.750],[-117.186,32.758],[-117.194,32.762]]},
+ {n:"Cabrillo", p:[[-117.248,32.680],[-117.239,32.666],[-117.2335,32.679],[-117.2405,32.688]]},
+ {n:"Silver Strand", p:[[-117.1685,32.674],[-117.1615,32.653],[-117.1485,32.625],[-117.1415,32.6075],[-117.1365,32.6095],[-117.1445,32.6305],[-117.1565,32.658],[-117.1625,32.6765]]},
+ {n:"Tijuana Estuary", p:[[-117.132,32.570],[-117.112,32.566],[-117.104,32.552],[-117.126,32.548],[-117.134,32.558]]},
+ {n:"Chollas", p:[[-117.088,32.716],[-117.072,32.712],[-117.066,32.724],[-117.080,32.728]]}
+];
+const RIVERS = [
+ [[-117.030,32.832],[-117.062,32.818],[-117.092,32.802],[-117.118,32.788],[-117.142,32.777],[-117.170,32.772],[-117.198,32.770],[-117.222,32.766],[-117.240,32.762],[-117.2525,32.7595]],
+ [[-116.930,32.686],[-116.962,32.690],[-116.994,32.684],[-117.026,32.672],[-117.058,32.664],[-117.088,32.652],[-117.100,32.644]]
+];
+const LAKES = [
+ {cx:-117.048, cy:32.788, rx:.009, ry:.006},
+ {cx:-116.944, cy:32.694, rx:.020, ry:.010},
+ {cx:-116.932, cy:32.628, rx:.016, ry:.009}
+];
+const AIRPORT = {
+  p:[[-117.2065,32.7295],[-117.1755,32.7335],[-117.1755,32.7375],[-117.2065,32.7335]],
+  rw:[[-117.2055,32.7318],[-117.1765,32.7355]]
+};
+
+/* main streets — arterials only, not every street */
+const ARTERIALS = [
+ {n:"Harbor Dr", lab:2, p:[[-117.208,32.733],[-117.190,32.723],[-117.175,32.712],[-117.160,32.702],[-117.148,32.692],[-117.135,32.682]]},
+ {n:"Broadway", lab:1, p:[[-117.176,32.7155],[-117.150,32.7155],[-117.130,32.716],[-117.108,32.717]]},
+ {n:"Market St", p:[[-117.170,32.7095],[-117.140,32.7095],[-117.112,32.710]]},
+ {n:"Imperial Ave", p:[[-117.158,32.7025],[-117.120,32.7025],[-117.078,32.702]]},
+ {n:"University Ave", lab:2, p:[[-117.166,32.7495],[-117.140,32.7495],[-117.100,32.7495],[-117.060,32.749],[-117.028,32.748]]},
+ {n:"El Cajon Blvd", lab:2, p:[[-117.152,32.7555],[-117.110,32.7555],[-117.060,32.7555],[-117.020,32.7555],[-116.978,32.755]]},
+ {n:"Washington St", p:[[-117.182,32.7445],[-117.162,32.7475],[-117.146,32.7495]]},
+ {n:"Adams Ave", p:[[-117.150,32.762],[-117.120,32.762],[-117.088,32.7625]]},
+ {n:"Park Blvd", p:[[-117.1435,32.714],[-117.1435,32.750],[-117.144,32.776]]},
+ {n:"5th Ave", p:[[-117.1605,32.704],[-117.1605,32.746]]},
+ {n:"30th St", p:[[-117.1295,32.700],[-117.1295,32.762]]},
+ {n:"Friars Rd", lab:1, p:[[-117.202,32.771],[-117.170,32.7745],[-117.140,32.778],[-117.118,32.783]]},
+ {n:"Mission Gorge Rd", p:[[-117.118,32.788],[-117.090,32.800],[-117.058,32.816],[-117.028,32.830]]},
+ {n:"Sunset Cliffs Blvd", lab:1, p:[[-117.253,32.760],[-117.2525,32.740],[-117.2515,32.722],[-117.250,32.706]]},
+ {n:"Nimitz Blvd", p:[[-117.240,32.752],[-117.229,32.740],[-117.222,32.730]]},
+ {n:"Rosecrans St", lab:1, p:[[-117.243,32.726],[-117.225,32.736],[-117.208,32.746],[-117.196,32.752]]},
+ {n:"Catalina Blvd", p:[[-117.246,32.700],[-117.244,32.682],[-117.242,32.670]]},
+ {n:"Mission Blvd", lab:1, p:[[-117.2535,32.762],[-117.2525,32.782],[-117.2515,32.802]]},
+ {n:"Garnet Ave", p:[[-117.2535,32.7995],[-117.235,32.7995],[-117.220,32.801]]},
+ {n:"Ingraham St", p:[[-117.2345,32.766],[-117.2315,32.782],[-117.2295,32.800]]},
+ {n:"Torrey Pines Rd", p:[[-117.258,32.816],[-117.264,32.832],[-117.252,32.846],[-117.240,32.856]]},
+ {n:"Balboa Ave", lab:2, p:[[-117.240,32.822],[-117.200,32.820],[-117.160,32.820],[-117.128,32.822]]},
+ {n:"Genesee Ave", p:[[-117.212,32.846],[-117.208,32.828],[-117.202,32.812]]},
+ {n:"Coronado Bridge", p:[[-117.1615,32.7005],[-117.170,32.697],[-117.1785,32.6935]]},
+ {n:"Orange Ave", lab:1, p:[[-117.1865,32.6965],[-117.177,32.690],[-117.1705,32.684]]},
+ {n:"Silver Strand", p:[[-117.170,32.681],[-117.157,32.646],[-117.142,32.612],[-117.133,32.586]]},
+ {n:"Third Ave", lab:1, p:[[-117.0865,32.652],[-117.0845,32.632],[-117.0825,32.612]]},
+ {n:"Broadway CV", p:[[-117.0985,32.652],[-117.0965,32.630],[-117.0945,32.610]]},
+ {n:"Palm Ave", lab:1, p:[[-117.116,32.5795],[-117.090,32.5795],[-117.058,32.581]]},
+ {n:"Sweetwater Rd", p:[[-117.072,32.664],[-117.032,32.672],[-116.996,32.686]]},
+ {n:"Jamacha Rd", p:[[-116.968,32.742],[-116.952,32.720],[-116.942,32.700]]},
+ {n:"Fletcher Pkwy", lab:1, p:[[-117.002,32.789],[-116.976,32.795],[-116.948,32.799]]},
+ {n:"Main St", p:[[-116.994,32.796],[-116.966,32.792],[-116.938,32.790]]}
+];
+const SHIELDS = [["5",-117.185,32.752],["8",-117.130,32.776],["805",-117.118,32.742],["94",-117.070,32.731],["15",-117.104,32.800]];
+
+const CATEGORY_LABEL = {id_documents:"Identity documents", shelter_bed:"Shelter bed", medical:"Medical access",
+  work_docs:"Work documents", phone:"Phone / callback", transit:"Transit", childcare:"Childcare"};
+const CATEGORY_SHORT = {id_documents:"ID docs", shelter_bed:"Shelter", medical:"Medical",
+  work_docs:"Work docs", phone:"Phone", transit:"Transit", childcare:"Childcare"};
+
+/* =========================================================
+   3. SEED STORIES (composite; no real individuals)
+   ========================================================= */
+const SEED = [
+{ id:"SD-0114", zone:"downtown", status:"unanswered",
+  ask:{category:"id_documents", summary:"Replacement birth certificate and state ID fee.", amountUsd:29},
+  story:{raw:"lost my wallet on the trolley. no birth certificate no nothing. they want ID to get ID. i been going to the office three years now. three years. i had a job lined up at the warehouse, guy said just bring me your papers. couldnt.",
+    shaped:"I lost my wallet on the trolley. No birth certificate, no nothing. They want ID to get ID. I have been going to the office for three years now. Three years. I had a job lined up at the warehouse; the guy said just bring me your papers. I could not."},
+  facts:["birth certificate","three years","warehouse","trolley"],
+  consent:{advocateId:"ADV-114", method:"verbal, witnessed by two advocates", timestamp:"2026-03-11T16:20:00Z"} },
+{ id:"SD-0207", zone:"east-village", status:"unanswered",
+  ask:{category:"shelter_bed", summary:"One shelter bed, any night, with a callback that comes.", amountUsd:null},
+  story:{raw:"the list. they call it the list. i called 211 nine times. nine. they said check back monday. every monday is a monday.",
+    shaped:"The list. They call it the list. I called 211 nine times. Nine. They said check back Monday. Every Monday is a Monday."},
+  facts:["211","nine","monday"],
+  consent:{advocateId:"ADV-221", method:"signed release form", timestamp:"2026-03-19T14:05:00Z"} },
+{ id:"SD-0318", zone:"balboa-park", status:"answered",
+  ask:{category:"medical", summary:"Clinic intake without a fixed address requirement.", amountUsd:null},
+  story:{raw:"insulin ran out. clinic wouldnt see me without a address. my sister let me use hers. thats the only reason i got seen.",
+    shaped:"My insulin ran out. The clinic would not see me without an address. My sister let me use hers. That is the only reason I got seen."},
+  facts:["insulin","address","sister","clinic"],
+  consent:{advocateId:"ADV-088", method:"verbal, recorded with permission", timestamp:"2026-02-27T19:41:00Z"} },
+{ id:"SD-0422", zone:"hillcrest", status:"unanswered",
+  ask:{category:"work_docs", summary:"Certified replacement of a welding certification card.", amountUsd:65},
+  story:{raw:"i been a welder 11 years. cert card burned up in the van fire. shop said come back when you got paper.",
+    shaped:"I have been a welder 11 years. My cert card burned up in the van fire. The shop said come back when you got paper."},
+  facts:["welder","11 years","van fire","shop"],
+  consent:{advocateId:"ADV-114", method:"signed release form", timestamp:"2026-04-02T17:12:00Z"} },
+{ id:"SD-0533", zone:"ocean-beach", status:"unanswered",
+  ask:{category:"phone", summary:"Prepaid phone plus three months of service.", amountUsd:45},
+  story:{raw:"no phone means no callback. thats the whole thing. i miss the callback i go back to the bottom.",
+    shaped:"No phone means no callback. That is the whole thing. If I miss the callback, I go back to the bottom."},
+  facts:["phone","callback","bottom"],
+  consent:{advocateId:"ADV-305", method:"verbal, witnessed by two advocates", timestamp:"2026-04-14T15:33:00Z"} },
+{ id:"SD-0641", zone:"chula-vista", status:"unanswered",
+  ask:{category:"childcare", summary:"A shelter placement that keeps a parent and child together.", amountUsd:null},
+  story:{raw:"my daughter is 7. shelter takes women or takes families depending on the night. i wont split us up. so we stay together in the car.",
+    shaped:"My daughter is 7. The shelter takes women, or takes families, depending on the night. I will not split us up. So we stay together in the car."},
+  facts:["daughter","shelter","car"],
+  consent:{advocateId:"ADV-221", method:"signed release form", timestamp:"2026-04-21T13:02:00Z"} },
+{ id:"SD-0709", zone:"el-cajon", status:"acknowledged",
+  ask:{category:"transit", summary:"Monthly transit pass to hold a confirmed job.", amountUsd:72},
+  story:{raw:"the job is a 40 minute bus each way. i can do the work. i cant do the fare every day. got written up for late twice.",
+    shaped:"The job is a 40 minute bus each way. I can do the work. I cannot do the fare every day. I got written up for late twice."},
+  facts:["40 minute","fare","twice","job"],
+  consent:{advocateId:"ADV-402", method:"verbal, recorded with permission", timestamp:"2026-05-06T18:50:00Z"} },
+{ id:"SD-0815", zone:"la-mesa", status:"unanswered",
+  ask:{category:"id_documents", summary:"Full document replacement after belongings were discarded.", amountUsd:29},
+  story:{raw:"my papers got thrown out in a cleanup. everything in the one bag. 8 years of documents gone in a truck.",
+    shaped:"My papers got thrown out in a cleanup. Everything was in the one bag. 8 years of documents, gone in a truck."},
+  facts:["8 years","bag","truck","cleanup"],
+  consent:{advocateId:"ADV-088", method:"verbal, witnessed by two advocates", timestamp:"2026-05-18T16:09:00Z"} },
+{ id:"SD-0926", zone:"downtown", status:"requested",
+  ask:{category:"work_docs", summary:"Food handler card and Live Scan fingerprint fee.", amountUsd:85},
+  story:{raw:"food handler card and live scan. thats it. thats the whole barrier. 85 dollars between me and a paycheck.",
+    shaped:"Food handler card and Live Scan. That is it. That is the whole barrier. 85 dollars between me and a paycheck."},
+  facts:["food handler","live scan","85","paycheck"],
+  consent:{advocateId:"ADV-305", method:"signed release form", timestamp:"2026-06-01T15:20:00Z"} },
+{ id:"SD-1002", zone:"hillcrest", status:"unanswered",
+  ask:{category:"medical", summary:"Withheld pending consent verification.", amountUsd:null},
+  story:{raw:"", shaped:""}, facts:[], consent:null }
+];
+
+/* =========================================================
+   4. FRICTION POINTS + COMMON GROUND THREADS
+   Public places only. Never a camp, never a sleeping location.
+   ========================================================= */
+const SPOTS = [
+{ id:"CG-01", zone:"downtown", lon:-117.157, lat:32.708, heat:.95,
+  place:"Transit plaza block", state:"awaiting", days:71,
+  ledger:{moves:9, notice:"25 min", discarded:3},
+  thread:[
+    {side:"housed", ts:"2026-05-02", text:"I open the shop at six. Three mornings this week I cleaned human waste off the doorway before customers came. I am not angry at anyone. I am tired."},
+    {side:"unhoused", ts:"2026-05-04", via:"ADV-114", text:"There is one restroom open near here at that hour. It closes at nine. I have been cited for the one thing I have no legal place to do."},
+    {side:"housed", ts:"2026-05-06", text:"I did not know the hours. I would sign for a portable unit outside my building if someone asked me."},
+    {side:"housed", ts:"2026-05-19", text:"Forty-one residents and six businesses on this block signed the request."}
+  ],
+  resolution:{action:"Overnight restroom access on this block", note:"Signed by both sides of the thread. No reply from the responsible department in 71 days."} },
+
+{ id:"CG-02", zone:"ocean-beach", lon:-117.251, lat:32.748, heat:.8,
+  place:"Beach parking lots", state:"agreed", days:0,
+  ledger:{moves:11, notice:"20 min", discarded:4},
+  thread:[
+    {side:"housed", ts:"2026-03-28", text:"Broken glass in the lot where my kid's team parks. I pick it up every Saturday. I would like to stop being the only one who does."},
+    {side:"unhoused", ts:"2026-03-30", via:"ADV-305", text:"When the cleanup comes we get twenty minutes. Whatever I cannot carry goes in the truck. I have started over eleven times. After a while you stop carrying anything worth keeping."},
+    {side:"housed", ts:"2026-04-01", text:"I did not know it was twenty minutes. I thought people just left their things."},
+    {side:"unhoused", ts:"2026-04-03", via:"ADV-305", text:"Give me somewhere to put it and I will keep my corner clean. I used to."}
+  ],
+  resolution:{action:"72-hour posted notice, plus one labeled storage bin, trial", note:"Three cleanups since. Zero belongings discarded. Glass reports on this block down."} },
+
+{ id:"CG-03", zone:"mission-valley", lon:-117.166, lat:32.769, heat:.7,
+  place:"River path, west segment", state:"proposed", days:34,
+  ledger:{moves:6, notice:"1 hr", discarded:2},
+  thread:[
+    {side:"housed", ts:"2026-04-11", text:"I stopped riding the path after dark. I want to be honest that it is fear, not just annoyance."},
+    {side:"unhoused", ts:"2026-04-13", via:"ADV-088", text:"I am afraid on that path too. I sleep in shifts. Most of what happens out there happens to us.", claim:"People without housing are more likely to be victims of violence than the housed."},
+    {side:"housed", ts:"2026-04-15", text:"That did not occur to me. I am not sure what to do with that yet, but it changed the question I was asking."}
+  ],
+  resolution:{action:"Path lighting and a shared-use agreement for the west segment", note:"Proposed by four neighbors and two intake advocates. Awaiting a decision for 34 days."} },
+
+{ id:"CG-04", zone:"el-cajon", lon:-116.962, lat:32.792, heat:.6,
+  place:"Trolley plaza benches", state:"agreed", days:0,
+  ledger:{moves:4, notice:"2 hr", discarded:1},
+  thread:[
+    {side:"housed", ts:"2026-02-09", text:"Trash by the benches every morning. The bins on this block were removed last year."},
+    {side:"unhoused", ts:"2026-02-12", via:"ADV-402", text:"They took the cans out. Then they wrote us up for the trash."}
+  ],
+  resolution:{action:"Two bins restored, emptied twice weekly", note:"Complaints logged on this block have fallen since. Cost of the fix: two bins."} },
+
+{ id:"CG-05", zone:"chula-vista", lon:-117.070, lat:32.635, heat:.85,
+  place:"Shopping center service road", state:"no_response", days:94,
+  ledger:{moves:7, notice:"30 min", discarded:2},
+  thread:[
+    {side:"housed", ts:"2026-03-02", text:"Cars broken into twice this month. I do not know who is doing it, and I have caught myself blaming whoever is closest."},
+    {side:"unhoused", ts:"2026-03-05", via:"ADV-221", text:"I got blamed for a break-in the night I was in the emergency room. Nobody asked me. Now I do not talk to anyone here."}
+  ],
+  resolution:{action:"A neutral report line and a monthly block meeting", note:"Both sides agreed to attend. No institutional reply in 94 days."} },
+
+{ id:"CG-06", zone:"balboa-park", lon:-117.148, lat:32.730, heat:.75,
+  place:"Park perimeter, east side", state:"proposed", days:12,
+  ledger:{moves:8, notice:"45 min", discarded:3},
+  thread:[
+    {side:"housed", ts:"2026-05-21", text:"I bring my kids here. I want the park to feel safe. I also do not want anyone swept out of it into nowhere. I do not know how to hold both of those."},
+    {side:"unhoused", ts:"2026-05-23", via:"ADV-088", text:"I used to pick up my area every day. I stopped when they threw it all out anyway. I would start again if there was somewhere to put it."},
+    {side:"housed", ts:"2026-05-24", text:"Then that is a thing I can actually help with."}
+  ],
+  resolution:{action:"Neighborhood-supplied bags and a weekly pickup point", note:"Proposed 12 days ago. Nineteen households have offered to supply bags."} }
+];
+const SPOT_STATE_LABEL = {agreed:"agreement reached", proposed:"proposed", awaiting:"awaiting response", no_response:"no response"};
+
+/* =========================================================
+   4b. SERVICE SITES
+   Composite sample directory. Not a live feed and not a
+   referral source. A real deployment would sync bed counts
+   from a coordinated-entry system on a signed interval.
+   ========================================================= */
+const SERVICE_LABEL = {beds:"Shelter beds", shower:"Showers", laundry:"Laundry", mail:"Mail address",
+  id_help:"ID & document help", medical:"Medical care", dental:"Dental care", legal:"Legal help",
+  food:"Meals", storage:"Belongings storage", charging:"Device charging", phone:"Phone & callback line",
+  transit:"Transit passes", childcare:"Childcare", case_mgmt:"Case management"};
+const KIND_LABEL = {shelter:"Shelter", day_center:"Day center", clinic:"Health", legal:"Legal",
+  outreach:"Outreach post", hygiene:"Hygiene", food:"Food", mail:"Mail"};
+
+const SERVICES = [
+{id:"SVC-01", kiosk:true, zone:"downtown", lon:-117.1655, lat:32.7125, name:"Harbor Day Center", kind:"day_center",
+ services:["shower","laundry","mail","charging","storage","case_mgmt"], hours:"6:00–19:00 daily", intake:"Walk-in, no ID required",
+ note:"Mail held 30 days. Opening a mail slot requires nothing but a name you choose to use."},
+{id:"SVC-02", zone:"east-village", lon:-117.1485, lat:32.7075, name:"East Village Bridge Shelter", kind:"shelter",
+ services:["beds","food","storage","case_mgmt"], beds:{total:324, available:11}, hours:"Intake 16:00–20:00",
+ intake:"Referral, or walk-in after 18:00 if beds remain", note:"Pets kenneled on site. Partners are not separated."},
+{id:"SVC-03", kiosk:true, zone:"east-village", lon:-117.1525, lat:32.7055, name:"Village Legal Clinic", kind:"legal",
+ services:["legal","id_help"], hours:"Tue & Thu 9:00–15:00", intake:"Walk-in",
+ note:"Files fee waivers for birth certificates and state ID the same day. This is the $29 in record SD-0114."},
+{id:"SVC-04", zone:"downtown", lon:-117.1695, lat:32.7145, name:"Waterfront Health Post", kind:"clinic",
+ services:["medical","dental","case_mgmt"], hours:"Mon–Fri 8:00–16:00", intake:"Walk-in, no address required",
+ note:"Dental extractions Wednesdays. No address requirement, which is the barrier in record SD-0318."},
+{id:"SVC-05", zone:"downtown", lon:-117.1605, lat:32.7085, name:"Harbor Interim Housing", kind:"shelter",
+ services:["beds","food","case_mgmt","storage"], beds:{total:150, available:2}, hours:"Intake 17:00–21:00",
+ intake:"Coordinated entry referral", note:"90-day stays. Storage for one bin per person."},
+{id:"SVC-06", kiosk:true, zone:"balboa-park", lon:-117.1465, lat:32.7335, name:"Park Outreach Post", kind:"outreach",
+ services:["id_help","transit","phone","case_mgmt"], hours:"Wed & Fri 10:00–14:00", intake:"Walk-in",
+ note:"Transit passes issued against a confirmed appointment. Voicemail line for callbacks."},
+{id:"SVC-07", zone:"hillcrest", lon:-117.1665, lat:32.7525, name:"Hillcrest Family Services", kind:"day_center",
+ services:["food","shower","childcare","case_mgmt"], hours:"7:00–17:00 Mon–Sat", intake:"Walk-in",
+ note:"Childcare during appointments only. Parents are not asked to leave the building."},
+{id:"SVC-08", zone:"ocean-beach", lon:-117.2445, lat:32.7475, name:"Ocean Beach Hygiene Trailer", kind:"hygiene",
+ services:["shower","laundry"], hours:"Tue & Sat 7:00–12:00", intake:"Walk-in, sign-in sheet",
+ note:"20-minute slots. Towel and kit provided. Laundry runs while you shower."},
+{id:"SVC-09", zone:"chula-vista", lon:-117.0755, lat:32.6325, name:"South Bay Family Center", kind:"shelter",
+ services:["beds","food","childcare","case_mgmt"], beds:{total:96, available:4}, hours:"Intake 15:00–19:00",
+ intake:"Families with children, walk-in", note:"Keeps a parent and child in the same room. This is the ask in record SD-0641."},
+{id:"SVC-10", kiosk:true, zone:"el-cajon", lon:-116.9605, lat:32.7925, name:"East County Resource Hub", kind:"day_center",
+ services:["mail","id_help","transit","charging","case_mgmt"], hours:"8:00–16:00 Mon–Fri", intake:"Walk-in",
+ note:"Monthly transit passes for confirmed employment. Two blocks from the trolley plaza in exchange CG-04."},
+{id:"SVC-11", kiosk:true, zone:"la-mesa", lon:-117.0205, lat:32.7705, name:"La Mesa Mail Room", kind:"mail",
+ services:["mail","phone"], hours:"9:00–15:00 Mon, Wed, Fri", intake:"Walk-in",
+ note:"A mailing address you can put on a job application. Held 60 days."},
+{id:"SVC-12", zone:"national-city", lon:-117.1015, lat:32.6835, name:"Mobile Dental Van", kind:"clinic",
+ services:["dental","medical"], hours:"Thu 9:00–15:00", intake:"Walk-in, first 20",
+ note:"Cleanings, fillings, extractions. Rotating location posted weekly at partner sites."},
+{id:"SVC-13", zone:"mission-valley", lon:-117.1605, lat:32.7745, name:"Riverside Health Van", kind:"clinic",
+ services:["medical","case_mgmt"], hours:"Mon & Thu 10:00–14:00", intake:"Walk-in",
+ note:"Wound care and prescription refills. Parks near the river path in exchange CG-03."},
+{id:"SVC-14", zone:"barrio-logan", lon:-117.1425, lat:32.6955, name:"Logan Community Kitchen", kind:"food",
+ services:["food","storage"], hours:"Meals 11:30 and 17:30 daily", intake:"Walk-in, no questions",
+ note:"Day storage for bags during meals so nothing has to be carried in."},
+{id:"SVC-15", zone:"north-park", lon:-117.1265, lat:32.7465, name:"North Park Night Shelter", kind:"shelter",
+ services:["beds","shower","food"], beds:{total:64, available:0}, hours:"Intake 18:00–21:00",
+ intake:"First come. Line forms around 17:00", note:"Adults only. Beds released at 18:00 and are typically gone by 18:20."},
+{id:"SVC-16", zone:"point-loma", lon:-117.2385, lat:32.7165, name:"Peninsula Veterans Post", kind:"outreach",
+ services:["case_mgmt","id_help","medical"], hours:"Mon & Wed 9:00–15:00", intake:"Walk-in",
+ note:"Helps recover service records and discharge paperwork lost with other documents."},
+{id:"SVC-17", zone:"spring-valley", lon:-116.9855, lat:32.7385, name:"East Valley Shelter", kind:"shelter",
+ services:["beds","food","laundry"], beds:{total:48, available:6}, hours:"Intake 16:30–20:00",
+ intake:"Walk-in", note:"Smallest site on this map and the one most often with room."},
+{id:"SVC-18", zone:"imperial-beach", lon:-117.1185, lat:32.5785, name:"South Coast Outreach", kind:"outreach",
+ services:["food","shower","transit"], hours:"Fri 8:00–13:00", intake:"Walk-in", note:"Mobile unit. Showers are two stalls, expect a wait."},
+{id:"SVC-19", zone:"san-ysidro", lon:-117.0425, lat:32.5545, name:"Border Community Clinic", kind:"clinic",
+ services:["medical","legal","food"], hours:"Tue–Sat 8:00–17:00", intake:"Walk-in, interpretation available",
+ note:"Immigration and benefits questions handled by on-site legal staff."},
+{id:"SVC-20", kiosk:true, zone:"pacific-beach", lon:-117.2385, lat:32.7955, name:"Beach Access Point", kind:"outreach",
+ services:["shower","charging","phone"], hours:"Wed & Sun 7:00–11:00", intake:"Walk-in",
+ note:"Charging bank and a callback line so a missed call does not cost a placement."},
+{id:"SVC-21", zone:"lemon-grove", lon:-117.0325, lat:32.7365, name:"Grove Legal Aid", kind:"legal",
+ services:["legal","id_help"], hours:"Mon 9:00–16:00", intake:"Appointment, walk-in waitlist",
+ note:"Citation clearing and records replacement after a cleanup."}
+];
+const SHELTERS = SERVICES.filter(x => x.beds);
+
+/* consent gate */
+function hasConsent(e){ return !!(e.consent && e.consent.advocateId && e.consent.method && e.consent.timestamp); }
+const WITHHELD = SEED.filter(e => !hasConsent(e));
+const ENTRIES = SEED.filter(hasConsent).map(e => JSON.parse(JSON.stringify(e)));
+const ORIGINAL = JSON.parse(JSON.stringify(ENTRIES));
+
+/* Claim codes. In production the site stores ONLY the keyed hash below and
+   never the phrase. The phrase lives on a paper card the person keeps, and
+   on nothing else. These are printed here so the demo can be tried. */
+const CODES = {
+ "SD-0114":{phrase:"river copper lantern", pin:"4417"},
+ "SD-0207":{phrase:"harbor pine anchor",   pin:"2039"},
+ "SD-0318":{phrase:"cedar violet ember",   pin:"7715"},
+ "SD-0422":{phrase:"iron willow signal",   pin:"3308"},
+ "SD-0533":{phrase:"coast amber quill",    pin:"5124"},
+ "SD-0641":{phrase:"meadow tin compass",   pin:"8862"},
+ "SD-0709":{phrase:"granite fern lantern", pin:"6471"},
+ "SD-0815":{phrase:"otter slate beacon",   pin:"1930"},
+ "SD-0926":{phrase:"juniper brass ferry",  pin:"5583"}
+};
+const REPLIES = {
+ "SD-0114":[{from:"Village Legal Clinic", ts:"2026-06-14", text:"We file fee waivers Tuesday and Thursday. Come to the front desk and ask for records. You do not need ID to start the form."}],
+ "SD-0533":[{from:"A neighbour", ts:"2026-05-02", text:"I have a spare prepaid phone. I would rather hand it to an advocate than to a stranger, so I left it at the day center under this record number."}],
+ "SD-0926":[{from:"Beach Access Point", ts:"2026-06-09", text:"Live Scan vouchers restarted this month. Bring this record number, no ID needed to be added to the list."}],
+ "SD-0207":[{from:"East Village Bridge Shelter", ts:"2026-06-02", text:"Walk-in after 18:00 if beds remain. We do not separate partners and we kennel pets on site."}]
+};
+ENTRIES.forEach(e => { e.replies = (REPLIES[e.id]||[]).slice(); e.withdrawn = false; });
+const WORDS = ["river","harbor","cedar","iron","coast","meadow","granite","otter","juniper","lantern","copper","anchor","ember","willow","amber","compass","fern","slate","beacon","brass","pine","violet","signal","quill","tin","ferry","marsh","kestrel","alder","basalt"];
+
+/* Claim cards. Printed at intake and handed over on paper.
+   Four words, no phone, no email, no ID, nothing to lose but a card
+   that we already know gets thrown away, which is why an advocate
+   can always restore access in person. */
+const CLAIM_WORDS = ["anchor","harbor","cedar","lantern","copper","meadow","otter","pebble",
+  "quartz","ribbon","saddle","thistle","violet","walnut","yarrow","zephyr","basil","canyon",
+  "dune","ember","fern","granite","hollow","juniper"];
+ENTRIES.forEach((e,i) => {
+  const w = [], seen = {};
+  let j = 0;
+  while(w.length < 4){
+    const word = CLAIM_WORDS[(i*7 + j*5 + 3) % CLAIM_WORDS.length];
+    if(!seen[word]){ seen[word] = 1; w.push(word); }
+    j++;
+  }
+  e.claim = {words:w, verifier:null, restores:0};
+  e.updates = []; e.offers = [];
+});
+
+/* =========================================================
+   5. CRYPTO
+   ========================================================= */
+const ENC = new TextEncoder();
+let KEYS = null, PUBJWK = null;
+function canonEntry(e){
+  return JSON.stringify({id:e.id, zone:e.zone, status:e.status, ask_category:e.ask.category,
+    ask_summary:e.ask.summary, ask_amount_usd:(e.ask.amountUsd==null?null:e.ask.amountUsd),
+    story_raw:e.story.raw, story_shaped:e.story.shaped, consent_advocate_id:e.consent.advocateId,
+    consent_method:e.consent.method, consent_timestamp:e.consent.timestamp,
+    geo_precision:"neighborhood_centroid", composite:true});
+}
+function canonMsg(spotId, m, seq){
+  return JSON.stringify({spot_id:spotId, seq:seq, side:m.side, text:m.text, posted:m.ts,
+    via_advocate:(m.via||null), geo_precision:"neighborhood_centroid", addressed_to:"place_not_person"});
+}
+function hex(b){ return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join(""); }
+async function sha(bytes){ return hex(await crypto.subtle.digest("SHA-256", bytes)); }
+async function signBytes(bytes){ return new Uint8Array(await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"}, KEYS.privateKey, bytes)); }
+async function seal(e){
+  const bytes = ENC.encode(canonEntry(e));
+  e.prov = {sealedHash: await sha(bytes), sig: await signBytes(bytes), byteLen: bytes.length,
+    sealedAt: new Date().toISOString(), ok:true, tampered:false, tamperNote:null};
+}
+async function sealMsg(spotId, m, seq){
+  const bytes = ENC.encode(canonMsg(spotId, m, seq));
+  m.hash = await sha(bytes); m.sig = await signBytes(bytes); m.ok = true;
+}
+function canonBeds(v){
+  return JSON.stringify({site_id:v.id, total:v.beds.total, available:v.beds.available,
+    observed_at:v.beds.observedAt, source:"sample_feed", geo_precision:"neighborhood_centroid"});
+}
+async function sealBeds(v){
+  v.beds.observedAt = new Date().toISOString();
+  const bytes = ENC.encode(canonBeds(v));
+  v.beds.hash = await sha(bytes); v.beds.sig = await signBytes(bytes);
+}
+/* A claim key is derived from the four words on the card plus the record
+   number. Nothing is stored that could identify a person, and the words
+   never leave the device. Losing the card is expected, not fatal. */
+async function deriveClaimKey(recordId, words){
+  const base = await crypto.subtle.importKey("raw",
+    ENC.encode(words.map(w=>w.trim().toLowerCase()).join(" ")), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2", salt:ENC.encode("onrecord:claim:"+recordId), iterations:80000, hash:"SHA-256"},
+    base, {name:"HMAC", hash:"SHA-256", length:256}, true, ["sign","verify"]);
+}
+async function claimVerifier(key){
+  return hex(await crypto.subtle.digest("SHA-256", await crypto.subtle.exportKey("raw", key)));
+}
+async function signUpdate(key, recordId, seq, text){
+  const canonical = JSON.stringify({record_id:recordId, seq:seq, text:text,
+    posted:new Date().toISOString().slice(0,10), author:"record_holder"});
+  const bytes = ENC.encode(canonical);
+  return {hash: await sha(bytes),
+    sig: hex(new Uint8Array(await crypto.subtle.sign("HMAC", key, bytes))).slice(0,16)};
+}
+/* Claim code -> HMAC key -> author tag.
+   The key never leaves this device and the phrase is never stored. */
+async function deriveAuth(phrase, pin){
+  const material = ENC.encode(String(phrase).trim().toLowerCase().replace(/\s+/g," ") + ":" + String(pin).trim());
+  const base = await crypto.subtle.importKey("raw", material, "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt:ENC.encode("onrecord/claim/v1"), iterations:60000, hash:"SHA-256"},
+    base, {name:"HMAC", hash:"SHA-256", length:256}, false, ["sign"]);
+}
+async function authorTag(key, id){ return hex(await crypto.subtle.sign("HMAC", key, ENC.encode("author:"+id))); }
+async function authorSign(key, payload){ return hex(await crypto.subtle.sign("HMAC", key, ENC.encode(payload))); }
+
+async function verifyEntry(e){
+  const bytes = ENC.encode(canonEntry(e));
+  const digest = await sha(bytes);
+  const hashMatch = digest === e.prov.sealedHash;
+  const sigOk = await crypto.subtle.verify({name:"ECDSA",hash:"SHA-256"}, KEYS.publicKey, e.prov.sig, bytes);
+  e.prov.ok = hashMatch && sigOk;
+  return {digest, hashMatch, sigOk, ok:e.prov.ok, byteLen:bytes.length};
+}
+
+/* =========================================================
+   6. LAYOUT OF MARKERS
+   ========================================================= */
+const byZone = {};
+ENTRIES.forEach(e => { (byZone[e.zone] = byZone[e.zone] || []).push(e); });
+ENTRIES.forEach(e => {
+  const d = DISTRICTS[e.zone], g = byZone[e.zone], i = g.indexOf(e), n = g.length;
+  const rad = Math.min(d.w, d.h) * (n === 1 ? 0 : .26);
+  const ang = -Math.PI/2 + (i/Math.max(n,1))*Math.PI*2;
+  e._x = d.cx + Math.cos(ang)*rad;
+  e._y = d.cy + Math.sin(ang)*rad;
+});
+SPOTS.forEach(s => { s._x = PX(s.lon); s._y = PY(s.lat); });
+SERVICES.forEach(v => { v._x = PX(v.lon); v._y = PY(v.lat); });
+
+/* =========================================================
+   7. CAMERA
+   ========================================================= */
+const view = {x:0, y:0, k:1};
+const K_MIN = .85, K_MAX = 9, K_DRILL = 1.9, K_DETAIL = 3.4;
+let svg, camera, anim = null;
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function clampView(){
+  const sx = VBW*view.k, sy = VBH*view.k, pad = 170;
+  view.x = (sx <= VBW) ? (VBW-sx)/2 : clamp(view.x, VBW-sx-pad, pad);
+  view.y = (sy <= VBH) ? (VBH-sy)/2 : clamp(view.y, VBH-sy-pad, pad);
+}
+function applyView(){
+  clampView();
+  camera.setAttribute("transform","translate("+view.x.toFixed(2)+","+view.y.toFixed(2)+") scale("+view.k.toFixed(4)+")");
+  const inv = 1/view.k;
+  svg.querySelectorAll("[data-cs]").forEach(g => {
+    g.setAttribute("transform","translate("+g.dataset.px+","+g.dataset.py+") scale("+inv.toFixed(4)+")");
+  });
+  const lvl = view.k >= K_DETAIL ? "detail" : (view.k >= K_DRILL ? "zone" : "county");
+  if(svg.dataset.level !== lvl){ svg.dataset.level = lvl; refreshMarkers(); }
+}
+function easeOut(t){ return 1 - Math.pow(1-t,3); }
+function flyTo(tx, ty, k, ms){
+  if(anim) cancelAnimationFrame(anim);
+  const k2 = clamp(k, K_MIN, K_MAX);
+  const from = {x:view.x, y:view.y, k:view.k};
+  const to = {k:k2, x: VBW/2 - tx*k2, y: VBH/2 - ty*k2};
+  const t0 = performance.now(), dur = ms || 720;
+  (function frame(now){
+    const t = clamp((now-t0)/dur, 0, 1), e = easeOut(t);
+    view.x = from.x + (to.x-from.x)*e; view.y = from.y + (to.y-from.y)*e; view.k = from.k + (to.k-from.k)*e;
+    applyView();
+    if(t < 1) anim = requestAnimationFrame(frame);
+  })(performance.now());
+}
+function zoomBy(f){ flyTo((VBW/2-view.x)/view.k, (VBH/2-view.y)/view.k, view.k*f, 320); }
+
+/* =========================================================
+   8. STATE
+   ========================================================= */
+const state = {selected:null, spot:null, focusedZone:null, view:"shaped", manifestOpen:false,
+  tab:"dash", leftTab:"asks", status:"all", category:"all", panelOpen:true,
+  layers:{asks:true, spots:true, heat:true, svc:true}, needs:new Set(), svc:null};
+const STEPS = [{k:"map",t:"Explore"},{k:"zone",t:"Drill in"},{k:"story",t:"Open a story"},
+  {k:"words",t:"Their words / AI"},{k:"prov",t:"Provenance"},{k:"tamper",t:"Tamper"},
+  {k:"cg",t:"Common ground"},{k:"post",t:"Post to a place"},{k:"author",t:"Open with a card"},{k:"offer",t:"Answer an ask"},{k:"claim",t:"Claim card"},{k:"dash",t:"Non-response"}];
+const done = {map:true};
+function markStep(k){ if(!done[k]){ done[k]=true; drawRail(); } }
+function drawRail(){
+  const nx = STEPS.findIndex(s => !done[s.k]);
+  document.getElementById("rail").innerHTML = STEPS.map((s,i) =>
+    '<div class="step '+(done[s.k]?"done":(i===nx?"next":""))+'"><span class="n">'+(done[s.k]?"&#10003;":(i+1))+'</span>'+s.t+'</div>').join("");
+}
+function say(m){ document.getElementById("live").textContent = m; }
+function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function shortHash(h){ return h.slice(0,8)+"…"+h.slice(-6); }
+function money(n){ return "$"+n.toLocaleString("en-US"); }
+function passesNeed(v){
+  if(state.needs.size === 0) return true;
+  for(const n of state.needs) if(v.services.indexOf(n) >= 0) return true;
+  return false;
+}
+function passesFilter(e){
+  if(e.withdrawn) return false;
+  if(state.status === "unanswered" && e.status !== "unanswered") return false;
+  if(state.status === "answered" && e.status !== "answered") return false;
+  if(state.category !== "all" && e.ask.category !== state.category) return false;
+  return true;
+}
+
+/* =========================================================
+   9. MAP
+   ========================================================= */
+function buildMap(){
+  let s = '<svg class="map" id="svg" viewBox="0 0 '+VBW+' '+VBH+'" preserveAspectRatio="xMidYMid meet" data-level="county" role="application" aria-label="Map of San Diego County. Neighborhood level only. Use the list panel for keyboard access.">'
+   + '<defs>'
+   + '<radialGradient id="glow"><stop offset="0%" stop-color="#ffcf7d" stop-opacity=".85"/><stop offset="45%" stop-color="#f2a93b" stop-opacity=".36"/><stop offset="100%" stop-color="#f2a93b" stop-opacity="0"/></radialGradient>'
+   + '<radialGradient id="glowbad"><stop offset="0%" stop-color="#ff9d8f" stop-opacity=".9"/><stop offset="45%" stop-color="#ff5f4d" stop-opacity=".4"/><stop offset="100%" stop-color="#ff5f4d" stop-opacity="0"/></radialGradient>'
+   + '<radialGradient id="heatgrad"><stop offset="0%" stop-color="#e0563f" stop-opacity=".55"/><stop offset="55%" stop-color="#e0563f" stop-opacity=".18"/><stop offset="100%" stop-color="#e0563f" stop-opacity="0"/></radialGradient>'
+   + '<!--CLIPS--></defs><g id="camera">';
+
+  s += '<rect class="bgfill" x="-4000" y="-4000" width="9000" height="9000"/>';
+  s += '<path class="landmass" d="'+path(COAST)+'"/>';
+  s += '<path class="waterbody" d="'+path(BAY)+'"/>';
+  s += '<path class="waterbody" d="'+path(MBAY)+'"/>';
+  s += '<path class="island" d="'+path(CORONADO)+'"/>';
+  s += '<!--GRID-->';
+
+  /* green space */
+  PARKS.forEach(pk => { s += '<path class="park" d="'+path(pk.p)+'"><title>'+pk.n+'</title></path>'; });
+  /* rivers and reservoirs */
+  RIVERS.forEach(r => { s += '<path class="river" d="'+path(r, false)+'"/>'; });
+  LAKES.forEach(l => {
+    s += '<ellipse class="lake" cx="'+PX(l.cx).toFixed(1)+'" cy="'+PY(l.cy).toFixed(1)+'" rx="'+(l.rx*KX).toFixed(1)+'" ry="'+(l.ry*KY).toFixed(1)+'"/>';
+  });
+  /* airport */
+  s += '<path class="airport" d="'+path(AIRPORT.p)+'"><title>San Diego International</title></path>';
+  s += '<path class="runway" d="'+path(AIRPORT.rw, false)+'"/>';
+
+  /* main streets under the freeways */
+  ARTERIALS.forEach(a => { s += '<path class="arterial" d="'+path(a.p, false)+'"/>'; });
+
+  for(const n in FWY){
+    s += '<path class="fwy-cap" d="'+path(FWY[n], false)+'"/><path class="fwy" d="'+path(FWY[n], false)+'"/>';
+  }
+
+  /* street names, revealed on zoom */
+  ARTERIALS.forEach(a => {
+    if(!a.lab) return;
+    const i = Math.min(a.lab, a.p.length-1);
+    const x1=PX(a.p[i-1][0]), y1=PY(a.p[i-1][1]), x2=PX(a.p[i][0]), y2=PY(a.p[i][1]);
+    const mx=(x1+x2)/2, my=(y1+y2)/2;
+    let ang = Math.atan2(y2-y1, x2-x1)*180/Math.PI;
+    if(ang > 90) ang -= 180; if(ang < -90) ang += 180;
+    s += '<text class="stlabel" x="'+mx.toFixed(1)+'" y="'+(my-3).toFixed(1)+'" transform="rotate('+ang.toFixed(1)+' '+mx.toFixed(1)+' '+(my-3).toFixed(1)+')">'+a.n+'</text>';
+  });
+
+  /* freeway shields */
+  SHIELDS.forEach(sh => {
+    const x=PX(sh[1]), y=PY(sh[2]);
+    s += '<g class="shield" data-cs="1" data-px="'+x.toFixed(1)+'" data-py="'+y.toFixed(1)+'" transform="translate('+x.toFixed(1)+','+y.toFixed(1)+')">'
+       + '<rect x="-9" y="-7" width="18" height="14" rx="4"/><text x="0" y="0">'+sh[0]+'</text></g>';
+  });
+  s += '<path class="border-line" d="M '+PX(-117.124).toFixed(1)+' '+PY(32.5343).toFixed(1)+' L '+PX(-116.60).toFixed(1)+' '+PY(32.5343).toFixed(1)+'"/>';
+  s += '<text class="water-label" x="'+PX(-116.94)+'" y="'+(PY(32.5343)-9)+'" style="fill:var(--muted);opacity:.6">UNITED STATES</text>';
+  s += '<text class="water-label" x="'+PX(-116.94)+'" y="'+(PY(32.5343)+18)+'" style="fill:var(--muted);opacity:.6">MEXICO</text>';
+
+  s += '<text class="water-label big" x="'+PX(-117.30)+'" y="'+PY(32.70)+'">PACIFIC OCEAN</text>';
+  s += '<text class="water-label" x="'+PX(-117.168)+'" y="'+PY(32.663)+'" transform="rotate(52 '+PX(-117.168).toFixed(1)+' '+PY(32.663).toFixed(1)+')">SAN DIEGO BAY</text>';
+  s += '<text class="water-label" x="'+PX(-117.226)+'" y="'+PY(32.784)+'" style="font-size:7px">MISSION BAY</text>';
+
+  GEO_LABELS.forEach(g => { s += '<text class="geo-label" x="'+PX(g[1]).toFixed(1)+'" y="'+PY(g[2]).toFixed(1)+'">'+g[0]+'</text>'; });
+
+  for(const k in DISTRICTS){
+    const d = DISTRICTS[k], has = !!(byZone[k] && byZone[k].length);
+    s += '<g class="district'+(has?" has":"")+'" id="dz-'+k+'" data-zone="'+k+'">'
+       + '<path class="shape" d="'+path(d.poly)+'"><title>'+d.label+'</title></path>'
+       + '<text class="dlabel" data-cs="1" data-px="'+d.cx.toFixed(1)+'" data-py="'+(d.cy - d.h*.5 - 6).toFixed(1)+'" transform="translate('+d.cx.toFixed(1)+','+(d.cy-d.h*.5-6).toFixed(1)+')">'+d.label.toUpperCase()+'</text>'
+       + '</g>';
+  }
+
+  s += '<g class="heat" id="heatlayer">';
+  SPOTS.forEach(sp => { s += '<circle cx="'+sp._x.toFixed(1)+'" cy="'+sp._y.toFixed(1)+'" r="'+(38+sp.heat*46).toFixed(1)+'"/>'; });
+  s += '</g>';
+
+  for(const k in DISTRICTS){
+    if(!(byZone[k] && byZone[k].length)) continue;
+    const d = DISTRICTS[k];
+    s += '<g class="cluster" id="cl-'+k+'" data-zone="'+k+'" data-cs="1" data-px="'+d.cx.toFixed(1)+'" data-py="'+d.cy.toFixed(1)+'" transform="translate('+d.cx.toFixed(1)+','+d.cy.toFixed(1)+')" role="button" aria-label="'+d.label+' cluster">'
+       + '<circle class="ripple" cx="0" cy="0" r="16"/><circle class="halo" cx="0" cy="0" r="38"/>'
+       + '<circle class="disc" cx="0" cy="0" r="16"/><text class="num" x="0" y="0">0</text></g>';
+  }
+
+  ENTRIES.forEach(e => {
+    s += '<g class="pin hidden st-'+e.status+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+', '+e.status+'">'
+       + '<circle class="ripple" cx="0" cy="0" r="9"/><circle class="halo" cx="0" cy="0" r="26"/>'
+       + '<circle class="ring" cx="0" cy="0" r="14"/><circle class="core" cx="0" cy="0" r="6.5"/>'
+       + '<circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>'
+       + '<text class="plabel" x="0" y="-15">'+CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"")+'</text></g>';
+  });
+
+  SPOTS.forEach(sp => {
+    s += '<g class="spot" id="sp-'+sp.id+'" data-id="'+sp.id+'" data-cs="1" data-px="'+sp._x.toFixed(1)+'" data-py="'+sp._y.toFixed(1)+'" transform="translate('+sp._x.toFixed(1)+','+sp._y.toFixed(1)+')" role="button" aria-label="Friction point, '+sp.place+'">'
+       + '<path class="plate" d="M -13 -11 h 26 a 3 3 0 0 1 3 3 v 12 a 3 3 0 0 1 -3 3 h -9 l -4 5 l -2 -5 h -11 a 3 3 0 0 1 -3 -3 v -12 a 3 3 0 0 1 3 -3 z"/>'
+       + '<text class="cnt" x="0" y="-2">'+sp.thread.length+'</text>'
+       + '<text class="slabel" x="0" y="-17">'+esc(sp.place)+'</text>'
+       + '<text class="scap" x="0" y="17">neighbours talking</text></g>';
+  });
+
+  /* block grid, revealed only at street zoom, clipped to each district */
+  const GRID_ZONES = ["downtown","east-village","little-italy","hillcrest","north-park","south-park",
+    "barrio-logan","ocean-beach","pacific-beach","mission-beach","national-city","chula-vista",
+    "la-mesa","el-cajon","point-loma","lemon-grove","imperial-beach","san-ysidro","coronado"];
+  let clips = "";
+  GRID_ZONES.forEach(k => {
+    const d = DISTRICTS[k]; if(!d) return;
+    clips += '<clipPath id="clip-'+k+'"><path d="'+path(d.poly)+'"/></clipPath>';
+    const xs = d.poly.map(q=>q[0]), ys = d.poly.map(q=>q[1]);
+    const a=Math.min.apply(null,xs), b=Math.max.apply(null,xs), c=Math.min.apply(null,ys), e2=Math.max.apply(null,ys);
+    let g = '<g class="grid" clip-path="url(#clip-'+k+')">';
+    for(let lon=a; lon<=b; lon+=0.0016) g += '<line x1="'+PX(lon).toFixed(1)+'" y1="'+PY(c).toFixed(1)+'" x2="'+PX(lon).toFixed(1)+'" y2="'+PY(e2).toFixed(1)+'"/>';
+    for(let lat=c; lat<=e2; lat+=0.0013) g += '<line x1="'+PX(a).toFixed(1)+'" y1="'+PY(lat).toFixed(1)+'" x2="'+PX(b).toFixed(1)+'" y2="'+PY(lat).toFixed(1)+'"/>';
+    s = s.replace("<!--GRID-->", g + "</g><!--GRID-->");
+  });
+  s = s.replace("<!--GRID-->", "").replace("<!--CLIPS-->", clips);
+
+  /* service sites */
+  SERVICES.forEach(v => {
+    s += '<g class="svc '+v.kind+'" id="sv-'+v.id+'" data-id="'+v.id+'" data-cs="1" data-px="'+v._x.toFixed(1)+'" data-py="'+v._y.toFixed(1)+'" transform="translate('+v._x.toFixed(1)+','+v._y.toFixed(1)+')" role="button" aria-label="'+esc(v.name)+', '+KIND_LABEL[v.kind]+'">'
+       + '<rect class="plate" x="-8" y="-8" width="16" height="16" rx="4"/>'
+       + svcGlyph(v.kind)
+       + '<text class="sl" x="0" y="-11">'+esc(v.name)+'</text>'
+       + (v.beds ? '<text class="sb" x="0" y="17" id="bl-'+v.id+'">'+v.beds.available+' of '+v.beds.total+' beds</text>'
+                 : '<text class="sb" x="0" y="17">'+v.services.slice(0,2).map(x=>SERVICE_LABEL[x]).join(" · ")+'</text>')
+       + '</g>';
+  });
+
+  s += '</g></svg>';
+  document.getElementById("mapholder").insertAdjacentHTML("afterbegin", s);
+  svg = document.getElementById("svg"); camera = document.getElementById("camera");
+
+  svg.querySelectorAll(".district").forEach(g => g.addEventListener("click", () => { if(!dragMoved) focusZone(g.dataset.zone); }));
+  svg.querySelectorAll(".cluster").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) focusZone(g.dataset.zone); }));
+  svg.querySelectorAll(".pin").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) select(g.dataset.id); }));
+  svg.querySelectorAll(".spot").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) openSpot(g.dataset.id); }));
+  svg.querySelectorAll(".svc").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) openService(g.dataset.id); }));
+
+  wirePanZoom(); applyView(); refreshMarkers();
+}
+
+function svcGlyph(kind){
+  const g = {
+    shelter:'<path class="ic" d="M -4.2 0.6 L 0 -3.4 L 4.2 0.6 M -2.8 0 L -2.8 4 L 2.8 4 L 2.8 0"/>',
+    shelter_:'',
+    clinic:'<path class="ic" d="M 0 -4 L 0 4 M -4 0 L 4 0"/>',
+    legal:'<path class="ic" d="M 0 -4 L 0 4 M -4 -2 L 4 -2 M -4 -2 L -2.4 1.6 L -5.6 1.6 Z M 4 -2 L 5.6 1.6 L 2.4 1.6 Z"/>',
+    day_center:'<path class="ic" d="M -4 3.4 L -4 -1 L 0 -4 L 4 -1 L 4 3.4 Z M -1.4 3.4 L -1.4 0.4 L 1.4 0.4 L 1.4 3.4"/>',
+    outreach:'<path class="ic" d="M 0 4 C -3.6 0.6 -4.2 -1 -2.6 -2.6 C -1.4 -3.8 0 -3 0 -1.8 C 0 -3 1.4 -3.8 2.6 -2.6 C 4.2 -1 3.6 0.6 0 4 Z"/>',
+    hygiene:'<path class="ic" d="M 0 -4.2 C 2.6 -1 3.6 0.2 3.6 1.8 A 3.6 3.6 0 0 1 -3.6 1.8 C -3.6 0.2 -2.6 -1 0 -4.2 Z"/>',
+    food:'<path class="ic" d="M -4 -0.6 A 4 4 0 0 0 4 -0.6 Z M -2 -4 L -2 -1.4 M 0 -4 L 0 -1.4 M 2 -4 L 2 -1.4"/>',
+    mail:'<path class="ic" d="M -4.4 -2.8 L 4.4 -2.8 L 4.4 3 L -4.4 3 Z M -4.4 -2.8 L 0 0.8 L 4.4 -2.8"/>'
+  };
+  return g[kind] || g.outreach;
+}
+function refreshMarkers(){
+  const lvl = svg.dataset.level;
+  for(const k in DISTRICTS){
+    if(!(byZone[k] && byZone[k].length)) continue;
+    const list = byZone[k].filter(passesFilter);
+    const cl = document.getElementById("cl-"+k);
+    cl.querySelector(".num").textContent = list.length;
+    cl.classList.toggle("hidden", lvl !== "county" || !state.layers.asks || list.length === 0);
+    cl.querySelector(".disc").style.stroke = list.some(e => e.prov && !e.prov.ok) ? "var(--broken)" : "";
+  }
+  ENTRIES.forEach(e => {
+    const g = document.getElementById("pin-"+e.id);
+    g.classList.toggle("hidden", lvl === "county" || !state.layers.asks || e.withdrawn);
+    g.classList.toggle("dim", !passesFilter(e));
+    g.classList.toggle("broken", !!(e.prov && !e.prov.ok));
+    g.classList.toggle("selected", state.selected === e);
+  });
+  SPOTS.forEach(sp => {
+    const g = document.getElementById("sp-"+sp.id);
+    g.classList.toggle("layer-off", !state.layers.spots);
+    g.classList.toggle("selected", state.spot === sp);
+  });
+  SERVICES.forEach(v => {
+    const g = document.getElementById("sv-"+v.id);
+    g.classList.toggle("layer-off", !state.layers.svc);
+    g.classList.toggle("dim", !passesNeed(v));
+    g.classList.toggle("selected", state.svc === v);
+    if(v.beds){ const t = document.getElementById("bl-"+v.id); if(t) t.textContent = v.beds.available + " of " + v.beds.total + " beds"; }
+  });
+  document.getElementById("heatlayer").classList.toggle("layer-off", !state.layers.heat);
+  document.querySelectorAll(".district").forEach(z => {
+    z.classList.toggle("focused", state.focusedZone === z.dataset.zone);
+    z.classList.toggle("muted", !!state.focusedZone && state.focusedZone !== z.dataset.zone && lvl === "zone");
+  });
+  drawCrumbs();
+}
+
+/* pan / zoom / pinch */
+let dragging=false, dragMoved=false, captured=false, last=null, downClient=null, pinchStart=null;
+const pointers = new Map();
+function svgPoint(cx, cy){ const p = svg.createSVGPoint(); p.x=cx; p.y=cy; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function wirePanZoom(){
+  svg.addEventListener("wheel", ev => {
+    ev.preventDefault();
+    const loc = svgPoint(ev.clientX, ev.clientY);
+    const wx = (loc.x-view.x)/view.k, wy = (loc.y-view.y)/view.k;
+    const k2 = clamp(view.k*Math.exp(-ev.deltaY*.0016), K_MIN, K_MAX);
+    view.k=k2; view.x=loc.x-wx*k2; view.y=loc.y-wy*k2; applyView();
+  }, {passive:false});
+
+  /* No setPointerCapture on the <svg>: capturing there retargets the click
+     event to the svg itself, which silently kills every district, pin,
+     bubble and service click. Drag state lives on window instead. */
+  function onMove(ev){
+    if(!pointers.has(ev.pointerId)) return;
+    pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+    if(pointers.size === 2 && pinchStart){
+      const p=Array.from(pointers.values());
+      const d=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);
+      const mid=svgPoint((p[0].x+p[1].x)/2,(p[0].y+p[1].y)/2);
+      const wx=(mid.x-view.x)/view.k, wy=(mid.y-view.y)/view.k;
+      const k2=clamp(pinchStart.k*(d/pinchStart.d), K_MIN, K_MAX);
+      view.k=k2; view.x=mid.x-wx*k2; view.y=mid.y-wy*k2; dragMoved=true; applyView(); return;
+    }
+    if(!dragging) return;
+    const now = svgPoint(ev.clientX, ev.clientY);
+    const dx = now.x-last.x, dy = now.y-last.y;
+    if(Math.abs(dx)+Math.abs(dy) > 1.6) dragMoved = true;
+    view.x+=dx; view.y+=dy; last=now; applyView();
+  }
+  function onUp(ev){
+    pointers.delete(ev.pointerId);
+    if(pointers.size < 2) pinchStart = null;
+    if(pointers.size === 0){
+      dragging=false; svg.classList.remove("dragging");
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      setTimeout(()=>{ dragMoved=false; }, 0);
+    }
+  }
+  svg.addEventListener("pointerdown", ev => {
+    pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+    if(pointers.size === 1){
+      dragging=true; dragMoved=false; last=svgPoint(ev.clientX,ev.clientY); svg.classList.add("dragging");
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    } else if(pointers.size === 2){
+      const p=Array.from(pointers.values());
+      pinchStart={d:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y), k:view.k}; dragging=false;
+    }
+  });
+  svg.addEventListener("dblclick", ev => {
+    ev.preventDefault();
+    const loc = svgPoint(ev.clientX, ev.clientY);
+    flyTo((loc.x-view.x)/view.k, (loc.y-view.y)/view.k, view.k*1.8, 420);
+  });
+}
+
+function drawCrumbs(){
+  let h = '<button type="button" data-c="all"'+(!state.focusedZone?' aria-current="true"':'')+'>San Diego County</button>';
+  if(state.focusedZone) h += '<span class="sep">&#8250;</span><button type="button" data-c="zone"'+((!state.selected&&!state.spot)?' aria-current="true"':'')+'>'+DISTRICTS[state.focusedZone].label+'</button>';
+  if(state.selected) h += '<span class="sep">&#8250;</span><button type="button" aria-current="true">'+state.selected.id+'</button>';
+  else if(state.spot) h += '<span class="sep">&#8250;</span><button type="button" aria-current="true">'+esc(state.spot.place)+'</button>';
+  const c = document.getElementById("crumbs");
+  c.innerHTML = h;
+  c.querySelectorAll("button").forEach(b => { b.onclick = () => {
+    if(b.dataset.c === "all") resetView();
+    else if(b.dataset.c === "zone"){ state.selected=null; state.spot=null; renderStory(); focusZone(state.focusedZone); }
+  };});
+}
+
+/* =========================================================
+   10. NAVIGATION
+   ========================================================= */
+function zoneK(d){ return clamp(Math.min(VBW/(d.w*3.2), VBH/(d.h*3.2)), 2.2, 5); }
+function focusZone(key){
+  state.focusedZone = key; state.selected = null; state.spot = null; state.svc = null;
+  const d = DISTRICTS[key];
+  markStep("zone");
+  flyTo(d.cx, d.cy, Math.max(zoneK(d), K_DETAIL));
+  openPanel(); setTab("area", true);
+  renderArea(); refreshMarkers();
+  const hint = document.getElementById("maphint"); if(hint) hint.classList.add("gone");
+  const n = (byZone[key]||[]).length, sv = SERVICES.filter(v=>v.zone===key).length;
+  say(d.label + ": " + n + " records, " + sv + " service sites.");
+}
+function openService(id){
+  const v = SERVICES.find(x => x.id === id);
+  if(!v) return;
+  state.svc = v; state.focusedZone = v.zone; state.selected = null; state.spot = null;
+  openPanel(); setTab("area", true);
+  flyTo(v._x, v._y, Math.max(view.k, 4.6), 600);
+  renderArea(); refreshMarkers();
+  say(v.name + ". " + (v.beds ? v.beds.available + " of " + v.beds.total + " beds open." : KIND_LABEL[v.kind] + "."));
+  setTimeout(() => { const el = document.getElementById("svc-"+v.id); if(el) el.scrollIntoView({block:"center", behavior:"smooth"}); }, 60);
+}
+function resetView(){
+  state.focusedZone=null; state.selected=null; state.spot=null;
+  flyTo(VBW/2, VBH/2, 1);
+  renderStory(); refreshMarkers(); renderList();
+}
+function select(id){
+  const e = ENTRIES.find(x => x.id === id);
+  if(!e) return;
+  state.selected=e; state.spot=null; state.focusedZone=e.zone; state.view="shaped"; state.manifestOpen=false;
+  markStep("story"); openPanel(); setTab("story", true);
+  flyTo(e._x, e._y, Math.max(view.k, 3.4), 620);
+  renderStory(); refreshMarkers(); renderList();
+  say("Opened record " + e.id + ".");
+}
+function openSpot(id){
+  const sp = SPOTS.find(x => x.id === id);
+  if(!sp) return;
+  state.spot=sp; state.selected=null; state.focusedZone=sp.zone;
+  markStep("cg"); openPanel(); setTab("cg", true);
+  flyTo(sp._x, sp._y, Math.max(view.k, 3.4), 620);
+  renderCG(); refreshMarkers(); renderList();
+  say("Opened the exchange at " + sp.place + ".");
+}
+
+/* =========================================================
+   11. LISTS
+   ========================================================= */
+function renderList(){
+  const asks = state.leftTab === "asks", svcs = state.leftTab === "svc";
+  document.getElementById("reclist").hidden = !asks;
+  document.getElementById("spotlist").hidden = (state.leftTab !== "spots");
+  document.getElementById("svclist").hidden = !svcs;
+  document.getElementById("filters").style.display = asks ? "" : "none";
+  document.getElementById("needfilters").hidden = !svcs;
+  if(svcs){
+    const ul = document.getElementById("svclist");
+    ul.innerHTML = SERVICES.filter(passesNeed).map(v =>
+      '<li><button class="recitem" type="button" data-id="'+v.id+'"'+(state.svc===v?' aria-current="true"':'')+'>'
+      + '<span class="sdot" style="background:'+(v.beds?"var(--amber)":"var(--ok)")+'"></span>'
+      + '<span><span class="z">'+esc(v.name)+'</span>'
+      + '<span class="c">'+DISTRICTS[v.zone].label+' · '+KIND_LABEL[v.kind]+'</span>'
+      + '<span class="m">'+(v.beds ? v.beds.available+" of "+v.beds.total+" beds" : v.services.slice(0,3).map(x=>SERVICE_LABEL[x]).join(" · "))+'</span></span></button></li>').join("");
+    ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => openService(b.dataset.id));
+    document.getElementById("listempty").hidden = SERVICES.filter(passesNeed).length > 0;
+    return;
+  }
+  if(asks){
+    const ul = document.getElementById("reclist");
+    ul.innerHTML = ENTRIES.map(e => {
+      const on = passesFilter(e), cls = (e.prov && !e.prov.ok) ? "broken" : e.status;
+      return '<li'+(on?'':' class="filtered"')+'><button class="recitem" type="button" data-id="'+e.id+'"'+(state.selected===e?' aria-current="true"':'')+'>'
+        + '<span class="sdot '+cls+'"></span><span><span class="z">'+DISTRICTS[e.zone].label+'</span>'
+        + '<span class="c">'+CATEGORY_LABEL[e.ask.category]+'</span>'
+        + '<span class="m">'+e.id+' · '+e.status+(e.ask.amountUsd?" · "+money(e.ask.amountUsd):"")+'</span></span></button></li>';
+    }).join("");
+    ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => select(b.dataset.id));
+    const shown = ENTRIES.filter(passesFilter).length;
+    document.getElementById("listempty").hidden = shown > 0;
+  } else {
+    const ul = document.getElementById("spotlist");
+    ul.innerHTML = SPOTS.map(sp =>
+      '<li><button class="recitem tl" type="button" data-id="'+sp.id+'"'+(state.spot===sp?' aria-current="true"':'')+'>'
+      + '<span class="sdot tl"></span><span><span class="z">'+esc(sp.place)+'</span>'
+      + '<span class="c">'+DISTRICTS[sp.zone].label+' · '+sp.thread.length+' messages</span>'
+      + '<span class="m">'+SPOT_STATE_LABEL[sp.state]+(sp.days?" · "+sp.days+" days":"")+'</span></span></button></li>').join("");
+    ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => openSpot(b.dataset.id));
+    document.getElementById("listempty").hidden = true;
+  }
+}
+
+/* =========================================================
+   12. DIFF HELPERS
+   ========================================================= */
+const FUNCTION_WORDS = new Set(("a an the and or but if so of to in on for with at by from as is are was were be been am i my me we us you your he she they them it its that this these those not no yes do does did done have has had will would can could should may might must there here then than when what which who whom whose about into over under out up down off again more most very just only also every each any all one two three cannot cant wont dont didnt couldnt wouldnt thats isnt arent im ive").split(" "));
+function tok(t){ return String(t).toLowerCase().replace(/[^a-z0-9$\s]/g," ").split(/\s+/).filter(Boolean); }
+function addedWords(raw, shaped){
+  const r = new Set(tok(raw)), out=[], seen=new Set();
+  tok(shaped).forEach(w => { if(!r.has(w) && !seen.has(w)){ seen.add(w); out.push(w); } });
+  return out;
+}
+function isFunc(w){ return FUNCTION_WORDS.has(w) || /^\d+$/.test(w); }
+function factCheck(e){
+  const r = e.story.raw.toLowerCase(), s = e.story.shaped.toLowerCase();
+  return e.facts.map(f => ({f, ok: r.includes(f.toLowerCase()) && s.includes(f.toLowerCase())}));
+}
+
+/* =========================================================
+   13. STORY PANEL
+   ========================================================= */
+function renderStory(){
+  const host = document.getElementById("panel-story"), e = state.selected;
+  if(!e || !e.prov){
+    host.innerHTML = '<div class="empty"><div class="mark" aria-hidden="true">&#10022;</div><p>Zoom into a neighbourhood and pick a glowing pin, or choose a record from the list.</p><p style=\'margin-top:10px;font-size:11.5px\'>Filed one of these yourself? Use <b>Your request</b> in the top bar and the card you were given.</p></div>';
+    return;
+  }
+  const p = e.prov, broken = !p.ok;
+  const facts = factCheck(e), added = addedWords(e.story.raw, e.story.shaped);
+  const contentAdded = added.filter(w => !isFunc(w));
+  const text = state.view === "raw" ? e.story.raw : e.story.shaped;
+
+  host.innerHTML = '<div class="story">'
+   + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
+   + '<div class="eyebrow" style="margin-top:4px">Record '+e.id+' · composite account</div></div>'
+   + '<span class="statuspill st-'+e.status+'">'+e.status+'</span></div>'
+   + '<div class="ask"><div class="row"><div class="eyebrow">The ask · '+CATEGORY_LABEL[e.ask.category]+'</div>'
+   + (e.ask.amountUsd!==null ? '<div class="amount">'+money(e.ask.amountUsd)+'</div>' : '<div class="mono" style="color:var(--muted)">no cost, policy only</div>')
+   + '</div><h3>'+esc(e.ask.summary)+'</h3></div>'
+   + '<div class="togglerow"><div class="toggle" role="group" aria-label="Text version">'
+   + '<button type="button" id="btn-raw" aria-pressed="'+(state.view==="raw")+'">Their words</button>'
+   + '<button type="button" id="btn-shaped" aria-pressed="'+(state.view==="shaped")+'">AI-shaped</button></div>'
+   + '<div class="eyebrow">'+(state.view==="raw"?"unedited intake fragments":"grammar and punctuation only")+'</div></div>'
+   + '<blockquote class="fade '+(state.view==="raw"?"raw":"")+'">'+esc(text)+'</blockquote>'
+   + '<p class="attrib">Composite account, published with consent recorded '+e.consent.timestamp.slice(0,10)+' by advocate '+e.consent.advocateId+' · '+esc(e.consent.method)+'.</p>'
+   + '<div class="diffbox"><div class="eyebrow">What the shaping changed</div>'
+   + '<p class="k" style="margin-top:6px">Words in the shaped text but not the original: <b>'+added.length+'</b>. Content words, anything that could add a new fact: <b style="color:'+(contentAdded.length?"var(--broken)":"var(--ok)")+'">'+contentAdded.length+'</b>.</p>'
+   + '<div class="chips">'+(added.length ? added.map(w=>'<span class="chip '+(isFunc(w)?"added":"flag")+'">'+esc(w)+'</span>').join("") : '<span class="chip fact">nothing added</span>')+'</div>'
+   + '<p class="k" style="margin-top:10px">Facts carried through both versions, checked literally:</p>'
+   + '<div class="chips">'+facts.map(f=>'<span class="chip '+(f.ok?"fact":"flag")+'">'+(f.ok?"&#10003; ":"&#33; ")+esc(f.f)+'</span>').join("")+'</div></div>'
+   + '<button class="sealchip '+(broken?"broken":"")+'" id="sealchip" type="button" aria-expanded="'+state.manifestOpen+'" aria-controls="manifest">'
+   + sealGlyph(broken)
+   + '<span class="txt"><span class="l1">'+(broken?"SEAL BROKEN / signature invalid":"Consent verified · content sealed · signed &#10003;")+'</span>'
+   + '<span class="l2">consent '+e.consent.timestamp.slice(0,10)+' · sha256 '+shortHash(p.sealedHash)+' · ES256</span></span>'
+   + '<span class="caret" aria-hidden="true">&#9654;</span></button>'
+   + '<div id="manifest" class="manifest" '+(state.manifestOpen?"":"hidden")+'>'
+   + '<div class="manifest-head"><div class="eyebrow">C2PA-style manifest · signed over canonical bytes only</div></div>'
+   + '<pre class="json">'+manifestHTML(e)+'</pre>'
+   + '<div class="actions"><button class="btn btn-verify" id="btn-verify" type="button">Verify</button>'
+   + (p.tampered ? '<button class="btn btn-restore" id="btn-restore" type="button">Restore original</button>'
+                 : '<button class="btn btn-tamper" id="btn-tamper" type="button">Tamper with this record</button>')
+   + '</div><div class="verifylog" id="verifylog" role="status" aria-live="polite">'
+   + (p.tampered && !p.ok ? '<div><span class="lbl">altered field</span><span class="bad">'+esc(p.tamperNote||"")+'</span></div>'
+                          : '<div><span class="lbl">ready</span><span>re-hash and re-check the signature against the live record</span></div>')
+   + '</div></div>'
+   + '<div class="composer" style="margin-top:16px"><div class="ch"><div class="eyebrow">Answer this ask · you never contact the person</div></div>'
+   + '<div class="pipe"><span>you offer</span><span class="arw">&#8594;</span><span>advocate confirms and routes</span><span class="arw">&#8594;</span><span>they see it next time they open their record</span></div>'
+   + '<div style="padding:11px 12px;display:flex;gap:6px;flex-wrap:wrap">'
+   + (e.ask.amountUsd ? '<button class="btn btn-send" data-offer="Cover the '+money(e.ask.amountUsd)+' fee" type="button">Cover '+money(e.ask.amountUsd)+'</button>' : '')
+   + '<button class="btn btn-send" data-offer="Provide the item or service directly" type="button">Provide it directly</button>'
+   + '<button class="btn btn-send" data-offer="Vouch for them with the office" type="button">Vouch for them</button></div>'
+   + '<input id="offernote" placeholder="Optional note. No names, no contact details." maxlength="160" style="width:100%;background:var(--panel-solid);border:0;border-top:1px solid var(--line);padding:11px 12px;font-family:var(--serif);font-size:14px;color:var(--ink)">'
+   + '<div class="rules">Offers are signed and queued. An advocate confirms the offer is real before the person is told anything, so nobody can dangle help at someone and then vanish. '+(e.offers.length ? '<b>'+e.offers.length+' offer'+(e.offers.length>1?'s':'')+' already waiting on this record.</b>' : 'No offers on this record yet.')+'</div></div>'
+   + (e.replies.length ? '<div class="eyebrow" style="margin-top:16px">'+e.replies.length+' '+(e.replies.length===1?"reply":"replies")+'</div>'
+        + e.replies.map(r => '<div class="reply'+(r.mine?" mine":"")+'"><div class="rf">'+esc(r.from)+' · '+r.ts+'</div><p>'+esc(r.text)+'</p>'
+          + (r.tag ? '<div class="rm">signed by the author&#8217;s card · '+r.tag.slice(0,10)+'</div>' : '')+'</div>').join("") : '')
+   + (CODES[e.id] ? '<div class="nodata" style="margin-top:16px"><b>The person who filed this can come back to it.</b> '
+        + 'They hold a paper card with three words and four digits. Typing them proves they are the same author without proving who they are, and lets them update it, resolve it, or withdraw it entirely.<br>'
+        + '<span class="mono" style="color:var(--amber);display:inline-block;margin-top:7px">demo card &#183; '+CODES[e.id].phrase+' &#183; '+CODES[e.id].pin+'</span> '
+        + '<button class="btn btn-restore" id="openascard" type="button" style="margin-top:9px;display:block">Open it as them</button></div>' : '')
+   + '<button class="jump" id="jumpdash" type="button">See what happened to all '+ENTRIES.length+' asks &#8594;</button></div>';
+
+  document.getElementById("btn-raw").onclick = () => { if(state.view!=="raw"){ state.view="raw"; markStep("words"); renderStory(); } };
+  document.getElementById("btn-shaped").onclick = () => { if(state.view!=="shaped"){ state.view="shaped"; markStep("words"); renderStory(); } };
+  document.getElementById("sealchip").onclick = () => { state.manifestOpen=!state.manifestOpen; if(state.manifestOpen) markStep("prov"); renderStory(); };
+  document.getElementById("btn-verify").onclick = onVerify;
+  const t=document.getElementById("btn-tamper"); if(t) t.onclick = onTamper;
+  const r=document.getElementById("btn-restore"); if(r) r.onclick = onRestore;
+  const oc = document.getElementById("openascard");
+  if(oc) oc.onclick = () => {
+    const c = CODES[e.id];
+    document.getElementById("access").hidden = false;
+    document.getElementById("acphrase").value = c.phrase;
+    document.getElementById("acpin").value = c.pin;
+    renderIssuers(); openByCode();
+  };
+  document.getElementById("jumpdash").onclick = () => setTab("dash");
+  host.querySelectorAll("[data-offer]").forEach(b => b.onclick = () => {
+    const n = document.getElementById("offernote");
+    makeOffer(e, b.dataset.offer, n ? n.value.trim() : "");
+  });
+}
+function sealGlyph(broken){
+  if(!broken) return '<svg class="glyph" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--ok)" stroke-width="1.4" opacity=".55"/><circle cx="16" cy="16" r="8.5" fill="var(--ok-dim)" stroke="var(--ok)" stroke-width="1"/><path d="M11.6 16.2 L14.8 19.3 L20.6 12.9" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  return '<svg class="glyph" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--broken)" stroke-width="1.4" opacity=".5" stroke-dasharray="4 3"/><path d="M16 3.5 L12.5 12 L18.5 15 L14 28.5" fill="none" stroke="var(--broken)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 9 L26.5 6.5 M25.5 16 L29 16 M6 9 L2.5 6.5" stroke="var(--broken)" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>';
+}
+function manifestHTML(e){
+  const p = e.prov;
+  const m = {
+    claim_generator:"OnRecord/0.1 (advocate-mediated intake)",
+    format:"application/vnd.onrecord.entry+json",
+    instance_id:"urn:onrecord:"+e.id,
+    assertions:[
+      {label:"onrecord.consent", data:{advocate_id:e.consent.advocateId, method:e.consent.method, obtained_at:e.consent.timestamp}},
+      {label:"onrecord.composite", data:{composite:true, depicts_real_individual:false, source:"multi-person advocate intake notes"}},
+      {label:"onrecord.geo_precision", data:{level:"neighborhood_centroid", district:DISTRICTS[e.zone].label, precise_location_recorded:false}},
+      {label:"c2pa.actions", actions:[
+        {action:"c2pa.created", softwareAgent:"advocate intake (verbatim transcription)"},
+        {action:"c2pa.edited", softwareAgent:"AI text shaping", parameters:{scope:"grammar, punctuation, capitalization", content_words_added: addedWords(e.story.raw,e.story.shaped).filter(w=>!isFunc(w)).length}}
+      ]}
+    ],
+    signature:{alg:"ES256", curve:"P-256", hash:"SHA-256", canonical_bytes:p.byteLen, content_hash:p.sealedHash,
+      signature:hex(p.sig).slice(0,32)+"…", public_key_x:PUBJWK?PUBJWK.x.slice(0,20)+"…":"…", sealed_at:p.sealedAt}
+  };
+  return esc(JSON.stringify(m,null,2))
+    .replace(/^(\s*)&quot;([^&]+)&quot;:/gm,'$1<span class="key">"$2"</span>:')
+    .replace(/: (&quot;[^\n]*?&quot;)(,?)$/gm,': <span class="str">$1</span>$2')
+    .replace(/: (\d+|true|false|null)(,?)$/gm,': <span class="num">$1</span>$2');
+}
+
+/* verify / tamper / restore */
+async function onVerify(){
+  const e = state.selected, r = await verifyEntry(e);
+  document.getElementById("verifylog").innerHTML =
+      '<div><span class="lbl">canonical bytes</span><span>'+r.byteLen+' (sealed at '+e.prov.byteLen+')</span></div>'
+    + '<div><span class="lbl">sha-256 now</span><span class="'+(r.hashMatch?"ok":"bad")+'">'+shortHash(r.digest)+'</span></div>'
+    + '<div><span class="lbl">sha-256 sealed</span><span>'+shortHash(e.prov.sealedHash)+'</span></div>'
+    + '<div><span class="lbl">hash match</span><span class="'+(r.hashMatch?"ok":"bad")+'">'+(r.hashMatch?"&#10003; identical":"&#10007; content changed after sealing")+'</span></div>'
+    + '<div><span class="lbl">ES256 signature</span><span class="'+(r.sigOk?"ok":"bad")+'">'+(r.sigOk?"&#10003; valid":"&#10007; invalid")+'</span></div>'
+    + '<div><span class="lbl">verdict</span><span class="'+(r.ok?"ok":"bad")+'">'+(r.ok?"&#10003; RECORD INTACT":"&#10007; SEAL BROKEN, do not trust this record")+'</span></div>';
+  const chip = document.getElementById("sealchip");
+  chip.className = "sealchip" + (r.ok ? "" : " broken");
+  chip.querySelector(".l1").innerHTML = r.ok ? "Consent verified · content sealed · signed &#10003;" : "SEAL BROKEN / signature invalid";
+  chip.querySelector(".glyph").outerHTML = sealGlyph(!r.ok);
+  refreshMarkers(); renderList(); renderDash();
+  say(r.ok ? "Record verified." : "Verification failed. The seal is broken.");
+}
+async function onTamper(){
+  const e = state.selected, before = e.status;
+  e.status = (before === "answered") ? "unanswered" : "answered";
+  e.prov.tampered = true;
+  e.prov.tamperNote = 'status: "'+before+'" \u2192 "'+e.status+'"';
+  markStep("tamper"); state.manifestOpen = true;
+  renderStory(); await onVerify();
+  say("A field was altered. Verification now fails.");
+}
+async function onRestore(){
+  const e = state.selected;
+  e.status = ORIGINAL.find(o => o.id === e.id).status;
+  e.prov.tampered = false; e.prov.tamperNote = null;
+  renderStory(); await onVerify();
+  say("Original record restored.");
+}
+
+/* =========================================================
+   14. COMMON GROUND PANEL
+   ========================================================= */
+function renderCG(){
+  const host = document.getElementById("panel-cg"), sp = state.spot;
+  if(!sp){
+    host.innerHTML = '<div class="empty"><div class="mark" aria-hidden="true">&#8646;</div>'
+      + '<p>Pick a friction point on the map. Each one is a place where two groups of neighbors keep colliding, and the record of what they said to each other.</p></div>';
+    return;
+  }
+  let h = '<div class="cg">'
+   + '<div class="story-top"><div><h2>'+esc(sp.place)+'</h2>'
+   + '<div class="eyebrow" style="margin-top:4px">'+DISTRICTS[sp.zone].label+' · exchange '+sp.id+'</div></div>'
+   + '<span class="statuspill st-'+sp.state+'">'+SPOT_STATE_LABEL[sp.state]+'</span></div>'
+
+   + '<div class="ledger"><div class="lh"><div class="eyebrow">What repetition does · composite intake, this block, 12 months</div></div>'
+   + '<div class="lg">'
+   + '<div class="lc"><div class="v">'+sp.ledger.moves+'</div><div class="l">times moved</div></div>'
+   + '<div class="lc"><div class="v">'+sp.ledger.notice+'</div><div class="l">median notice</div></div>'
+   + '<div class="lc"><div class="v">'+sp.ledger.discarded+'</div><div class="l">times belongings discarded</div></div></div>'
+   + '<p class="note">People stop carrying what they cannot afford to lose, and stop tending what gets thrown out anyway. <b>That is what giving up looks like from the inside.</b> It is also true that cleaning human waste before opening your shop is not a small thing to ask of anyone. Both of these are on this page at the same time, and neither one cancels the other.</p></div>'
+
+   + '<div class="eyebrow" style="margin-top:18px">The exchange · replies go to a place, never to a person</div>'
+   + '<div class="thread">';
+
+  sp.thread.forEach(m => {
+    h += '<div class="msg '+m.side+(m.pending?" pending":"")+'">'
+      + '<div class="who">'+(m.side==="housed" ? "Neighbor with an address" : "Neighbor without one")
+      + (m.via ? ' · via advocate '+m.via : '')+'</div>'
+      + '<p>'+esc(m.text)+'</p>'
+      + (m.claim ? '<div class="claimflag">Claim in this message: '+esc(m.claim)+' &nbsp;<b>ALLEGED &#183; unverified</b> &nbsp;[source needed]. Not counted in any metric.</div>' : '')
+      + '<div class="meta"><span>'+m.ts+'</span>'
+      + (m.hash ? '<span class="sg">signed &#10003; '+m.hash.slice(0,8)+'</span>' : '<span>sealing…</span>')
+      + (m.pending ? '<span style="color:var(--amber)">pending advocate review</span>' : '')
+      + '</div></div>';
+  });
+  h += '</div>';
+
+  h += '<div class="res"><div class="rh"><div class="eyebrow">What they asked for together</div>'
+     + '<span class="statuspill st-'+sp.state+'">'+SPOT_STATE_LABEL[sp.state]+(sp.days?" · "+sp.days+" days":"")+'</span></div>'
+     + '<div class="rb"><h4>'+esc(sp.resolution.action)+'</h4><p>'+esc(sp.resolution.note)+'</p></div></div>';
+
+  h += '<div class="composer"><div class="ch"><div class="eyebrow">Add to this place</div></div>'
+     + '<div class="pipe"><span>you write</span><span class="arw">&#8594;</span><span>advocate review strips names and locations</span><span class="arw">&#8594;</span><span>posts at neighborhood level</span></div>'
+     + '<textarea id="cgtext" maxlength="400" placeholder="Say what you have seen here, or what you would be willing to do about it."></textarea>'
+     + '<div class="rules"><b>What is not allowed:</b> names, photographs, addresses, plate numbers, descriptions of a person, or a reply aimed at an individual. You are writing to a block, not to someone on it. Posts are signed and cannot be edited afterward.</div>'
+     + '<div class="cfoot"><span class="count" id="cgcount">0 / 240</span>'
+     + '<button class="btn btn-send" id="cgsend" type="button">Sign and post</button></div></div>';
+
+  h += '<div class="gate"><b>Why only one side has a text box.</b> People living outside post through advocate-mediated intake with recorded consent, not through this form. An open channel would let anyone speak in their name, and would require them to identify themselves in public in order to be heard. The imbalance in this form is the safeguard, not an oversight.</div>';
+
+  h += '<button class="jump" id="cgdash" type="button">See how many of these got an answer &#8594;</button></div>';
+
+  host.innerHTML = h;
+  const ta = document.getElementById("cgtext"), ct = document.getElementById("cgcount"), sb = document.getElementById("cgsend");
+  function upd(){
+    const n = ta.value.trim().length;
+    ct.textContent = n + " / 240";
+    ct.classList.toggle("over", n > 240);
+    sb.disabled = (n === 0 || n > 240 || !KEYS);
+  }
+  ta.addEventListener("input", upd); upd();
+  sb.onclick = () => postToPlace(sp, ta.value.trim());
+  document.getElementById("cgdash").onclick = () => setTab("dash");
+}
+
+async function postToPlace(sp, text){
+  if(!text || !KEYS) return;
+  const m = {side:"housed", ts:new Date().toISOString().slice(0,10), text:text, pending:true};
+  sp.thread.push(m);
+  await sealMsg(sp.id, m, sp.thread.length);
+  markStep("post");
+  renderCG(); renderList(); renderDash();
+  say("Posted to " + sp.place + ". Signed and queued for advocate review.");
+}
+
+/* =========================================================
+   14b. NEIGHBOURHOOD PANEL + LIVE BEDS
+   ========================================================= */
+function ago(iso){
+  if(!iso) return "…";
+  const s2 = Math.max(0, Math.round((Date.now() - new Date(iso).getTime())/1000));
+  return s2 < 60 ? s2+"s ago" : Math.round(s2/60)+"m ago";
+}
+function bedTotals(list){
+  const l = (list||SHELTERS).filter(v => v.beds);
+  return {open:l.reduce((a,v)=>a+v.beds.available,0), total:l.reduce((a,v)=>a+v.beds.total,0), sites:l.length};
+}
+function updateBedChip(){
+  const t = bedTotals();
+  const el = document.getElementById("bedtext");
+  if(el) el.textContent = t.open + " of " + t.total + " beds open";
+}
+function svcCard(v){
+  const bedLine = v.beds
+    ? '<div class="bd'+(v.beds.available===0?" zero":"")+'">'+v.beds.available+' / '+v.beds.total+'</div>' : '';
+  return '<div class="svccard" id="svc-'+v.id+'"'+(state.svc===v?' style="border-color:var(--amber)"':'')+'>'
+    + '<div class="sh"><div><div class="nm">'+esc(v.name)+'<span class="sample">sample</span></div>'
+    + '<div class="kd">'+KIND_LABEL[v.kind]+' · '+DISTRICTS[v.zone].label+'</div></div>'+bedLine+'</div>'
+    + '<div class="sb2"><div class="tags">'+v.services.map(x=>'<span class="tag">'+SERVICE_LABEL[x]+'</span>').join("")
+    + (v.kiosk ? '<span class="tag" style="border-color:var(--amber);color:var(--amber);background:var(--amber-dim)">Record kiosk</span>' : '')+'</div>'
+    + '<div class="svcmeta"><b>Hours:</b> '+esc(v.hours)+'<br><b>Getting in:</b> '+esc(v.intake)+'<br>'+esc(v.note)
+    + (v.kiosk ? '<br><b>Record kiosk:</b> open or check your own request here with a claim card. No phone or ID needed.' : '')+'</div>'
+    + (v.beds ? '<div class="svcmeta" style="margin-top:7px;font-family:var(--mono);font-size:9.5px;color:var(--ok)">count signed '+(v.beds.hash?v.beds.hash.slice(0,8):"…")+' · observed '+ago(v.beds.observedAt)+'</div>' : '')
+    + '</div></div>';
+}
+function renderArea(){
+  const host = document.getElementById("panel-area");
+  const key = state.focusedZone;
+  if(!key){
+    host.innerHTML = '<div class="empty"><div class="mark" aria-hidden="true">&#9678;</div>'
+      + '<p>Click any neighborhood on the map. You will get what is recorded there, who is talking about it, and what a person can actually walk into today.</p></div>';
+    return;
+  }
+  const d = DISTRICTS[key];
+  const recs = (byZone[key]||[]);
+  const spots = SPOTS.filter(x => x.zone === key);
+  const svcs = SERVICES.filter(v => v.zone === key);
+  const bt = bedTotals(svcs);
+
+  let h = '<div class="area"><h2>'+d.label+'</h2>'
+    + '<div class="eyebrow" style="margin-top:4px">'+recs.length+' records · '+spots.length+' exchanges · '+svcs.length+' service sites</div>';
+
+  if(bt.sites){
+    h += '<div class="bedbox"><div class="bh"><div class="eyebrow">Beds open tonight in '+d.label+'</div>'
+       + '<span class="tick" id="areatick">updated '+ago(svcs.filter(v=>v.beds)[0].beds.observedAt)+'</span></div>'
+       + '<div class="bb"><span class="big">'+bt.open+'</span><span class="of">open of '+bt.total+' across '+bt.sites+' '+(bt.sites===1?"site":"sites")+'</span></div>'
+       + '<div class="sgn">Each count is signed at the moment it is observed. A site cannot revise last night\u2019s number after the fact.</div></div>';
+  }
+
+  if(svcs.length){
+    h += '<div class="eyebrow" style="margin-top:16px">What someone can walk into here</div>'
+       + svcs.map(svcCard).join("");
+  } else {
+    h += '<div class="nodata"><b>No service sites recorded in this neighborhood.</b> That is a gap in the directory, not proof that nothing exists here. The nearest sites are listed under the Services tab.</div>';
+  }
+
+  if(recs.length){
+    h += '<div class="eyebrow" style="margin-top:18px">Asks recorded here</div>'
+       + recs.map(e => '<button class="arow" type="button" data-rec="'+e.id+'"><span class="sdot '+((e.prov&&!e.prov.ok)?"broken":e.status)+'" style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--amber)"></span>'
+         + '<span><span class="t">'+CATEGORY_LABEL[e.ask.category]+(e.ask.amountUsd?" · "+money(e.ask.amountUsd):"")+'</span>'
+         + '<span class="d">'+e.id+' · '+e.status+'</span></span></button>').join("");
+  }
+  if(spots.length){
+    h += '<div class="eyebrow" style="margin-top:18px">Exchanges here</div>'
+       + spots.map(sp => '<button class="arow" type="button" data-spot="'+sp.id+'"><span style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--teal)"></span>'
+         + '<span><span class="t">'+esc(sp.place)+'</span><span class="d">'+SPOT_STATE_LABEL[sp.state]+' · '+sp.thread.length+' messages</span></span></button>').join("");
+  }
+  if(!recs.length && !spots.length){
+    h += '<div class="nodata" style="margin-top:16px"><b>Nothing recorded here yet.</b> Absence of data is not absence of need. It usually means no advocate has run intake on this block.</div>';
+  }
+  h += '<p class="disclaim" style="margin-top:16px">Sample directory. Sites, hours, and bed counts are composite demonstration data on a simulated feed. Do not route anyone using this page. A real deployment would sync counts from a coordinated-entry system on a signed interval.</p>';
+  h += '</div>';
+  host.innerHTML = h;
+  host.querySelectorAll("[data-rec]").forEach(b => b.onclick = () => select(b.dataset.rec));
+  host.querySelectorAll("[data-spot]").forEach(b => b.onclick = () => openSpot(b.dataset.spot));
+}
+async function tickBeds(){
+  if(!KEYS) return;
+  for(const v of SHELTERS){
+    const cap = Math.max(2, Math.round(v.beds.total * .09));
+    const delta = [-1,-1,0,0,1][Math.floor(Math.random()*5)];
+    v.beds.available = clamp(v.beds.available + delta, 0, cap);
+    await sealBeds(v);
+  }
+  updateBedChip(); refreshMarkers();
+  if(state.tab === "area") renderArea();
+  if(state.tab === "dash") renderDash();
+}
+
+/* =========================================================
+   14c. CLAIM FLOW — how a person gets back into their own record
+   ========================================================= */
+let claimUnlocked = null, claimKey = null;
+
+function claimHome(msg){
+  claimUnlocked = null; claimKey = null;
+  const opts = ENTRIES.map(e => '<option value="'+e.id+'">'+e.id+' · '+DISTRICTS[e.zone].label+'</option>').join("");
+  document.getElementById("claimstage").innerHTML =
+      '<div class="claimrow"><div class="fld"><label for="cid">Record number</label>'
+    + '<select id="cid">'+opts+'</select></div></div>'
+    + '<div class="claimrow"><div class="fld"><label for="cw">The four words on your card</label>'
+    + '<input id="cw" placeholder="word word word word" autocomplete="off" spellcheck="false"></div>'
+    + '<button class="btn btn-verify" id="cgo" type="button">Open my request</button></div>'
+    + (msg ? '<div class="claimerr">'+esc(msg)+'</div>' : '')
+    + '<div class="claimrow" style="margin-top:14px">'
+    + '<button class="btn btn-restore" id="clost" type="button">I lost my card</button>'
+    + '<button class="btn btn-restore" id="cdemo" type="button">Show me a card (demo)</button></div>'
+    + '<p class="disclaim" style="margin-top:12px">The words never leave this device. They are stretched with PBKDF2 into a key that signs your updates, so the system can tell it is you without ever holding your name, your number, or a password it could lose.</p>';
+  document.getElementById("cgo").onclick = tryClaim;
+  document.getElementById("clost").onclick = lostCard;
+  document.getElementById("cdemo").onclick = showCard;
+  document.getElementById("cw").addEventListener("keydown", ev => { if(ev.key === "Enter") tryClaim(); });
+}
+function showCard(){
+  const id = document.getElementById("cid").value;
+  const e = ENTRIES.find(x => x.id === id);
+  const host = document.getElementById("claimstage");
+  host.insertAdjacentHTML("beforeend",
+      '<div class="card3"><div class="eyebrow">Claim card · printed at intake, handed over on paper</div>'
+    + '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:6px">'+e.id+'</div>'
+    + '<div class="w">'+e.claim.words.join("  ")+'</div>'
+    + '<p class="disclaim" style="margin-top:9px">Shown here only because this is a demo. In use it is never displayed on a public screen, and a kiosk clears the field the moment you walk away.</p></div>');
+  document.getElementById("cw").value = e.claim.words.join(" ");
+}
+async function lostCard(){
+  const id = document.getElementById("cid").value;
+  const e = ENTRIES.find(x => x.id === id);
+  e.claim.restores++;
+  document.getElementById("claimstage").insertAdjacentHTML("beforeend",
+      '<div class="card3" style="border-color:var(--teal)"><div class="eyebrow">Advocate restore</div>'
+    + '<p style="font-size:12.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.55">Any advocate at any site marked <b>Record kiosk</b> can restore access in person. They confirm you the way they confirmed you at intake, the old card stops working, and a new one is printed. The restore itself is logged and signed, so nobody can quietly take over a record and call it a recovery.</p>'
+    + '<p style="font-size:12.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.55">This is not an edge case. Belongings get discarded, which is the subject of half the records on this map. A system that punishes you for losing a piece of paper is a system that has not read its own data.</p>'
+    + '<div style="font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:9px">restore events on '+e.id+': '+e.claim.restores+' · each one signed and visible to the record holder</div></div>');
+}
+async function tryClaim(){
+  const id = document.getElementById("cid").value;
+  const words = document.getElementById("cw").value.trim().split(/\s+/).filter(Boolean);
+  const e = ENTRIES.find(x => x.id === id);
+  if(words.length !== 4){ claimHome("A claim card has exactly four words. Enter all four."); return; }
+  const key = await deriveClaimKey(id, words);
+  const v = await claimVerifier(key);
+  if(v !== e.claim.verifier){ claimHome("Those words do not open " + id + ". Check the card, or use the restore option below."); return; }
+  claimUnlocked = e; claimKey = key;
+  markStep("claim");
+  renderUnlocked();
+  say("Record " + id + " unlocked.");
+}
+function renderUnlocked(){
+  const e = claimUnlocked;
+  document.getElementById("claimstage").innerHTML =
+      '<div class="unlocked"><div class="uh">&#10003; '+e.id+' opened with your card. Signed as the record holder.</div><div class="ub">'
+    + '<div class="eyebrow">Your ask</div><p style="font-family:var(--serif);font-size:16px;margin:6px 0 0">'+esc(e.ask.summary)+'</p>'
+    + '<div style="margin-top:10px"><span class="statuspill st-'+e.status+'">'+e.status+'</span></div>'
+    + '<div class="eyebrow" style="margin-top:16px">What came back while you were away</div>'
+    + (e.offers.length
+        ? e.offers.map(o => '<div class="offer"><div class="oh">'+esc(o.kind)+' · waiting for advocate routing</div><p>'+esc(o.note||"No message left.")+'</p>'
+            + '<div style="font-family:var(--mono);font-size:9.5px;color:var(--ok);margin-top:6px">signed '+o.hash.slice(0,8)+' · '+o.ts+'</div></div>').join("")
+        : '<p style="font-size:12.5px;color:var(--muted);margin:7px 0 0">Nothing yet. That is the number this whole site is about, and it is on the Accountability tab.</p>')
+    + '<div class="eyebrow" style="margin-top:16px">Your updates</div>'
+    + (e.updates.length ? e.updates.map(u => '<div class="upd"><p>'+esc(u.text)+'</p><div class="m">signed '+u.hash.slice(0,8)+' · '+u.ts+'</div></div>').join("")
+                        : '<p style="font-size:12.5px;color:var(--muted);margin:7px 0 0">None yet.</p>')
+    + '<div class="claimrow"><div class="fld"><label for="uptext">Add an update</label>'
+    + '<input id="uptext" placeholder="Still waiting. Went back Tuesday." autocomplete="off"></div>'
+    + '<button class="btn btn-verify" id="upgo" type="button">Sign and add</button></div>'
+    + '<div class="claimrow"><button class="btn btn-restore" id="upclose" type="button">Close</button>'
+    + '<button class="btn btn-restore" id="upresolved" type="button">Mark this answered</button></div>'
+    + '<p class="disclaim" style="margin-top:12px">Only you can add to this record and only an advocate can change the consent on it. Nobody who offered help sees who you are, and you never see who they are, until an advocate routes it.</p>'
+    + '</div></div>';
+  document.getElementById("upgo").onclick = addUpdate;
+  document.getElementById("upclose").onclick = () => { document.getElementById("claimmodal").hidden = true; claimHome(); };
+  document.getElementById("upresolved").onclick = async () => {
+    claimUnlocked.status = "answered";
+    await addUpdate("Marked answered by the record holder.");
+    refreshMarkers(); renderList(); renderDash();
+  };
+  document.getElementById("uptext").addEventListener("keydown", ev => { if(ev.key === "Enter") addUpdate(); });
+}
+async function addUpdate(forced){
+  const e = claimUnlocked;
+  const el = document.getElementById("uptext");
+  const text = (typeof forced === "string") ? forced : (el ? el.value.trim() : "");
+  if(!text) return;
+  const seq = e.updates.length + 1;
+  const sg = await signUpdate(claimKey, e.id, seq, text);
+  e.updates.push({text:text, ts:new Date().toISOString().slice(0,10), hash:sg.hash});
+  renderUnlocked();
+  say("Update signed and added to " + e.id + ".");
+}
+
+/* public side: answer an ask without ever contacting a person */
+async function makeOffer(e, kind, note){
+  const canonical = JSON.stringify({record_id:e.id, seq:e.offers.length+1, kind:kind,
+    note:note, posted:new Date().toISOString().slice(0,10), author:"public", routed_by:"advocate"});
+  const bytes = ENC.encode(canonical);
+  e.offers.push({kind:kind, note:note, ts:new Date().toISOString().slice(0,10),
+    hash: await sha(bytes), sig: await signBytes(bytes)});
+  markStep("offer");
+  renderStory(); renderDash();
+  say("Offer signed and queued for advocate routing.");
+}
+
+/* =========================================================
+   15. DASHBOARD
+   ========================================================= */
+const BIRTH_CERT_USD = 29, ALLEGED_SPEND = 1200000;
+function renderDash(){
+  const host = document.getElementById("panel-dash");
+  const live = ENTRIES.filter(e => !e.withdrawn);
+  const verified = live.filter(e => e.prov && e.prov.ok);
+  const brokenCount = live.length - verified.length;
+  const pool = verified.length ? verified : live;
+
+  const unanswered = pool.filter(e => e.status === "unanswered").length;
+  const answered = pool.filter(e => e.status === "answered").length;
+  const pct = pool.length ? Math.round(unanswered/pool.length*100) : 0;
+  const openMoney = pool.filter(e => e.status !== "answered" && e.ask.amountUsd).reduce((s,e)=>s+e.ask.amountUsd,0);
+  const docAsks = pool.filter(e => e.ask.category === "id_documents" && e.status !== "answered").length;
+
+  const cats={}, zs={};
+  pool.forEach(e => {
+    (cats[e.ask.category] = cats[e.ask.category] || {open:0,total:0}).total++;
+    if(e.status !== "answered") cats[e.ask.category].open++;
+    (zs[e.zone] = zs[e.zone] || {open:0,total:0}).total++;
+    if(e.status !== "answered") zs[e.zone].open++;
+  });
+  const catRows = Object.keys(cats).sort((a,b)=>cats[b].open-cats[a].open);
+  const catMax = Math.max.apply(null, catRows.map(c=>cats[c].total).concat([1]));
+  const zoneRows = Object.keys(zs).sort((a,b)=>zs[b].open-zs[a].open);
+  const zoneMax = Math.max.apply(null, zoneRows.map(z=>zs[z].total).concat([1]));
+
+  const bothSides = SPOTS.filter(s => s.thread.some(m=>m.side==="housed") && s.thread.some(m=>m.side==="unhoused")).length;
+  const agreed = SPOTS.filter(s => s.state === "agreed").length;
+  const stalled = SPOTS.filter(s => s.state === "no_response" || s.state === "awaiting").length;
+  const allegedCerts = Math.floor(ALLEGED_SPEND / BIRTH_CERT_USD);
+  const bt = bedTotals();
+
+  host.innerHTML = '<div class="dash">'
+   + '<div class="headline"><div class="eyebrow">Institutional non-response</div>'
+   + '<div class="bignum">'+pct+'<small>%</small></div>'
+   + '<p>of the asks on this map were never answered. Not refused with a reason. Not deferred with a date. Answered by nothing at all.</p>'
+   + '<p class="defn">Non-response is defined here as a documented ask with no recorded reply of any kind at the time of intake review. Refusals and deferrals count as answers.</p></div>'
+   + '<div class="metrics">'
+   + '<div class="metric"><div class="v">'+answered+'/'+pool.length+'</div><div class="l">asks answered</div></div>'
+   + '<div class="metric"><div class="v">'+money(openMoney)+'</div><div class="l">open ask total</div></div>'
+   + '<div class="metric"><div class="v">'+pool.length+'</div><div class="l">records counted</div></div></div>'
+
+   + '<div class="barsec"><h4>Beds open tonight · sample directory, signed counts</h4>'
+   + '<div class="metrics" style="margin-top:0">'
+   + '<div class="metric"><div class="v" style="color:'+(bt.open?"var(--amber)":"var(--broken)")+'">'+bt.open+'</div><div class="l">beds open right now</div></div>'
+   + '<div class="metric"><div class="v">'+bt.total+'</div><div class="l">beds in the directory</div></div>'
+   + '<div class="metric"><div class="v" style="color:var(--broken)">'+Math.round((1-bt.open/Math.max(bt.total,1))*100)+'%</div><div class="l">full</div></div></div>'
+   + '<p class="disclaim" style="margin-top:9px">Counts refresh on a simulated feed and are re-signed each time they change, so a site cannot revise a past number. Sample data: do not route anyone using this page.</p></div>'
+
+   + '<div class="barsec"><h4>Where the two sides did answer each other</h4>'
+   + '<div class="metrics" style="margin-top:0">'
+   + '<div class="metric"><div class="v" style="color:var(--teal)">'+bothSides+'/'+SPOTS.length+'</div><div class="l">exchanges that got a reply from the other side</div></div>'
+   + '<div class="metric"><div class="v" style="color:var(--ok)">'+agreed+'</div><div class="l">agreements reached between neighbors</div></div>'
+   + '<div class="metric"><div class="v" style="color:var(--broken)">'+stalled+'</div><div class="l">agreements waiting on an institution</div></div></div>'
+   + '<p class="disclaim" style="margin-top:9px">Neighbors answered each other in every exchange on this map. The gap is not between the two groups of people. It is between what they agreed on together and whether anyone with authority replied.</p></div>'
+
+   + '<div class="barsec"><h4>Unmet needs by category · click to filter the map</h4>'
+   + catRows.map(c => barRow(CATEGORY_LABEL[c], cats[c].open, cats[c].total, catMax, "cat", c)).join("")+'</div>'
+   + '<div class="barsec"><h4>Unmet needs by neighborhood · click to fly there</h4>'
+   + zoneRows.map(z => barRow(DISTRICTS[z].label, zs[z].open, zs[z].total, zoneMax, "zone", z)).join("")+'</div>'
+
+   + '<div class="money"><div class="mh"><div class="eyebrow">Promise vs proof</div></div><div class="mb">'
+   + '<div class="mline"><div class="desc">Cost of one certified California birth certificate, the document behind '+docAsks+' open asks on this map.</div><div class="amt">'+money(BIRTH_CERT_USD)+'<span class="src">[source]</span></div></div>'
+   + '<div class="mline"><div class="desc">Total cost to close every open ask shown here, at face value, today.</div><div class="amt">'+money(openMoney)+'<span class="src">[derived from signed records]</span></div></div>'
+   + '<div class="mline"><div class="desc">Cost of the two fixes neighbors agreed on themselves: bins, posted notice, one storage container.</div><div class="amt">under '+money(2000)+'<span class="src">[estimate, unsourced]</span></div></div>'
+   + '<div class="mline"><div class="desc">Illustrative placeholder only. A round figure, not attributed to any real entity, agency, or budget — shown to demonstrate the promise-vs-proof mechanic.<span class="alleged">Alleged · unverified</span></div><div class="amt unv">'+money(ALLEGED_SPEND)+'<span class="src">[source needed]</span></div></div>'
+   + '<div class="mline"><div class="desc">The same unverified figure expressed in birth certificates. Arithmetic only, inherits the unverified status of its input.<span class="alleged">Alleged · unverified</span></div><div class="amt unv">'+allegedCerts.toLocaleString("en-US")+' certs</div></div>'
+   + '<p class="disclaim">Unverified figures are excluded from all signed data and from every metric above. This is a comparison of public budget priorities, not an allegation of misconduct by any organization, agency, or person.</p></div></div>'
+
+   + '<div class="integrity '+(brokenCount?"bad":"")+'">'
+   + (brokenCount ? '&#9888; '+brokenCount+' record failed signature verification and is excluded from every number here. A tampered record cannot quietly move a metric.'
+                  : '&#10003; '+ENTRIES.length+' of '+ENTRIES.length+' records verified. Every number is computed only from records whose signature checks out.')
+   + '</div>'
+   + '<p class="footnote"><b>Keys stay local.</b> ECDSA P-256 generated in this browser via WebCrypto. Records and messages are signed the same way, so a neighbor\u2019s post carries the same proof as an intake record. No network requests, no fonts, no map tiles, no analytics.</p>'
+   + '</div>';
+
+  requestAnimationFrame(() => host.querySelectorAll(".fill").forEach(f => f.style.width = f.dataset.w + "%"));
+  host.querySelectorAll("[data-drill]").forEach(b => {
+    b.onclick = () => {
+      if(b.dataset.drill === "zone"){ openPanel(); focusZone(b.dataset.key); }
+      else {
+        state.category = b.dataset.key;
+        document.getElementById("catfilter").value = b.dataset.key;
+        state.leftTab = "asks"; setLeftTab("asks");
+        refreshMarkers(); renderList();
+        say("Map filtered to " + CATEGORY_LABEL[b.dataset.key] + ".");
+      }
+    };
+  });
+}
+function barRow(label, open, total, max, drill, key){
+  return '<div class="bar"><button class="top" type="button" data-drill="'+drill+'" data-key="'+key+'">'
+    + '<span>'+esc(label)+'</span><span>'+open+' open / '+total+'</span></button>'
+    + '<div class="track"><div class="fill '+(open?"":"none")+'" data-w="'+Math.round(total/max*100)+'"></div></div></div>';
+}
+
+/* =========================================================
+   16. PANEL / TABS
+   ========================================================= */
+function syncPanel(){
+  document.getElementById("rightpanel").classList.toggle("collapsed", !state.panelOpen);
+  document.getElementById("panelbtn").setAttribute("aria-pressed", String(state.panelOpen));
+  document.getElementById("stage").classList.toggle("panel-open", state.panelOpen);
+}
+function openPanel(){ state.panelOpen = true; syncPanel(); }
+function togglePanel(){ state.panelOpen = !state.panelOpen; syncPanel(); }
+function setTab(name, quiet){
+  state.tab = name;
+  ["area","story","cg","dash"].forEach(t => {
+    document.getElementById("tab-"+t).setAttribute("aria-selected", String(t===name));
+    document.getElementById("panel-"+t).hidden = (t !== name);
+  });
+  if(name === "dash"){ markStep("dash"); renderDash(); if(!quiet) say("Accountability dashboard."); }
+  if(name === "cg") renderCG();
+  if(name === "story") renderStory();
+  if(name === "area") renderArea();
+}
+function setLeftTab(name){
+  state.leftTab = name;
+  document.getElementById("lt-asks").setAttribute("aria-selected", String(name==="asks"));
+  document.getElementById("lt-spots").setAttribute("aria-selected", String(name==="spots"));
+  document.getElementById("lt-svc").setAttribute("aria-selected", String(name==="svc"));
+  renderList();
+}
+
+/* =========================================================
+   16b. AUTHOR ACCESS BY CLAIM CODE
+   ========================================================= */
+let authKey = null, authEntry = null;
+
+function renderIssuers(){
+  const list = SERVICES.filter(v => v.services.indexOf("id_help") >= 0 || v.services.indexOf("case_mgmt") >= 0);
+  document.getElementById("acissuers").innerHTML = list.map(v =>
+    '<button class="arow" type="button" data-svc="'+v.id+'"><span style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--ok)"></span>'
+    + '<span><span class="t">'+esc(v.name)+'</span><span class="d">'+DISTRICTS[v.zone].label+' · '+esc(v.hours)+' · '+esc(v.intake)+'</span></span></button>').join("");
+  document.getElementById("acissuers").querySelectorAll("[data-svc]").forEach(b =>
+    b.onclick = () => { document.getElementById("access").hidden = true; openService(b.dataset.svc); });
+}
+
+async function openByCode(){
+  const phrase = document.getElementById("acphrase").value;
+  const pin = document.getElementById("acpin").value;
+  const st = document.getElementById("acstatus");
+  const out = document.getElementById("acresult");
+  if(!phrase.trim() || !pin.trim() || !KEYS){ st.textContent = "Enter the words and the digits."; return; }
+  st.textContent = "Checking the card…";
+  const key = await deriveAuth(phrase, pin);
+  let found = null;
+  for(const e of ENTRIES){
+    if(!e.authTag) continue;
+    if(await authorTag(key, e.id) === e.authTag){ found = e; break; }
+  }
+  if(!found){
+    authKey = null; authEntry = null;
+    st.textContent = "No match.";
+    out.innerHTML = '<div class="nodata" style="margin-top:12px"><b>No record matches that card.</b> Check the spacing between words and the four digits. '
+      + 'We cannot recover a card for you, because we never stored one. Any advocate who knows you can verify you in person and issue a new card, which moves your record onto it.</div>';
+    return;
+  }
+  authKey = key; authEntry = found;
+  st.textContent = "Card verified.";
+  markStep("author");
+  renderAuthor();
+  say("Claim code verified for record " + found.id + ".");
+}
+
+function renderAuthor(){
+  const e = authEntry, out = document.getElementById("acresult");
+  if(!e){ out.innerHTML = ""; return; }
+  if(e.withdrawn){
+    out.innerHTML = '<div class="nodata" style="margin-top:14px"><b>This record has been withdrawn.</b> It is off the map, out of every count on the dashboard, and no longer public. '
+      + 'The signature stays valid for what it was, so the withdrawal cannot be presented as though the record never existed.</div>';
+    return;
+  }
+  out.innerHTML = '<div class="card-print" style="margin-top:16px">'
+    + '<div class="eyebrow">Record '+e.id+' · '+DISTRICTS[e.zone].label+'</div>'
+    + '<div style="font-size:15px;font-weight:600;margin-top:6px">'+esc(e.ask.summary)+'</div>'
+    + '<div class="cap">Status: <b style="color:var(--amber)">'+e.status+'</b>'+(e.ask.amountUsd?' · '+money(e.ask.amountUsd):'')
+    + ' · filed '+e.consent.timestamp.slice(0,10)+' with advocate '+e.consent.advocateId+'</div></div>'
+
+    + '<div class="eyebrow" style="margin-top:16px">'+e.replies.length+' '+(e.replies.length===1?"reply":"replies")+' since you filed this</div>'
+    + (e.replies.length ? e.replies.map(r =>
+        '<div class="reply'+(r.mine?" mine":"")+'"><div class="rf">'+esc(r.from)+' · '+r.ts+'</div><p>'+esc(r.text)+'</p>'
+        + (r.tag ? '<div class="rm">signed by your card · '+r.tag.slice(0,10)+'</div>' : '')+'</div>').join("")
+      : '<div class="nodata" style="margin-top:9px">No replies yet. Nobody has answered this one.</div>')
+
+    + '<div class="eyebrow" style="margin-top:16px">Add an update</div>'
+    + '<textarea id="acupd" maxlength="400" placeholder="Anything changed? Did someone help? Do you still need this?"></textarea>'
+    + '<div class="cfoot" style="padding:10px 0 0"><span class="count" id="acmsg">Signed with your card, not your name.</span>'
+    + '<span style="display:flex;gap:7px;flex-wrap:wrap">'
+    + '<button class="btn btn-send" id="acpost" type="button">Post update</button>'
+    + '<button class="btn btn-verify" id="acdone" type="button">Mark resolved</button>'
+    + '<button class="btn btn-tamper" id="acpull" type="button">Withdraw</button></span></div>'
+    + '<div class="nodata" style="margin-top:12px">Withdraw takes this off the map and out of every number on the dashboard, immediately and without asking anyone. '
+    + 'Consent here is ongoing, not a signature you gave once.</div>';
+
+  document.getElementById("acpost").onclick = async () => {
+    const t = document.getElementById("acupd").value.trim();
+    if(!t) return;
+    const ts = new Date().toISOString().slice(0,10);
+    const tag = await authorSign(authKey, e.id+"|"+ts+"|"+t);
+    e.replies.push({from:"The person who filed this", ts:ts, text:t, mine:true, tag:tag});
+    renderAuthor(); renderStory();
+    document.getElementById("acmsg").textContent = "Update posted and signed.";
+    say("Update posted to record " + e.id + ".");
+  };
+  document.getElementById("acdone").onclick = async () => {
+    e.status = "answered";
+    await seal(e);
+    const ts = new Date().toISOString().slice(0,10);
+    e.replies.push({from:"The person who filed this", ts:ts, text:"Resolved. I got what I asked for.", mine:true,
+      tag: await authorSign(authKey, e.id+"|resolved|"+ts)});
+    renderAuthor(); renderStory(); renderList(); renderDash(); refreshMarkers();
+    say("Record " + e.id + " marked resolved by its author.");
+  };
+  document.getElementById("acpull").onclick = () => {
+    e.withdrawn = true;
+    renderAuthor(); renderStory(); renderList(); renderDash(); renderArea(); refreshMarkers();
+    say("Record " + e.id + " withdrawn at the author's request.");
+  };
+}
+
+function makeDemoCard(){
+  const pick = () => WORDS[Math.floor(Math.random()*WORDS.length)];
+  let w = []; while(w.length < 3){ const x = pick(); if(w.indexOf(x) < 0) w.push(x); }
+  const pin = String(Math.floor(1000 + Math.random()*9000));
+  document.getElementById("acgenout").innerHTML = '<div class="card-print">'
+    + '<div class="eyebrow">On Record · access card</div>'
+    + '<div class="ph">'+w.join(" ")+'</div><div class="pn">'+pin+'</div>'
+    + '<div class="cap">Keep this. It is the only copy. It proves you filed your request without proving who you are. '
+    + 'This site stores a keyed hash of it and never the words themselves, so nobody here, and nobody who subpoenas this site, can turn it back into you.</div></div>';
+}
+
+function wireAccess(){
+  const m = document.getElementById("access");
+  const show = () => { m.hidden = false; renderIssuers(); setTimeout(()=>document.getElementById("acphrase").focus(),40); };
+  document.getElementById("accessbtn").onclick = show;
+  document.getElementById("acclose").onclick = () => { m.hidden = true; };
+  m.addEventListener("click", ev => { if(ev.target === m) m.hidden = true; });
+  document.getElementById("acopen").onclick = openByCode;
+  document.getElementById("acgen").onclick = makeDemoCard;
+  document.getElementById("acpin").addEventListener("keydown", ev => { if(ev.key === "Enter") openByCode(); });
+  document.getElementById("ac-have").onclick = () => {
+    document.getElementById("ac-have").setAttribute("aria-selected","true");
+    document.getElementById("ac-need").setAttribute("aria-selected","false");
+    document.getElementById("ac-pane-have").hidden = false;
+    document.getElementById("ac-pane-need").hidden = true;
+  };
+  document.getElementById("ac-need").onclick = () => {
+    document.getElementById("ac-have").setAttribute("aria-selected","false");
+    document.getElementById("ac-need").setAttribute("aria-selected","true");
+    document.getElementById("ac-pane-have").hidden = true;
+    document.getElementById("ac-pane-need").hidden = false;
+    renderIssuers();
+  };
+}
+
+/* =========================================================
+   17. BOOT
+   ========================================================= */
+function initTheme(){
+  const btn = document.getElementById("themebtn");
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const cur = () => document.documentElement.getAttribute("data-theme") || (mq.matches ? "dark" : "light");
+  const label = () => { btn.textContent = cur() === "dark" ? "Light" : "Dark"; };
+  btn.onclick = () => { document.documentElement.setAttribute("data-theme", cur()==="dark"?"light":"dark"); label(); };
+  label();
+}
+async function boot(){
+  initTheme(); drawRail(); buildMap();
+
+  const sel = document.getElementById("catfilter");
+  sel.innerHTML = '<option value="all">All categories</option>'
+    + Object.keys(CATEGORY_LABEL).map(c => '<option value="'+c+'">'+CATEGORY_LABEL[c]+'</option>').join("");
+  sel.onchange = () => { state.category = sel.value; refreshMarkers(); renderList(); };
+  document.querySelectorAll(".fchip").forEach(b => b.onclick = () => {
+    state.status = b.dataset.status;
+    document.querySelectorAll(".fchip").forEach(o => o.setAttribute("aria-pressed", String(o===b)));
+    refreshMarkers(); renderList();
+  });
+  document.getElementById("clearfilters").onclick = () => {
+    state.status="all"; state.category="all"; sel.value="all";
+    document.querySelectorAll(".fchip").forEach(o => o.setAttribute("aria-pressed", String(o.dataset.status==="all")));
+    refreshMarkers(); renderList();
+  };
+  document.getElementById("lt-asks").onclick = () => setLeftTab("asks");
+  document.getElementById("lt-spots").onclick = () => setLeftTab("spots");
+  document.getElementById("lt-svc").onclick = () => setLeftTab("svc");
+  document.getElementById("needchips").innerHTML = Object.keys(SERVICE_LABEL).map(k =>
+    '<button class="needchip" type="button" data-need="'+k+'" aria-pressed="false">'+SERVICE_LABEL[k]+'</button>').join("");
+  document.querySelectorAll(".needchip").forEach(b => b.onclick = function(){
+    const k = this.dataset.need;
+    if(state.needs.has(k)) state.needs.delete(k); else state.needs.add(k);
+    this.setAttribute("aria-pressed", String(state.needs.has(k)));
+    refreshMarkers(); renderList();
+  });
+
+  document.getElementById("withheld").innerHTML =
+    '<b>'+WITHHELD.length+' entry withheld.</b> Record '+WITHHELD.map(w=>w.id).join(", ")
+    + ' has a complete ask and story but no verified consent record, so it is not rendered, not mapped, not signed, and not counted anywhere.';
+
+  document.getElementById("zin").onclick = () => zoomBy(1.6);
+  document.getElementById("zout").onclick = () => zoomBy(1/1.6);
+  document.getElementById("zreset").onclick = resetView;
+  document.getElementById("panelbtn").onclick = togglePanel;
+  document.getElementById("closepanel").onclick = togglePanel;
+  document.getElementById("tab-area").onclick = () => setTab("area");
+  document.getElementById("tab-story").onclick = () => setTab("story");
+  document.getElementById("tab-cg").onclick = () => setTab("cg");
+  document.getElementById("tab-dash").onclick = () => setTab("dash");
+  [["lay-asks","asks"],["lay-spots","spots"],["lay-heat","heat"],["lay-svc","svc"]].forEach(([id,key]) => {
+    document.getElementById(id).onclick = function(){
+      state.layers[key] = !state.layers[key];
+      this.setAttribute("aria-pressed", String(state.layers[key]));
+      refreshMarkers();
+    };
+  });
+
+  const claimModal = document.getElementById("claimmodal");
+  document.getElementById("claimbtn").onclick = () => { claimHome(); claimModal.hidden = false; };
+  claimModal.addEventListener("click", ev => { if(ev.target === claimModal) claimModal.hidden = true; });
+  const modal = document.getElementById("modal");
+  document.getElementById("moreinfo").onclick = () => { modal.hidden=false; document.getElementById("closemodal").focus(); };
+  document.getElementById("closemodal").onclick = () => { modal.hidden=true; };
+  modal.addEventListener("click", ev => { if(ev.target===modal) modal.hidden=true; });
+  document.addEventListener("keydown", ev => {
+    if(ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
+    if(ev.key === "Escape"){
+      if(!claimModal.hidden){ claimModal.hidden=true; return; }
+      if(!modal.hidden){ modal.hidden=true; return; }
+      if(state.selected || state.spot){ state.selected=null; state.spot=null; renderStory(); renderCG(); refreshMarkers(); renderList(); }
+      else if(state.focusedZone) resetView();
+    }
+    if(ev.key === "+" || ev.key === "=") zoomBy(1.4);
+    if(ev.key === "-") zoomBy(1/1.4);
+    if(ev.key === "0") resetView();
+  });
+
+  wireAccess();
+  syncPanel(); renderStory(); renderCG(); renderArea(); renderList(); updateBedChip();
+
+  try{
+    KEYS = await crypto.subtle.generateKey({name:"ECDSA", namedCurve:"P-256"}, true, ["sign","verify"]);
+    PUBJWK = await crypto.subtle.exportKey("jwk", KEYS.publicKey);
+    for(const e of ENTRIES) await seal(e);
+    let msgs = 0;
+    for(const sp of SPOTS){ for(let i=0;i<sp.thread.length;i++){ await sealMsg(sp.id, sp.thread[i], i+1); msgs++; } }
+    for(const v of SHELTERS) await sealBeds(v);
+    for(const e of ENTRIES){
+      const c = CODES[e.id];
+      if(!c) continue;
+      e.authTag = await authorTag(await deriveAuth(c.phrase, c.pin), e.id);
+    }
+    for(const e of ENTRIES){
+      const ck = await deriveClaimKey(e.id, e.claim.words);
+      e.claim.verifier = await claimVerifier(ck);
+    }
+    updateBedChip(); renderArea();
+    setInterval(tickBeds, 7000);
+    document.getElementById("keychip").classList.add("ready");
+    document.getElementById("keytext").textContent = "ES256 " + PUBJWK.x.slice(0,8) + " · " + (ENTRIES.length+msgs) + " sealed";
+    say("Signing key generated. " + ENTRIES.length + " records and " + msgs + " messages sealed.");
+  }catch(err){
+    document.getElementById("keytext").textContent = "WebCrypto unavailable here";
+  }
+  renderDash(); renderCG(); refreshMarkers();
+}
+boot();
+})();
+</script>
+
+<!-- ============================================================
+     ON RECORD · "Guide me" self-driving walkthrough
+     Paste this ENTIRE block into index.html immediately BEFORE </body>.
+     It is inline (no network), drives the demo by clicking existing
+     element IDs, is cancelable (Stop / Escape / touch the map), and
+     honors prefers-reduced-motion. It needs NO edits to your app code.
+     ============================================================ -->
+<style>
+.tourcap{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:min(580px,92vw);
+  background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line-strong);border-radius:12px;padding:12px 18px;font-family:var(--serif);
+  font-size:15.5px;line-height:1.45;color:var(--ink);box-shadow:var(--shadow);opacity:0;
+  pointer-events:none;transition:opacity .4s;z-index:70;text-align:center}
+.tourcap.show{opacity:1}
+#guidebtn[aria-pressed="true"]{background:var(--broken-dim);border-color:var(--broken);color:var(--broken)}
+</style>
+<script>
+(function(){
+  "use strict";
+  function ready(fn){ if(document.getElementById("svg")) fn(); else setTimeout(function(){ready(fn);},120); }
+  ready(function(){
+    var tr = document.querySelector(".top-right");
+    if(tr) tr.insertAdjacentHTML("afterbegin",
+      '<button class="ghost" id="guidebtn" type="button" aria-pressed="false">Guide me</button>');
+    var capEl = document.createElement("div");
+    capEl.className = "tourcap"; capEl.id = "tourcap";
+    capEl.setAttribute("role","status"); capEl.setAttribute("aria-live","polite");
+    document.body.appendChild(capEl);
+
+    function click(id){
+      var el = document.getElementById(id);
+      if(el) el.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true}));
+      return !!el;
+    }
+
+    var STEPS = [
+      {cap:"Every point is an unhoused San Diegan's real ask. No real person or location is in this data.", run:function(){ click("zreset"); }, wait:3000},
+      {cap:"Drill into a neighborhood.", run:function(){ click("dz-downtown"); }, wait:2500},
+      {cap:"Open one person's record — a birth certificate they've chased for three years.", run:function(){ click("pin-SD-0114"); }, wait:3000},
+      {cap:"Their own words: unedited intake fragments.", run:function(){ click("btn-raw"); }, wait:2900},
+      {cap:"AI-shaped — grammar only. The diff proves zero content words were added.", run:function(){ click("btn-shaped"); }, wait:3100},
+      {cap:"Every record is signed. Here is the C2PA-style manifest.", run:function(){ click("sealchip"); }, wait:2900},
+      {cap:"Now watch what happens if someone edits a sealed record…", run:function(){ click("btn-tamper"); }, wait:3500},
+      {cap:"The seal shatters, the signature fails. Tampering can't hide — and can't move a metric.", run:function(){}, wait:3100},
+      {cap:"Restoring the original record.", run:function(){ click("btn-restore"); }, wait:2200},
+      {cap:"Neighbors — housed and unhoused — actually reach agreements here.", run:function(){ click("sp-CG-01"); }, wait:3300},
+      {cap:"But the system doesn't answer. This is the number that matters.", run:function(){ click("tab-dash"); }, wait:2200}
+    ];
+
+    var on=false, timer=null, idx=0;
+    function btn(){ return document.getElementById("guidebtn"); }
+    function cap(){ return document.getElementById("tourcap"); }
+    function stop(){ on=false; if(timer){ clearTimeout(timer); timer=null; }
+      cap().classList.remove("show"); btn().textContent="Guide me"; btn().setAttribute("aria-pressed","false"); }
+    function step(){
+      if(!on || idx>=STEPS.length){ stop(); return; }
+      var s = STEPS[idx++];
+      cap().textContent = s.cap; cap().classList.add("show");
+      try{ s.run(); }catch(e){}
+      var reduced = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+      timer = setTimeout(step, reduced ? 1100 : s.wait);
+    }
+    function run(){ if(on){ stop(); return; }
+      on=true; idx=0; btn().textContent="Stop tour"; btn().setAttribute("aria-pressed","true"); step(); }
+
+    btn().onclick = run;
+    var mh = document.getElementById("mapholder");
+    if(mh){ ["pointerdown","wheel"].forEach(function(ev){ mh.addEventListener(ev, function(){ if(on) stop(); }); }); }
+    document.addEventListener("keydown", function(e){ if(e.key==="Escape" && on) stop(); });
+  });
+})();
+</script>
+
+</body>
+</html>

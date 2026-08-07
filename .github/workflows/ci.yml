@@ -1,0 +1,75 @@
+# CI: typecheck and build the on-record CLI, then use it to re-verify every committed signature.
+# The verify step is the one that matters — it is the same guarantee a reader gets, run on every push.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Least privilege: CI only needs to read the repo.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      # No key required: each entry carries its own public key, so this re-derives the canonical
+      # form from the committed content and checks the signature. Exits non-zero if any seal broke.
+      - name: Verify committed signatures
+        run: npm run verify
+
+  # The map's central claim is that it makes no network requests. Assert it in CI so a well-meaning
+  # edit that adds a font, a CDN script, or an analytics tag fails the build instead of shipping.
+  map-is-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # Only subresource loads count. An <a href> to GitHub is a link the reader may choose to
+      # follow — it loads nothing and the CSP does not restrict top-level navigation.
+      - name: No external subresources in web/index.html
+        run: |
+          if grep -nEi 'src="[[:space:]]*(https?:)?//|<link[^>]+href="[[:space:]]*(https?:)?//|@import' web/index.html; then
+            echo "::error file=web/index.html::External subresource found. The map must remain self-contained and offline."
+            exit 1
+          fi
+          echo "No external subresources."
+
+      - name: No network APIs in web/index.html
+        run: |
+          if grep -nE '\bfetch\(|XMLHttpRequest|navigator\.sendBeacon|new[[:space:]]+(WebSocket|EventSource)|importScripts' web/index.html; then
+            echo "::error file=web/index.html::Network API found. The map must make zero network requests."
+            exit 1
+          fi
+          echo "No network APIs."
+
+      - name: CSP meta tag is present and still default-src 'none'
+        run: |
+          grep -q "http-equiv=\"Content-Security-Policy\"" web/index.html \
+            || { echo "::error file=web/index.html::CSP meta tag is missing."; exit 1; }
+          grep -q "default-src 'none'" web/index.html \
+            || { echo "::error file=web/index.html::CSP no longer sets default-src 'none'."; exit 1; }
+          echo "CSP intact."

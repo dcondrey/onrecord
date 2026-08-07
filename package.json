@@ -2,7 +2,26 @@
   "name": "on-record",
   "version": "1.0.0",
   "private": true,
-  "description": "Backend companion to the On Record artifact: Claude-dignified stories, ECDSA-signed entries, C2PA-style provenance manifests.",
+  "description": "Signed, provenance-wrapped entries for On Record: a public ledger of requests from unhoused people in San Diego. ECDSA-P256 signatures, disclosed Claude transforms, C2PA-style manifests, and a browser map that verifies itself offline.",
+  "keywords": [
+    "provenance",
+    "c2pa",
+    "ecdsa",
+    "webcrypto",
+    "content-authenticity",
+    "ai-disclosure",
+    "civic-tech"
+  ],
+  "homepage": "https://writerslogic.github.io/onrecord/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/writerslogic/onrecord.git"
+  },
+  "bugs": {
+    "url": "https://github.com/writerslogic/onrecord/issues"
+  },
+  "license": "MIT",
+  "author": "David Condrey",
   "type": "module",
   "bin": {
     "on-record": "./dist/cli.js"
@@ -12,10 +31,12 @@
   },
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "on-record": "node dist/cli.js",
     "seed": "node dist/cli.js seed",
     "verify": "node dist/cli.js verify",
-    "serve": "node dist/cli.js serve"
+    "serve": "node dist/cli.js serve",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0"

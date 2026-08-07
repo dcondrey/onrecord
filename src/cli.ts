@@ -421,7 +421,7 @@ async function cmdServe(args: Args): Promise<void> {
     void (async () => {
       const url = new URL(req.url ?? '/', 'http://localhost');
       let pathname = decodeURIComponent(url.pathname);
-      if (pathname === '/') pathname = '/public/index.html';
+      if (pathname === '/') pathname = '/web/index.html';
 
       // Contain everything under the repo root.
       const target = resolve(join(root, normalize(pathname)));
@@ -450,7 +450,7 @@ async function cmdServe(args: Args): Promise<void> {
   server.listen(port, () => {
     out();
     out(`  serving ${c.dim(root)}`);
-    out(`  viewer  ${c.cyan(`http://localhost:${port}/public/index.html`)}`);
+    out(`  viewer  ${c.cyan(`http://localhost:${port}/web/index.html`)}`);
     out(`  data    ${c.dim(`http://localhost:${port}/data/entries.json`)}`);
     out();
     out(c.dim('  ctrl-c to stop'));

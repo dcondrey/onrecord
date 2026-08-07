@@ -1,5 +1,24 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+*.tsbuildinfo
+
+# Signing keys — the private key never leaves the machine that made it
 keys/
+
+# Env & secrets
 .env
+.env.*
+!.env.example
+
+# Editor / OS
 .DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*

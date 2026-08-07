@@ -1,0 +1,55 @@
+name: Feature Request
+description: Suggest an idea for On Record
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        On Record publishes accounts from people who cannot correct the record about themselves.
+        Proposals need to be compatible with that: **zones, never coordinates**; **no entry without
+        recorded consent**; **the raw text always ships with the shaped text**. See
+        [CONTRIBUTING.md](https://github.com/writerslogic/onrecord/blob/main/CONTRIBUTING.md).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve? Who is it for (a reader, an advocate, a service provider)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you'd like to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Compatibility with the project's constraints
+      options:
+        - label: This does not require storing coordinates, addresses, or shelter names.
+          required: true
+        - label: This does not require publishing an entry without a named advocate and recorded consent.
+          required: true
+        - label: This does not require publishing AI-shaped text without the raw text it came from.
+          required: true
+
+  - type: checkboxes
+    id: signature-impact
+    attributes:
+      label: Signing impact
+      options:
+        - label: This would change `src/schema.ts` and therefore invalidate existing signatures.
+          required: false

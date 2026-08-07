@@ -1,0 +1,17 @@
+# Default owner for everything
+* @writerslogic
+
+# Cryptography and the entry contract — a change here invalidates existing signatures
+/src/schema.ts @writerslogic
+/src/sign.ts @writerslogic
+/src/verify.ts @writerslogic
+
+# The disclosed AI transform — the system prompt is hashed into every manifest
+/src/transform.ts @writerslogic
+
+# The browser verifier must stay in lockstep with src/verify.ts
+/web/ @writerslogic
+
+# CI/CD and security policy
+/.github/ @writerslogic
+/SECURITY.md @writerslogic

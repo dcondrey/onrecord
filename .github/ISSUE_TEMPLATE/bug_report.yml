@@ -1,0 +1,63 @@
+name: Bug Report
+description: Report something that does not work as documented
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. If this is a **security** issue — a signature bypass, a privacy leak,
+        a consent-gate bypass, or the map making a network request — do not file it here. See
+        [SECURITY.md](https://github.com/writerslogic/onrecord/blob/main/SECURITY.md).
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Which part?
+      options:
+        - The map (web/index.html)
+        - The CLI (on-record)
+        - Signing / verification
+        - Provenance manifests
+        - Docs
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Exact commands or clicks. Please do **not** paste a real private signing key, a real
+        `ANTHROPIC_API_KEY`, or any real person's account.
+      placeholder: |
+        1. npm run seed
+        2. npm run verify
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser + version for map issues; `node --version` and OS for CLI issues.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: no-real-data
+    attributes:
+      label: Confirmation
+      options:
+        - label: This report contains no private keys, no API keys, and no real individual's story.
+          required: true
