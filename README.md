@@ -138,7 +138,8 @@ onrecord/
 ├── web/index.html      the map — one self-contained file, no build, no network
 ├── src/                the on-record CLI
 │   ├── schema.ts       entry contract + canonicalization (key order is load-bearing)
-│   ├── sign.ts         ECDSA P-256 signing and C2PA-style manifests
+│   ├── sign.ts         COSE/CBOR signing and human-readable provenance manifests
+│   ├── c2pa.ts         official C2PA SDK signed-asset integration
 │   ├── transform.ts    the disclosed Claude story-shaping step
 │   ├── verify.ts       independent signature re-check
 │   ├── seed.ts         composite sample set
@@ -149,6 +150,11 @@ onrecord/
 
 `keys/` is generated on first run and is git-ignored. The private key never leaves the machine that
 made it; committing one would let anyone forge entries under your identity.
+
+To emit signed C2PA assets for development, run `npm run c2pa:dev-cert`, set
+`ONRECORD_C2PA_CERT=keys/c2pa-chain.pem` and `ONRECORD_C2PA_KEY=keys/c2pa-key.pem`, then run
+`on-record seed --force`. Development certificates are intentionally untrusted; production needs a
+C2PA CA-issued signing certificate.
 
 ## Deployment
 

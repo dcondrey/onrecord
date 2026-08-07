@@ -93,8 +93,10 @@ The provenance block written onto the entry:
 
 ## 4. The provenance manifest
 
-Alongside each entry, `buildManifest()` writes `data/manifests/<id>.json` — C2PA-*shaped* rather
-than C2PA-conformant (see [Limits](#6-what-this-does-not-prove)). Assertions:
+Alongside each entry, `buildManifest()` writes `data/manifests/<id>.json` — a human-readable bridge
+manifest. When C2PA credentials are configured, the pipeline additionally writes
+`data/manifests/<id>.png`, a signed Content Credential produced by the official C2PA SDK. The JSON
+bridge remains intentionally easier to inspect and is not itself a C2PA file. Assertions include:
 
 | Label | What it records |
 |---|---|
