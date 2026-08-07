@@ -1409,9 +1409,10 @@ function projectV2(e){
   return {id:e.id, zone:e.zone.toLowerCase().replace(/ /g,"-"), status:e.status,
     ask:{category:e.ask.category, summary:e.ask.summary, amountUsd:e.ask.amountUsd ?? null},
     story:e.story, facts:[], consent:{advocateId:e.consent.advocateId, method:e.consent.method, timestamp:e.consent.timestampISO},
-    provenance:e.provenance, __v2Zone:e.zone, __v2ConsentTimestamp:e.consent.timestampISO};
+    provenance:e.provenance, recovery:e.recovery, __v2Zone:e.zone, __v2ConsentTimestamp:e.consent.timestampISO};
 }
 const ENTRIES = (V2_ENTRIES.length ? V2_ENTRIES.map(projectV2) : SEED.filter(hasConsent)).map(e => JSON.parse(JSON.stringify(e)));
+ENTRIES.forEach(e => { if(e.recovery?.verifierTag) e.authTag = e.recovery.verifierTag; });
 const ORIGINAL = JSON.parse(JSON.stringify(ENTRIES));
 
 /* Claim codes. In production the site stores ONLY the keyed hash below and
@@ -1481,7 +1482,7 @@ function cbor(v){
 function cborRead(b,s={i:0}){const h=b[s.i++],m=h>>5,a=h&31;const len=()=>a<24?a:a===24?b[s.i++]:a===25?((b[s.i++]<<8)|b[s.i++]):(()=>{const n=new DataView(b.buffer,b.byteOffset+s.i,4).getUint32(0);s.i+=4;return n;})();if(m===6){len();return cborRead(b,s);}if(m===0)return len();if(m===1)return -1-len();if(m===2){const n=len(),x=b.slice(s.i,s.i+n);s.i+=n;return x;}if(m===3){const n=len(),x=ENC.decode(b.slice(s.i,s.i+n));s.i+=n;return x;}if(m===4){const n=len(),x=[];for(let i=0;i<n;i++)x.push(cborRead(b,s));return x;}if(m===5){const n=len(),x=new Map();for(let i=0;i<n;i++)x.set(cborRead(b,s),cborRead(b,s));return x;}if(m===7&&a===20)return false;if(m===7&&a===21)return true;if(m===7&&a===22)return null;if(m===7&&a===27){const x=new DataView(b.buffer,b.byteOffset+s.i,8).getFloat64(0);s.i+=8;return x;}throw Error("unsupported CBOR");}
 function b64bytes(v){const s=atob(v),o=new Uint8Array(s.length);for(let i=0;i<s.length;i++)o[i]=s.charCodeAt(i);return o;}
 function hexBytes(v){return Array.from(new Uint8Array(v)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-function v2Unsigned(e){const o={id:e.id,zone:e.__v2Zone||e.zone,ask:{category:e.ask.category,summary:e.ask.summary},story:{raw:e.story.raw,shaped:e.story.shaped},consent:{advocateId:e.consent.advocateId,method:e.consent.method,timestampISO:e.__v2ConsentTimestamp||e.consent.timestamp},status:e.status};if(e.ask.amountUsd!==null&&e.ask.amountUsd!==undefined)o.ask.amountUsd=e.ask.amountUsd;return o;}
+function v2Unsigned(e){const o={id:e.id,zone:e.__v2Zone||e.zone,ask:{category:e.ask.category,summary:e.ask.summary},story:{raw:e.story.raw,shaped:e.story.shaped},consent:{advocateId:e.consent.advocateId,method:e.consent.method,timestampISO:e.__v2ConsentTimestamp||e.consent.timestamp},status:e.status};if(e.recovery)o.recovery={scheme:e.recovery.scheme,verifierTag:e.recovery.verifierTag};if(e.ask.amountUsd!==null&&e.ask.amountUsd!==undefined)o.ask.amountUsd=e.ask.amountUsd;return o;}
 async function verifyV2(e){
   const p=e.provenance;if(!p||p.protocolVersion!=="2.0"||!p.cborPayload||!p.coseSign1)return {ok:false,hashMatch:false,sigOk:false,byteLen:0};
   const payload=b64bytes(p.cborPayload), expected=cbor(v2Unsigned(e)); if(payload.length!==expected.length||payload.some((x,i)=>x!==expected[i]))return {ok:false,hashMatch:false,sigOk:false,byteLen:payload.length};
@@ -2093,9 +2094,9 @@ function renderStory(){
    + (e.replies.length ? '<div class="eyebrow" style="margin-top:16px">'+e.replies.length+' '+(e.replies.length===1?"reply":"replies")+'</div>'
         + e.replies.map(r => '<div class="reply'+(r.mine?" mine":"")+'"><div class="rf">'+esc(r.from)+' · '+r.ts+'</div><p>'+esc(r.text)+'</p>'
           + (r.tag ? '<div class="rm">signed by the author&#8217;s card · '+r.tag.slice(0,10)+'</div>' : '')+'</div>').join("") : '')
-   + (CODES[e.id] ? '<div class="nodata" style="margin-top:16px"><b>The person who filed this can come back to it.</b> '
+   + (CODES[e.id] || e.recovery ? '<div class="nodata" style="margin-top:16px"><b>The person who filed this can come back to it.</b> '
         + 'They hold a paper card with three words and four digits. Typing them proves they are the same author without proving who they are, and lets them update it, resolve it, or withdraw it entirely.<br>'
-        + '<span class="mono" style="color:var(--amber);display:inline-block;margin-top:7px">demo card &#183; '+CODES[e.id].phrase+' &#183; '+CODES[e.id].pin+'</span> '
+        + (CODES[e.id] ? '<span class="mono" style="color:var(--amber);display:inline-block;margin-top:7px">demo card &#183; '+CODES[e.id].phrase+' &#183; '+CODES[e.id].pin+'</span> ' : '')
         + '<button class="btn btn-restore" id="openascard" type="button" style="margin-top:9px;display:block">Open it as them</button></div>' : '')
    + '<button class="jump" id="jumpdash" type="button">See what happened to all '+ENTRIES.length+' asks &#8594;</button></div>';
 
@@ -2114,6 +2115,7 @@ function renderStory(){
   const oc = document.getElementById("openascard");
   if(oc) oc.onclick = () => {
     const c = CODES[e.id];
+    if(!c) return;
     document.getElementById("access").hidden = false;
     document.getElementById("acphrase").value = c.phrase;
     document.getElementById("acpin").value = c.pin;

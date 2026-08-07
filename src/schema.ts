@@ -50,6 +50,11 @@ export interface Consent {
   timestampISO: string;
 }
 
+export interface Recovery {
+  scheme: 'claim-card/v1' | 'claim-card/identity-v1';
+  verifierTag: string;
+}
+
 export interface Provenance {
   alg: 'ECDSA-P256' | 'COSE-ES256';
   contentHash: string;
@@ -72,6 +77,7 @@ export interface Entry {
   ask: Ask;
   story: Story;
   consent: Consent;
+  recovery?: Recovery;
   status: Status;
   provenance: Provenance;
 }
@@ -113,6 +119,7 @@ export function canonicalize(entry: UnsignedEntry): string {
       method: entry.consent.method,
       timestampISO: entry.consent.timestampISO,
     },
+    ...(entry.recovery ? { recovery: { scheme: entry.recovery.scheme, verifierTag: entry.recovery.verifierTag } } : {}),
     status: entry.status,
   };
 
