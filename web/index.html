@@ -68,7 +68,7 @@
       "@type": "Dataset",
       "@id": "https://writerslogic.github.io/onrecord/#dataset",
       "name": "On Record — composite request ledger, San Diego County",
-      "description": "Composite, advocate-mediated, consent-verified request records. Every entry is a composite built from advocate intake notes across multiple people; no entry describes a real, identifiable individual. Locations are neighborhood centroids only — no precise location exists anywhere in the data. Service sites, hours, and bed counts are demonstration data on a simulated feed.",
+      "description": "Composite, advocate-mediated, consent-verified request records. Every entry is a composite built from advocate intake notes across multiple people; no entry describes a real, identifiable individual. Locations are neighborhood centroids only — no precise location exists anywhere in the data. Service-site identity, address, hours, and published bed capacity are real and sourced (see each site's source link); a few sites marked sample are fictional demo accounts. Live bed availability is simulated for all sites and is not connected to any real-time system — do not use this page to check whether a bed is open.",
       "creator": { "@id": "https://writerslogic.github.io/onrecord/#project" },
       "license": "https://github.com/writerslogic/onrecord/blob/main/LICENSE",
       "isAccessibleForFree": true,
@@ -140,7 +140,7 @@
           "name": "Can I use this to find services or route someone to a shelter?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page."
+            "text": "No. Most sites are real organizations with sourced identity, address, hours, and published bed capacity (see the source link on each card); a few marked sample are fictional demo accounts. Live bed availability is simulated for every site and is not connected to any real-time system. Do not route anyone using this page — call the organization directly."
           }
         }
       ]
@@ -538,6 +538,7 @@ pre.json .num{color:var(--ok)}
 .svcmeta{margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.5}
 .svcmeta b{color:var(--ink-2)}
 .sample{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line-strong);border-radius:4px;padding:2px 5px;margin-left:6px}
+.srclink{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);border:1px solid var(--teal);border-radius:4px;padding:2px 5px;margin-left:6px;text-decoration:none}
 .arow{width:100%;text-align:left;background:transparent;border:1px solid var(--line);border-radius:11px;padding:9px 11px;margin-top:7px;display:flex;gap:9px;align-items:flex-start;transition:.18s}
 .arow:hover{border-color:var(--amber);background:var(--panel-2)}
 .arow .t{font-size:12.5px;color:var(--ink);font-weight:600}
@@ -861,7 +862,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 <div class="modal" id="providermodal" hidden role="dialog" aria-modal="true" aria-labelledby="provtitle">
   <div class="box">
     <h2 id="provtitle">Provider tools</h2>
-    <p>Sample data: nothing published here routes anyone in real life. A staff card is issued per site, not per person, so it does not need reissuing every time someone leaves. Try one below.</p>
+    <p>Only the sample sites below can sign in here — a staff card is issued per site, not per person, so it does not need reissuing every time someone leaves. The rest of the map's sites are real organizations and are not part of this demo login; nothing published through this modal routes anyone in real life.</p>
     <div id="provstage"></div>
     <button class="btn btn-restore" id="provclose" type="button" style="margin-top:16px">Close</button>
   </div>
@@ -877,7 +878,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     <h3>Common ground</h3>
     <p>Friction points are places where two groups of neighbors collide. Anyone with an address can post to a place, never to a person. Posts route through advocate review that strips names and locations before publication. People living outside post only through advocate-mediated intake with recorded consent, because an open channel would let anyone speak in their name and would ask them to identify themselves in public to be heard.</p>
     <h3>The service directory</h3>
-    <p>Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page. In a real deployment each count would come from a coordinated-entry system and be signed on arrival, which is the point: a signed count cannot be revised after the night it described.</p>
+    <p>Most sites are real organizations, researched from official sources (city and county pages, RTFH/211 San Diego, and each org's own site) — identity, address, hours, intake, and published bed capacity are sourced, with a source link on every real site's card. A few sites marked <b>sample account</b> are fictional, kept only so the provider-tools demo below has something to sign into without attaching a fabricated action to a real organization. Bed <i>availability</i> is simulated for every site, real or sample, on a feed that never reads from a live system — do not route anyone using this page. In a real deployment each count would come from a coordinated-entry system and be signed on arrival, which is the point: a signed count cannot be revised after the night it described.</p>
     <h3>Getting in without an ID</h3>
     <p>Requiring an account to use a service that helps people replace lost documents would repeat the exact trap the records describe. So there is no account. At intake an advocate prints a claim card: a record number, three words, and four digits. Those are stretched with PBKDF2 into a key that signs the holder's updates, so the system can tell it is them without ever storing a name, a number, or a password. Any site marked <b>Record kiosk</b> can open a record. If the card is lost, and it will be, an advocate restores access in person and the restore is logged and signed.</p>
     <h3>What this is not</h3>
@@ -1193,69 +1194,114 @@ const SERVICE_LABEL = {beds:"Shelter beds", shower:"Showers", laundry:"Laundry",
 const KIND_LABEL = {shelter:"Shelter", day_center:"Day center", clinic:"Health", legal:"Legal",
   outreach:"Outreach post", hygiene:"Hygiene", food:"Food", mail:"Mail"};
 
+/* Real sites, researched August 2026 from official/primary sources (city, county, RTFH/211,
+   and each org's own site — full citation in `source` on every entry below). Identity, address,
+   hours, intake, and published bed capacity are real and sourced. Bed AVAILABILITY is not: no
+   live feed exists to read from, so `available` below is only a simulated starting point (see
+   tickBeds()) and is disclosed as such everywhere it's shown. Three entries are flagged
+   `demo:true` — kept exactly as originally written, fictional, so the interactive "provider
+   tools" role-play (signing in, publishing a bed count, filing a claim) never attaches a
+   fabricated action to a real, named organization. Only demo:true sites are signable; see the
+   STAFF_CODES/pvissuers filters below. */
 const SERVICES = [
-{id:"SVC-01", kiosk:true, zone:"downtown", lon:-117.1655, lat:32.7125, name:"Harbor Day Center", kind:"day_center",
- services:["shower","laundry","mail","charging","storage","case_mgmt"], hours:"6:00–19:00 daily", intake:"Walk-in, no ID required",
- note:"Mail held 30 days. Opening a mail slot requires nothing but a name you choose to use."},
-{id:"SVC-02", zone:"east-village", lon:-117.1485, lat:32.7075, name:"East Village Bridge Shelter", kind:"shelter",
+{id:"SVC-01", zone:"east-village", lon:-117.1484, lat:32.7082, name:"San Diego (Neil Good) Day Center", kind:"day_center",
+ services:["shower","laundry","mail","charging","storage","case_mgmt"], hours:"Mon–Fri 6:00–16:00, Sat–Sun 6:00–14:00",
+ intake:"Walk-in, 18+, no ID required", note:"City-funded day center operated by Father Joe's Villages.",
+ source:"https://www.sandiego.gov/homelessness-strategies-and-solutions/services/day-center"},
+{id:"SVC-02", zone:"east-village", lon:-117.1502, lat:32.7062, name:"Village Family Health Center", kind:"clinic",
+ services:["medical","dental","case_mgmt"], hours:"Mon–Fri 8:30–16:45, Thu to 20:45",
+ intake:"Federally Qualified Health Center; walk-in registration or online; cannot be turned away for inability to pay",
+ note:"On Father Joe's Villages' Paul Mirabile Center campus.", source:"https://my.neighbor.org/newpatient/"},
+{id:"SVC-03", zone:"east-village", lon:-117.1502, lat:32.7062, name:"Franklin Antonio Public Lunch Program", kind:"food",
+ services:["food"], hours:"Mon–Sat 11:00–12:30, Sun 9:30–11:30, 365 days/year",
+ intake:"Walk-in; first-time visitors get a badge from the Day Center or Joan Kroc Center front desk",
+ note:"Same Father Joe's Villages campus as the Day Center and Village Family Health Center.",
+ source:"https://my.neighbor.org/get-help/"},
+{id:"SVC-04", zone:"downtown", lon:-117.1661, lat:32.7158, name:"Legal Aid Society of San Diego — Hall of Justice Clinics", kind:"legal",
+ services:["legal","id_help"], hours:"Mon–Fri 8:30–15:30 (eviction, CARE Act, name/gender marker change); 8:30–12:00 (restraining orders)",
+ intake:"Walk-in, no appointment", note:"Several co-located clinics, 2nd floor of the Hall of Justice.",
+ source:"https://www.lassd.org/walk-in-legal-clinics/"},
+{id:"SVC-05", zone:"downtown", lon:-117.1594, lat:32.7183, name:"PATH Connections Housing", kind:"shelter",
+ services:["beds","case_mgmt"], beds:{total:70, available:6}, hours:"24/7 for residents; intake via Coordinated Entry System",
+ intake:"Coordinated Entry System referral only, no walk-in",
+ note:"70 city-funded interim shelter beds inside a 223-unit building; the rest is permanent supportive housing.",
+ source:"https://sdhc.org/homelessness-solutions/city-homeless-shelters-services/"},
+{id:"SVC-06", zone:"east-village", lon:-117.1507, lat:32.7033, name:"Alpha Project Bridge Shelter — 16th & Newton", kind:"shelter",
+ services:["beds","case_mgmt"], beds:{total:326, available:11}, hours:"24/7 for residents",
+ intake:"Coordinated Entry System only, vulnerability-assessment based, no walk-in",
+ note:"One of the city's largest bridge shelters for single adults, across two co-located buildings.",
+ source:"https://www.sandiego.gov/homelessness-strategies-and-solutions/services/shelter"},
+{id:"SVC-07", zone:"barrio-logan", lon:-117.1339, lat:32.7032, name:"Logan Memorial Family Health Center", kind:"clinic",
+ services:["medical"], hours:"Mon–Fri 8:00–17:00, closed 12:00–13:00", intake:"Call ahead or use the MyHealthRecord portal",
+ note:"Family Health Centers of San Diego site on the Logan Memorial High School campus.",
+ source:"https://www.fhcsd.org/logan-memorial-family-health-center/"},
+{id:"SVC-08", zone:"hillcrest", lon:-117.1477, lat:32.7489, name:"Safe STAY Wellness Center", kind:"shelter",
+ services:["beds","shower","laundry","case_mgmt"], beds:{total:43, available:2}, hours:"Referral-based; call or email to arrange intake",
+ intake:"Coordinated Entry; ages 18–24, LGBTQ-affirming",
+ note:"Run jointly by the San Diego LGBT Community Center, San Diego Youth Services, and YMCA of San Diego County.",
+ source:"https://thecentersd.org/housing-services/"},
+{id:"SVC-09", zone:"north-park", lon:-117.1304, lat:32.7429, name:"North Park Family Health Center", kind:"clinic",
+ services:["medical","dental","case_mgmt"], hours:"Mon–Fri 8:30–17:30, closed 12:30–13:30",
+ intake:"Call ahead; Medi-Cal/Covered California enrollment help on site",
+ note:"Includes a restorative dental program for dentures and partials.",
+ source:"https://www.fhcsd.org/north-park-family-health-center/"},
+{id:"SVC-10", zone:"pacific-beach", lon:-117.2532, lat:32.8023, name:"Shoreline Community Services — The Compass Station", kind:"day_center",
+ services:["shower","laundry","mail","id_help","medical","legal","case_mgmt","charging","transit"], hours:"Mon–Fri 10:00–16:00",
+ intake:"Walk-in; serves the beach communities from Mission Beach to La Jolla",
+ note:"The main day-services hub for people experiencing homelessness along the coast.",
+ source:"https://shorelinecs.org/compass-station/"},
+{id:"SVC-11", zone:"pacific-beach", lon:-117.2524, lat:32.7827, name:"Beach Area Family Health Center", kind:"clinic",
+ services:["medical"], hours:"Mon–Fri 8:30–17:30, closed 12:30–13:30", intake:"Call ahead",
+ note:"Part of Family Health Centers of San Diego's Healthcare for the Homeless program, including a mobile medical unit.",
+ source:"https://www.fhcsd.org/beach-area-family-health-center/"},
+{id:"SVC-12", zone:"clairemont", lon:-117.2011, lat:32.8055, name:"CCSA Clairemont Service Center", kind:"food",
+ services:["food","id_help","transit"], hours:"Mon–Fri 9:30–15:30", intake:"Walk-in",
+ note:"Daily emergency food distribution; also helps with ID cards and bus tokens.",
+ source:"https://www.ccsasandiego.org/about-ccsa/locations"},
+{id:"SVC-13", zone:"chula-vista", lon:-117.0833, lat:32.6381, name:"South Bay Community Services — Coordinated Entry Access", kind:"outreach",
+ services:["case_mgmt","phone"], hours:"Mon–Fri 9:00–17:00, closed 12:00–13:00", intake:"Walk-in and phone",
+ note:"The only Coordinated Entry System access point for the county's entire South Region.",
+ source:"https://www.rtfhsd.org/wp-content/uploads/2026/03/Access-Sites_Feb-2.27.26.pdf"},
+{id:"SVC-14", zone:"chula-vista", lon:-117.0739, lat:32.6199, name:"Rice Family Health Center", kind:"clinic",
+ services:["medical"], hours:"Mon–Fri 8:00–17:00, closed 12:00–13:00", intake:"Appointment; walk-in accepted for scheduling",
+ note:"County-designated Healthcare for the Homeless site; also offers HIV/Hepatitis testing and needle exchange.",
+ source:"https://www.fhcsd.org/rice-family-health-center/"},
+{id:"SVC-15", zone:"national-city", lon:-117.0795, lat:32.6785, name:"San Diego Rescue Mission — South County Lighthouse", kind:"shelter",
+ services:["beds","food","shower","laundry","case_mgmt"], beds:{total:162, available:9}, hours:"Open 365 days/year",
+ intake:"Referral only; ID verification required; up to 2 pets allowed",
+ note:"Serves men, women, and families; opened in 2024 using beds relocated from the Mission's downtown campus.",
+ source:"https://www.sdrescue.org/what-we-do/southcounty/"},
+{id:"SVC-16", zone:"el-cajon", lon:-116.9245, lat:32.8046, name:"East County Transitional Living Center", kind:"shelter",
+ services:["food","shower","case_mgmt"], hours:"Office Mon–Fri 8:00–17:00",
+ intake:"Referral; excludes registered sex offenders and unmedicated mental illness",
+ note:"28-day emergency stay before transition to longer-term housing tracks. Bed capacity is not published, so no live count is shown here.",
+ source:"https://ectlc.org/emergency-housing"},
+{id:"SVC-17", zone:"el-cajon", lon:-116.9560, lat:32.7947, name:"El Cajon Family Health Center", kind:"clinic",
+ services:["medical","dental"], hours:"Mon–Sat 8:30–17:30, closed 12:30–13:30", intake:"Call ahead",
+ note:"Family Health Centers of San Diego site; primary care, dental, vision, and urgent care.",
+ source:"https://www.fhcsd.org/el-cajon-family-health-center/"},
+{id:"SVC-18", zone:"santee", lon:-116.9933, lat:32.8539, name:"Santee Food Bank", kind:"food",
+ services:["food"], hours:"Wed/Fri/Sat 8:00–11:00; commodities distribution 3rd Tuesday 8:00–11:00", intake:"Walk-in",
+ note:"Address and hours independently confirmed by two separate sources.",
+ source:"https://www.thesanteefoodbank.org/contact-us/"},
+{id:"SVC-19", zone:"ocean-beach", lon:-117.2466, lat:32.7464, name:"Ocean Beach Emergency Food", kind:"food",
+ services:["food"], hours:"Call ahead — hours not independently confirmed", intake:"Walk-in",
+ note:"Single-sourced listing; call ahead before visiting.",
+ source:"https://www.rtfhsd.org/wp-content/uploads/2025/01/PITC-Pocket-Guides-2025-North-Central.pdf"},
+{id:"SVC-20", zone:"imperial-beach", lon:-117.1233, lat:32.5834, name:"Imperial Beach Neighborhood Center — Shower Program", kind:"hygiene",
+ services:["shower","food"], hours:"Saturdays — published hours conflict between sources; call ahead to confirm",
+ intake:"Call to confirm walk-in availability", note:"Also offers personal-care items and food alongside showers.",
+ source:"https://211sandiego.org/wp-content/uploads/2026/02/PITC-SOUTH-San-Diego-2026-Final.pptx.pdf"},
+{id:"SVC-21", demo:true, kiosk:true, zone:"east-village", lon:-117.1485, lat:32.7075, name:"East Village Bridge Shelter", kind:"shelter",
  services:["beds","food","storage","case_mgmt"], beds:{total:324, available:11}, hours:"Intake 16:00–20:00",
- intake:"Referral, or walk-in after 18:00 if beds remain", note:"Pets kenneled on site. Partners are not separated."},
-{id:"SVC-03", kiosk:true, zone:"east-village", lon:-117.1525, lat:32.7055, name:"Village Legal Clinic", kind:"legal",
+ intake:"Referral, or walk-in after 18:00 if beds remain",
+ note:"Sample account for the interactive provider-tools demo below — not a real organization. Pets kenneled on site. Partners are not separated."},
+{id:"SVC-22", demo:true, kiosk:true, zone:"east-village", lon:-117.1525, lat:32.7055, name:"Village Legal Clinic", kind:"legal",
  services:["legal","id_help"], hours:"Tue & Thu 9:00–15:00", intake:"Walk-in",
- note:"Files fee waivers for birth certificates and state ID the same day. This is the $29 in record SD-0114."},
-{id:"SVC-04", zone:"downtown", lon:-117.1695, lat:32.7145, name:"Waterfront Health Post", kind:"clinic",
- services:["medical","dental","case_mgmt"], hours:"Mon–Fri 8:00–16:00", intake:"Walk-in, no address required",
- note:"Dental extractions Wednesdays. No address requirement, which is the barrier in record SD-0318."},
-{id:"SVC-05", zone:"downtown", lon:-117.1605, lat:32.7085, name:"Harbor Interim Housing", kind:"shelter",
- services:["beds","food","case_mgmt","storage"], beds:{total:150, available:2}, hours:"Intake 17:00–21:00",
- intake:"Coordinated entry referral", note:"90-day stays. Storage for one bin per person."},
-{id:"SVC-06", kiosk:true, zone:"balboa-park", lon:-117.1465, lat:32.7335, name:"Park Outreach Post", kind:"outreach",
- services:["id_help","transit","phone","case_mgmt"], hours:"Wed & Fri 10:00–14:00", intake:"Walk-in",
- note:"Transit passes issued against a confirmed appointment. Voicemail line for callbacks."},
-{id:"SVC-07", zone:"hillcrest", lon:-117.1665, lat:32.7525, name:"Hillcrest Family Services", kind:"day_center",
- services:["food","shower","childcare","case_mgmt"], hours:"7:00–17:00 Mon–Sat", intake:"Walk-in",
- note:"Childcare during appointments only. Parents are not asked to leave the building."},
-{id:"SVC-08", zone:"ocean-beach", lon:-117.2445, lat:32.7475, name:"Ocean Beach Hygiene Trailer", kind:"hygiene",
- services:["shower","laundry"], hours:"Tue & Sat 7:00–12:00", intake:"Walk-in, sign-in sheet",
- note:"20-minute slots. Towel and kit provided. Laundry runs while you shower."},
-{id:"SVC-09", zone:"chula-vista", lon:-117.0755, lat:32.6325, name:"South Bay Family Center", kind:"shelter",
- services:["beds","food","childcare","case_mgmt"], beds:{total:96, available:4}, hours:"Intake 15:00–19:00",
- intake:"Families with children, walk-in", note:"Keeps a parent and child in the same room. This is the ask in record SD-0641."},
-{id:"SVC-10", kiosk:true, zone:"el-cajon", lon:-116.9605, lat:32.7925, name:"East County Resource Hub", kind:"day_center",
- services:["mail","id_help","transit","charging","case_mgmt"], hours:"8:00–16:00 Mon–Fri", intake:"Walk-in",
- note:"Monthly transit passes for confirmed employment. Two blocks from the trolley plaza in exchange CG-04."},
-{id:"SVC-11", kiosk:true, zone:"la-mesa", lon:-117.0205, lat:32.7705, name:"La Mesa Mail Room", kind:"mail",
- services:["mail","phone"], hours:"9:00–15:00 Mon, Wed, Fri", intake:"Walk-in",
- note:"A mailing address you can put on a job application. Held 60 days."},
-{id:"SVC-12", zone:"national-city", lon:-117.1015, lat:32.6835, name:"Mobile Dental Van", kind:"clinic",
- services:["dental","medical"], hours:"Thu 9:00–15:00", intake:"Walk-in, first 20",
- note:"Cleanings, fillings, extractions. Rotating location posted weekly at partner sites."},
-{id:"SVC-13", zone:"mission-valley", lon:-117.1605, lat:32.7745, name:"Riverside Health Van", kind:"clinic",
- services:["medical","case_mgmt"], hours:"Mon & Thu 10:00–14:00", intake:"Walk-in",
- note:"Wound care and prescription refills. Parks near the river path in exchange CG-03."},
-{id:"SVC-14", zone:"barrio-logan", lon:-117.1425, lat:32.6955, name:"Logan Community Kitchen", kind:"food",
- services:["food","storage"], hours:"Meals 11:30 and 17:30 daily", intake:"Walk-in, no questions",
- note:"Day storage for bags during meals so nothing has to be carried in."},
-{id:"SVC-15", zone:"north-park", lon:-117.1265, lat:32.7465, name:"North Park Night Shelter", kind:"shelter",
- services:["beds","shower","food"], beds:{total:64, available:0}, hours:"Intake 18:00–21:00",
- intake:"First come. Line forms around 17:00", note:"Adults only. Beds released at 18:00 and are typically gone by 18:20."},
-{id:"SVC-16", zone:"point-loma", lon:-117.2385, lat:32.7165, name:"Peninsula Veterans Post", kind:"outreach",
- services:["case_mgmt","id_help","medical"], hours:"Mon & Wed 9:00–15:00", intake:"Walk-in",
- note:"Helps recover service records and discharge paperwork lost with other documents."},
-{id:"SVC-17", zone:"spring-valley", lon:-116.9855, lat:32.7385, name:"East Valley Shelter", kind:"shelter",
- services:["beds","food","laundry"], beds:{total:48, available:6}, hours:"Intake 16:30–20:00",
- intake:"Walk-in", note:"Smallest site on this map and the one most often with room."},
-{id:"SVC-18", zone:"imperial-beach", lon:-117.1185, lat:32.5785, name:"South Coast Outreach", kind:"outreach",
- services:["food","shower","transit"], hours:"Fri 8:00–13:00", intake:"Walk-in", note:"Mobile unit. Showers are two stalls, expect a wait."},
-{id:"SVC-19", zone:"san-ysidro", lon:-117.0425, lat:32.5545, name:"Border Community Clinic", kind:"clinic",
- services:["medical","legal","food"], hours:"Tue–Sat 8:00–17:00", intake:"Walk-in, interpretation available",
- note:"Immigration and benefits questions handled by on-site legal staff."},
-{id:"SVC-20", kiosk:true, zone:"pacific-beach", lon:-117.2385, lat:32.7955, name:"Beach Access Point", kind:"outreach",
+ note:"Sample account for the interactive provider-tools demo below — not a real organization. Files fee waivers for birth certificates and state ID the same day."},
+{id:"SVC-23", demo:true, kiosk:true, zone:"pacific-beach", lon:-117.2385, lat:32.7955, name:"Beach Access Point", kind:"outreach",
  services:["shower","charging","phone"], hours:"Wed & Sun 7:00–11:00", intake:"Walk-in",
- note:"Charging bank and a callback line so a missed call does not cost a placement."},
-{id:"SVC-21", zone:"lemon-grove", lon:-117.0325, lat:32.7365, name:"Grove Legal Aid", kind:"legal",
- services:["legal","id_help"], hours:"Mon 9:00–16:00", intake:"Appointment, walk-in waitlist",
- note:"Citation clearing and records replacement after a cleanup."}
+ note:"Sample account for the interactive provider-tools demo below — not a real organization. Charging bank and a callback line so a missed call does not cost a placement."}
 ];
 const SHELTERS = SERVICES.filter(x => x.beds);
 SHELTERS.forEach(v => { v.beds.frozenUntil = 0; });
@@ -1301,7 +1347,7 @@ const WORDS = ["river","harbor","cedar","iron","coast","meadow","granite","otter
    same demo tradeoff as CODES above: derived deterministically here so the
    demo is reproducible, never a phrase a real deployment would hardcode. */
 const STAFF_CODES = {};
-SERVICES.forEach((v,i) => {
+SERVICES.filter(v => v.demo).forEach((v,i) => {
   const w = [], seen = {};
   let j = 0;
   while(w.length < 3){
@@ -2110,7 +2156,8 @@ function svcCard(v){
   const bedLine = v.beds
     ? '<div class="bd'+(v.beds.available===0?" zero":"")+'">'+v.beds.available+' / '+v.beds.total+'</div>' : '';
   return '<div class="svccard" id="svc-'+v.id+'"'+(state.svc===v?' style="border-color:var(--amber)"':'')+'>'
-    + '<div class="sh"><div><div class="nm">'+esc(v.name)+'<span class="sample">sample</span></div>'
+    + '<div class="sh"><div><div class="nm">'+esc(v.name)
+    + (v.demo ? '<span class="sample">sample account</span>' : (v.source ? '<a class="srclink" href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">source</a>' : ''))+'</div>'
     + '<div class="kd">'+KIND_LABEL[v.kind]+' · '+DISTRICTS[v.zone].label+'</div></div>'+bedLine+'</div>'
     + '<div class="sb2"><div class="tags">'+v.services.map(x=>'<span class="tag">'+SERVICE_LABEL[x]+'</span>').join("")
     + (v.kiosk ? '<span class="tag" style="border-color:var(--amber);color:var(--amber);background:var(--amber-dim)">Record kiosk</span>' : '')+'</div>'
@@ -2164,7 +2211,7 @@ function renderArea(){
   if(!recs.length && !spots.length){
     h += '<div class="nodata" style="margin-top:16px"><b>Nothing recorded here yet.</b> Absence of data is not absence of need. It usually means no advocate has run intake on this block.</div>';
   }
-  h += '<p class="disclaim" style="margin-top:16px">Sample directory. Sites, hours, and bed counts are composite demonstration data on a simulated feed. Do not route anyone using this page. A real deployment would sync counts from a coordinated-entry system on a signed interval.</p>';
+  h += '<p class="disclaim" style="margin-top:16px">Most sites here are real, sourced organizations (source link on each card); a few marked sample are fictional demo accounts. Bed availability is simulated for every site on a feed that never reads from a live system. Do not route anyone using this page — call the organization directly.</p>';
   h += '</div>';
   host.innerHTML = h;
   host.querySelectorAll("[data-rec]").forEach(b => b.onclick = () => select(b.dataset.rec));
@@ -2386,12 +2433,12 @@ function renderDash(){
    + '<div class="metric"><div class="v" style="color:var(--broken)">'+disputed+'</div><div class="l">disputed — claimed but the requester said no</div></div></div>'
    + '<p class="disclaim" style="margin-top:9px">A site can file a claim, but only the person who asked can confirm it. Until they do, the claim stays counted as unmet above. A dispute stays counted as unmet permanently, with the claim attached.</p></div>'
 
-   + '<div class="barsec"><h4>Beds open tonight · sample directory, signed counts</h4>'
+   + '<div class="barsec"><h4>Beds open tonight · real sites, simulated counts</h4>'
    + '<div class="metrics" style="margin-top:0">'
    + '<div class="metric"><div class="v" style="color:'+(bt.open?"var(--amber)":"var(--broken)")+'">'+bt.open+'</div><div class="l">beds open right now</div></div>'
    + '<div class="metric"><div class="v">'+bt.total+'</div><div class="l">beds in the directory</div></div>'
    + '<div class="metric"><div class="v" style="color:var(--broken)">'+Math.round((1-bt.open/Math.max(bt.total,1))*100)+'%</div><div class="l">full</div></div></div>'
-   + '<p class="disclaim" style="margin-top:9px">Counts refresh on a simulated feed and are re-signed each time they change, so a site cannot revise a past number. Sample data: do not route anyone using this page.</p></div>'
+   + '<p class="disclaim" style="margin-top:9px">Total capacity is real and sourced per site (see its card). Availability refreshes on a feed simulated for this demo, never a live system, and is re-signed each time it changes so a site cannot revise a past number. Do not route anyone using this page.</p></div>'
 
    + '<div class="barsec"><h4>Where the two sides did answer each other</h4>'
    + '<div class="metrics" style="margin-top:0">'
@@ -2866,8 +2913,9 @@ function renderProvider(){
       + '<input id="pvpin" type="text" inputmode="numeric" maxlength="6" placeholder="4417" autocomplete="off"></div>'
       + '<button class="btn btn-verify" id="pvgo" type="button">Unlock</button></div>'
       + '<p class="disclaim" style="margin-top:12px">One card per site, not per person &#8212; it does not need reissuing when staff turn over. Try any site&#8217;s card below.</p>'
-      + '<h3>Sites on this map</h3><div id="pvissuers"></div>';
-    document.getElementById("pvissuers").innerHTML = SERVICES.map(v =>
+      + '<p class="disclaim" style="margin-top:8px">Only the sample sites below are signable. Every other site on the map is real, sourced, and not part of this demo login &#8212; see its source link on its card.</p>'
+      + '<h3>Sample sites (try the demo)</h3><div id="pvissuers"></div>';
+    document.getElementById("pvissuers").innerHTML = SERVICES.filter(v => v.demo).map(v =>
       '<button class="arow" type="button" data-svc="'+v.id+'"><span style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--teal)"></span>'
       + '<span><span class="t">'+esc(v.name)+'</span><span class="d">'+DISTRICTS[v.zone].label+' &#183; '+esc(v.hours)+'</span></span></button>').join("");
     document.getElementById("pvissuers").querySelectorAll("[data-svc]").forEach(b => b.onclick = () => {
@@ -3067,6 +3115,7 @@ async function boot(){
     }
     for(const v of SERVICES){
       const c = STAFF_CODES[v.id];
+      if(!c) continue;
       v.staffTag = await authorTag(await deriveAuth(c.phrase, c.pin), "staff:"+v.id);
     }
     updateBedChip(); renderArea();
