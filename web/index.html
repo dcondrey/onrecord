@@ -132,7 +132,7 @@
           "name": "Can someone use this without an ID, phone, or account?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. There is no account. At intake an advocate prints a claim card carrying a record number and four words. Those words are stretched with PBKDF2 into a key that signs the holder's updates, so the system can confirm it is them without ever storing a name, a number, or a password. If the card is lost, an advocate restores access in person and the restore is logged and signed."
+            "text": "Yes. There is no account. At intake an advocate prints a claim card carrying a record number, three words, and four digits. Those are stretched with PBKDF2 into a key that signs the holder's updates, so the system can confirm it is them without ever storing a name, a number, or a password. If the card is lost, an advocate restores access in person and the restore is logged and signed."
           }
         },
         {
@@ -340,6 +340,9 @@ svg.map.dragging{cursor:grabbing}
 .pin.broken .ripple{fill:var(--broken);opacity:.32;animation-duration:1.1s}
 .pin.broken .ring{stroke:var(--broken);opacity:1}
 .pin.st-answered .core{fill:var(--ok)}
+.pin.pending .ring{stroke:var(--teal);stroke-dasharray:2.5 2.5;opacity:1}
+.pin.pending .core{fill:var(--teal)}
+.pin.pending .halo{opacity:.6}
 @keyframes ripple{0%{transform:scale(.6);opacity:.3}70%{transform:scale(2.5);opacity:0}100%{opacity:0}}
 
 .heat{pointer-events:none;transition:opacity .4s}
@@ -383,6 +386,27 @@ svg.map.dragging{cursor:grabbing}
 .zoomctl button{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow);font-size:17px;display:grid;place-items:center;color:var(--ink-2)}
 .zoomctl button:hover{border-color:var(--amber);color:var(--amber)}
 .zoomctl button.reset{font-size:9.5px;letter-spacing:.06em;font-weight:700;text-transform:uppercase}
+
+/* intake chat — docked over the live map, no scrim: the map stays visible and
+   interactive everywhere the dock does not physically cover. */
+.chatdock{position:absolute;right:12px;top:60px;width:min(360px,46vw);max-height:calc(100% - 84px);
+  z-index:45;display:flex;flex-direction:column;background:var(--panel);backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.chatdock[hidden]{display:none}
+.chathead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel-2);flex:none}
+.chatbody{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;font-size:12.5px}
+.cmsg{max-width:92%;padding:8px 11px;border-radius:12px;line-height:1.5}
+.cmsg.bot{align-self:flex-start;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-2);border-bottom-left-radius:3px}
+.cmsg.user{align-self:flex-end;background:color-mix(in srgb,var(--ok) 16%,var(--panel-2));border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);color:var(--ink);border-bottom-right-radius:3px}
+.cmsg.crisis{align-self:stretch;background:var(--broken-dim);border:1px solid color-mix(in srgb,var(--broken) 50%,transparent);color:var(--ink)}
+.cmsg.redact{align-self:stretch;background:var(--amber-dim);border:1px dashed color-mix(in srgb,var(--amber) 55%,transparent);color:var(--ink-2);font-size:11.5px}
+.copts{display:flex;flex-wrap:wrap;gap:6px;align-self:stretch}
+.copts button{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:11.5px;color:var(--ink)}
+.copts button:hover{border-color:var(--ok);color:var(--ok)}
+.cinputrow{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--line);flex:none}
+.cinputrow input,.cinputrow select,.cinputrow textarea{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:12.5px;color:var(--ink)}
+.cinputrow textarea{resize:vertical;min-height:56px}
+.cinputrow button{flex:none}
 
 /* panels */
 .panel{position:absolute;top:12px;bottom:12px;display:flex;flex-direction:column;background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
@@ -429,6 +453,7 @@ select{width:100%;background:var(--panel-2);color:var(--ink);border:1px solid va
 .statuspill{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:5px 10px;border:1px solid;white-space:nowrap}
 .st-unanswered,.st-no_response{color:var(--broken);border-color:color-mix(in srgb,var(--broken) 42%,transparent);background:var(--broken-dim)}
 .st-answered,.st-agreed{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 42%,transparent);background:var(--ok-dim)}
+.st-pending{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 42%,transparent);background:color-mix(in srgb,var(--teal) 14%,transparent)}
 .st-acknowledged,.st-requested,.st-proposed,.st-awaiting{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 42%,transparent);background:var(--amber-dim)}
 .ask{margin:13px 0;padding:12px 13px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--amber)}
 .ask .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
@@ -614,6 +639,7 @@ textarea:focus{outline:none;background:var(--panel-2)}
 .fld input{font-family:var(--mono);letter-spacing:.04em}
 .card3{margin-top:14px;border:1px dashed var(--amber);border-radius:12px;padding:13px;background:var(--amber-dim)}
 .card3 .w{font-family:var(--mono);font-size:16px;color:var(--amber);letter-spacing:.08em;margin-top:6px}
+.card3 .pn{font-family:var(--mono);font-size:14px;color:var(--ink);margin-top:4px}
 .claimerr{margin-top:10px;font-size:12px;color:var(--broken)}
 .unlocked{margin-top:14px;border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);border-radius:12px;overflow:hidden}
 .unlocked .uh{padding:10px 12px;background:var(--ok-dim);border-bottom:1px solid var(--line);color:var(--ok);font-size:12px}
@@ -681,6 +707,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     <div class="top-right">
       <div class="keychip" id="bedchip"><span class="pulse" aria-hidden="true" style="background:var(--amber);box-shadow:0 0 10px var(--amber)"></span><span class="mono" id="bedtext">beds…</span></div>
       <div class="keychip" id="keychip"><span class="pulse" aria-hidden="true"></span><span class="mono" id="keytext">generating key…</span></div>
+      <button class="ghost" id="chatbtn" type="button" style="border-color:var(--ok);color:var(--ok)">File a request</button>
       <button class="ghost" id="claimbtn" type="button" style="border-color:var(--amber);color:var(--amber)">My request</button>
       <button class="ghost" id="accessbtn" type="button" style="border-color:var(--amber);color:var(--amber)">Your request</button>
       <button class="ghost" id="panelbtn" type="button" aria-pressed="true">Panel</button>
@@ -713,6 +740,14 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
       <button type="button" id="zin" aria-label="Zoom in">+</button>
       <button type="button" id="zout" aria-label="Zoom out">&minus;</button>
       <button type="button" id="zreset" class="reset" aria-label="Reset to county view">All</button>
+    </div>
+
+    <div class="chatdock" id="chatdock" hidden role="dialog" aria-modal="false" aria-labelledby="chattitle">
+      <div class="chathead">
+        <span id="chattitle" style="font-family:var(--serif);font-size:15px">File a request</span>
+        <button class="pclose" id="chatclose" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="chatbody" id="chatbody"></div>
     </div>
   </div>
 
@@ -775,7 +810,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 <div class="modal" id="claimmodal" hidden role="dialog" aria-modal="true" aria-labelledby="claimtitle">
   <div class="box">
     <h2 id="claimtitle">Open or check a request</h2>
-    <p>No phone, no email, no ID, no account. At intake an advocate prints a claim card: a record number and four words. Bring it to any record kiosk on the map, or an advocate brings the kiosk to you.</p>
+    <p>No phone, no email, no ID, no account. At intake an advocate prints a claim card: a record number, three words, and four digits. Bring it to any record kiosk on the map, or an advocate brings the kiosk to you.</p>
     <div id="claimstage"></div>
   </div>
 </div>
@@ -828,7 +863,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     <h3>The service directory</h3>
     <p>Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page. In a real deployment each count would come from a coordinated-entry system and be signed on arrival, which is the point: a signed count cannot be revised after the night it described.</p>
     <h3>Getting in without an ID</h3>
-    <p>Requiring an account to use a service that helps people replace lost documents would repeat the exact trap the records describe. So there is no account. At intake an advocate prints a claim card: a record number and four words. Those words are stretched with PBKDF2 into a key that signs the holder's updates, so the system can tell it is them without ever storing a name, a number, or a password. Any site marked <b>Record kiosk</b> can open a record. If the card is lost, and it will be, an advocate restores access in person and the restore is logged and signed.</p>
+    <p>Requiring an account to use a service that helps people replace lost documents would repeat the exact trap the records describe. So there is no account. At intake an advocate prints a claim card: a record number, three words, and four digits. Those are stretched with PBKDF2 into a key that signs the holder's updates, so the system can tell it is them without ever storing a name, a number, or a password. Any site marked <b>Record kiosk</b> can open a record. If the card is lost, and it will be, an advocate restores access in person and the restore is logged and signed.</p>
     <h3>What this is not</h3>
     <p>Not a directory of people. Not a live feed. Not an accusation against any named organization. Figures marked ALLEGED are unverified placeholders, excluded from all signed data and every metric, and must be sourced before publication.</p>
     <button class="btn btn-restore" id="closemodal" type="button">Close</button>
@@ -1237,24 +1272,13 @@ const REPLIES = {
 ENTRIES.forEach(e => { e.replies = (REPLIES[e.id]||[]).slice(); e.withdrawn = false; });
 const WORDS = ["river","harbor","cedar","iron","coast","meadow","granite","otter","juniper","lantern","copper","anchor","ember","willow","amber","compass","fern","slate","beacon","brass","pine","violet","signal","quill","tin","ferry","marsh","kestrel","alder","basalt"];
 
-/* Claim cards. Printed at intake and handed over on paper.
-   Four words, no phone, no email, no ID, nothing to lose but a card
-   that we already know gets thrown away, which is why an advocate
-   can always restore access in person. */
-const CLAIM_WORDS = ["anchor","harbor","cedar","lantern","copper","meadow","otter","pebble",
-  "quartz","ribbon","saddle","thistle","violet","walnut","yarrow","zephyr","basil","canyon",
-  "dune","ember","fern","granite","hollow","juniper"];
-ENTRIES.forEach((e,i) => {
-  const w = [], seen = {};
-  let j = 0;
-  while(w.length < 4){
-    const word = CLAIM_WORDS[(i*7 + j*5 + 3) % CLAIM_WORDS.length];
-    if(!seen[word]){ seen[word] = 1; w.push(word); }
-    j++;
-  }
-  e.claim = {words:w, verifier:null, restores:0};
-  e.updates = []; e.offers = [];
-});
+/* Claim cards. Printed at intake and handed over on paper: a record
+   number, three words, and four digits (CODES below). Nothing to lose
+   but a card that we already know gets thrown away, which is why an
+   advocate can always restore access in person. Both the "Your request"
+   and "My request" panels authenticate against the same CODES/authTag
+   scheme — there is exactly one claim-card format in this artifact. */
+ENTRIES.forEach(e => { e.updates = []; e.offers = []; e.restores = 0; e.pendingReview = false; });
 
 /* =========================================================
    5. CRYPTO
@@ -1292,19 +1316,6 @@ async function sealBeds(v){
   v.beds.observedAt = new Date().toISOString();
   const bytes = ENC.encode(canonBeds(v));
   v.beds.hash = await sha(bytes); v.beds.sig = await signBytes(bytes);
-}
-/* A claim key is derived from the four words on the card plus the record
-   number. Nothing is stored that could identify a person, and the words
-   never leave the device. Losing the card is expected, not fatal. */
-async function deriveClaimKey(recordId, words){
-  const base = await crypto.subtle.importKey("raw",
-    ENC.encode(words.map(w=>w.trim().toLowerCase()).join(" ")), "PBKDF2", false, ["deriveKey"]);
-  return crypto.subtle.deriveKey(
-    {name:"PBKDF2", salt:ENC.encode("onrecord:claim:"+recordId), iterations:80000, hash:"SHA-256"},
-    base, {name:"HMAC", hash:"SHA-256", length:256}, true, ["sign","verify"]);
-}
-async function claimVerifier(key){
-  return hex(await crypto.subtle.digest("SHA-256", await crypto.subtle.exportKey("raw", key)));
 }
 async function signUpdate(key, recordId, seq, text){
   const canonical = JSON.stringify({record_id:recordId, seq:seq, text:text,
@@ -1394,7 +1405,7 @@ const state = {selected:null, spot:null, focusedZone:null, view:"shaped", manife
   layers:{asks:true, spots:true, heat:true, svc:true}, needs:new Set(), svc:null};
 const STEPS = [{k:"map",t:"Explore"},{k:"zone",t:"Drill in"},{k:"story",t:"Open a story"},
   {k:"words",t:"Their words / AI"},{k:"prov",t:"Provenance"},{k:"tamper",t:"Tamper"},
-  {k:"cg",t:"Common ground"},{k:"post",t:"Post to a place"},{k:"author",t:"Open with a card"},{k:"offer",t:"Answer an ask"},{k:"claim",t:"Claim card"},{k:"dash",t:"Non-response"}];
+  {k:"cg",t:"Common ground"},{k:"post",t:"Post to a place"},{k:"author",t:"Open with a card"},{k:"offer",t:"Answer an ask"},{k:"claim",t:"Claim card"},{k:"chat",t:"File a request"},{k:"dash",t:"Non-response"}];
 const done = {map:true};
 function markStep(k){ if(!done[k]){ done[k]=true; drawRail(); } }
 function drawRail(){
@@ -1412,7 +1423,7 @@ function passesNeed(v){
   return false;
 }
 function passesFilter(e){
-  if(e.withdrawn) return false;
+  if(e.withdrawn || e.pendingReview) return false;
   if(state.status === "unanswered" && e.status !== "unanswered") return false;
   if(state.status === "answered" && e.status !== "answered") return false;
   if(state.category !== "all" && e.ask.category !== state.category) return false;
@@ -1423,6 +1434,11 @@ function passesFilter(e){
    9. MAP
    ========================================================= */
 function buildMap(){
+  /* Safe to call more than once: a newly filed intake-chat record needs a
+     live pin, and the simplest correct way to place one is to rebuild the
+     whole map from the current ENTRIES/SPOTS/SERVICES arrays. Remove any
+     prior <svg> first so ids never collide. */
+  if(svg && svg.parentNode) svg.remove();
   let s = '<svg class="map" id="svg" viewBox="0 0 '+VBW+' '+VBH+'" preserveAspectRatio="xMidYMid meet" data-level="county" role="application" aria-label="Map of San Diego County. Neighborhood level only. Use the list panel for keyboard access.">'
    + '<defs>'
    + '<radialGradient id="glow"><stop offset="0%" stop-color="#ffcf7d" stop-opacity=".85"/><stop offset="45%" stop-color="#f2a93b" stop-opacity=".36"/><stop offset="100%" stop-color="#f2a93b" stop-opacity="0"/></radialGradient>'
@@ -1503,7 +1519,7 @@ function buildMap(){
   }
 
   ENTRIES.forEach(e => {
-    s += '<g class="pin hidden st-'+e.status+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+', '+e.status+'">'
+    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status)+'">'
        + '<circle class="ripple" cx="0" cy="0" r="9"/><circle class="halo" cx="0" cy="0" r="26"/>'
        + '<circle class="ring" cx="0" cy="0" r="14"/><circle class="core" cx="0" cy="0" r="6.5"/>'
        + '<circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>'
@@ -1588,6 +1604,7 @@ function refreshMarkers(){
     g.classList.toggle("hidden", lvl === "county" || !state.layers.asks || e.withdrawn);
     g.classList.toggle("dim", !passesFilter(e));
     g.classList.toggle("broken", !!(e.prov && !e.prov.ok));
+    g.classList.toggle("pending", !!e.pendingReview);
     g.classList.toggle("selected", state.selected === e);
   });
   SPOTS.forEach(sp => {
@@ -1814,6 +1831,8 @@ function renderStory(){
   const text = state.view === "raw" ? e.story.raw : e.story.shaped;
 
   host.innerHTML = '<div class="story">'
+   + (e.pendingReview ? '<div class="integrity" style="margin-top:0;margin-bottom:12px">&#9678; Filed through the intake chat, awaiting advocate review. '
+       + 'Not counted on the Accountability tab until reviewed. <button class="btn btn-restore" id="markreviewed" type="button" style="margin-top:8px;display:block">Mark reviewed (advocate, demo)</button></div>' : '')
    + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
    + '<div class="eyebrow" style="margin-top:4px">Record '+e.id+' · composite account</div></div>'
    + '<span class="statuspill st-'+e.status+'">'+e.status+'</span></div>'
@@ -1863,6 +1882,12 @@ function renderStory(){
         + '<button class="btn btn-restore" id="openascard" type="button" style="margin-top:9px;display:block">Open it as them</button></div>' : '')
    + '<button class="jump" id="jumpdash" type="button">See what happened to all '+ENTRIES.length+' asks &#8594;</button></div>';
 
+  const mr = document.getElementById("markreviewed");
+  if(mr) mr.onclick = () => {
+    e.pendingReview = false;
+    renderStory(); renderList(); renderDash(); refreshMarkers();
+    say("Record " + e.id + " marked reviewed and now counted on the Accountability tab.");
+  };
   document.getElementById("btn-raw").onclick = () => { if(state.view!=="raw"){ state.view="raw"; markStep("words"); renderStory(); } };
   document.getElementById("btn-shaped").onclick = () => { if(state.view!=="shaped"){ state.view="shaped"; markStep("words"); renderStory(); } };
   document.getElementById("sealchip").onclick = () => { state.manifestOpen=!state.manifestOpen; if(state.manifestOpen) markStep("prov"); renderStory(); };
@@ -2126,48 +2151,53 @@ function claimHome(msg){
   document.getElementById("claimstage").innerHTML =
       '<div class="claimrow"><div class="fld"><label for="cid">Record number</label>'
     + '<select id="cid">'+opts+'</select></div></div>'
-    + '<div class="claimrow"><div class="fld"><label for="cw">The four words on your card</label>'
-    + '<input id="cw" placeholder="word word word word" autocomplete="off" spellcheck="false"></div>'
+    + '<div class="claimrow"><div class="fld"><label for="cw">The three words on your card</label>'
+    + '<input id="cw" placeholder="word word word" autocomplete="off" spellcheck="false"></div>'
+    + '<div class="fld"><label for="cpin">The four digits on your card</label>'
+    + '<input id="cpin" type="text" inputmode="numeric" maxlength="6" placeholder="4417" autocomplete="off"></div>'
     + '<button class="btn btn-verify" id="cgo" type="button">Open my request</button></div>'
     + (msg ? '<div class="claimerr">'+esc(msg)+'</div>' : '')
     + '<div class="claimrow" style="margin-top:14px">'
     + '<button class="btn btn-restore" id="clost" type="button">I lost my card</button>'
     + '<button class="btn btn-restore" id="cdemo" type="button">Show me a card (demo)</button></div>'
-    + '<p class="disclaim" style="margin-top:12px">The words never leave this device. They are stretched with PBKDF2 into a key that signs your updates, so the system can tell it is you without ever holding your name, your number, or a password it could lose.</p>';
+    + '<p class="disclaim" style="margin-top:12px">The words and digits never leave this device. They are stretched with PBKDF2 into a key that signs your updates, so the system can tell it is you without ever holding your name, your number, or a password it could lose.</p>';
   document.getElementById("cgo").onclick = tryClaim;
   document.getElementById("clost").onclick = lostCard;
   document.getElementById("cdemo").onclick = showCard;
-  document.getElementById("cw").addEventListener("keydown", ev => { if(ev.key === "Enter") tryClaim(); });
+  document.getElementById("cpin").addEventListener("keydown", ev => { if(ev.key === "Enter") tryClaim(); });
 }
 function showCard(){
   const id = document.getElementById("cid").value;
-  const e = ENTRIES.find(x => x.id === id);
+  const c = CODES[id];
   const host = document.getElementById("claimstage");
+  if(!c) return;
   host.insertAdjacentHTML("beforeend",
       '<div class="card3"><div class="eyebrow">Claim card · printed at intake, handed over on paper</div>'
-    + '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:6px">'+e.id+'</div>'
-    + '<div class="w">'+e.claim.words.join("  ")+'</div>'
+    + '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:6px">'+id+'</div>'
+    + '<div class="w">'+c.phrase+'</div><div class="pn">'+c.pin+'</div>'
     + '<p class="disclaim" style="margin-top:9px">Shown here only because this is a demo. In use it is never displayed on a public screen, and a kiosk clears the field the moment you walk away.</p></div>');
-  document.getElementById("cw").value = e.claim.words.join(" ");
+  document.getElementById("cw").value = c.phrase;
+  document.getElementById("cpin").value = c.pin;
 }
 async function lostCard(){
   const id = document.getElementById("cid").value;
   const e = ENTRIES.find(x => x.id === id);
-  e.claim.restores++;
+  e.restores++;
   document.getElementById("claimstage").insertAdjacentHTML("beforeend",
       '<div class="card3" style="border-color:var(--teal)"><div class="eyebrow">Advocate restore</div>'
     + '<p style="font-size:12.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.55">Any advocate at any site marked <b>Record kiosk</b> can restore access in person. They confirm you the way they confirmed you at intake, the old card stops working, and a new one is printed. The restore itself is logged and signed, so nobody can quietly take over a record and call it a recovery.</p>'
     + '<p style="font-size:12.5px;color:var(--ink-2);margin:8px 0 0;line-height:1.55">This is not an edge case. Belongings get discarded, which is the subject of half the records on this map. A system that punishes you for losing a piece of paper is a system that has not read its own data.</p>'
-    + '<div style="font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:9px">restore events on '+e.id+': '+e.claim.restores+' · each one signed and visible to the record holder</div></div>');
+    + '<div style="font-family:var(--mono);font-size:10px;color:var(--ok);margin-top:9px">restore events on '+e.id+': '+e.restores+' · each one signed and visible to the record holder</div></div>');
 }
 async function tryClaim(){
   const id = document.getElementById("cid").value;
   const words = document.getElementById("cw").value.trim().split(/\s+/).filter(Boolean);
+  const pin = document.getElementById("cpin").value.trim();
   const e = ENTRIES.find(x => x.id === id);
-  if(words.length !== 4){ claimHome("A claim card has exactly four words. Enter all four."); return; }
-  const key = await deriveClaimKey(id, words);
-  const v = await claimVerifier(key);
-  if(v !== e.claim.verifier){ claimHome("Those words do not open " + id + ". Check the card, or use the restore option below."); return; }
+  if(words.length !== 3 || !pin){ claimHome("A claim card has exactly three words and four digits. Enter all of it."); return; }
+  const key = await deriveAuth(words.join(" "), pin);
+  const tag = await authorTag(key, id);
+  if(!e.authTag || tag !== e.authTag){ claimHome("Those words and digits do not open " + id + ". Check the card, or use the restore option below."); return; }
   claimUnlocked = e; claimKey = key;
   markStep("claim");
   renderUnlocked();
@@ -2233,7 +2263,8 @@ async function makeOffer(e, kind, note){
 const BIRTH_CERT_USD = 29, ALLEGED_SPEND = 1200000;
 function renderDash(){
   const host = document.getElementById("panel-dash");
-  const live = ENTRIES.filter(e => !e.withdrawn);
+  const live = ENTRIES.filter(e => !e.withdrawn && !e.pendingReview);
+  const pending = ENTRIES.filter(e => e.pendingReview && !e.withdrawn);
   const verified = live.filter(e => e.prov && e.prov.ok);
   const brokenCount = live.length - verified.length;
   const pool = verified.length ? verified : live;
@@ -2303,6 +2334,7 @@ function renderDash(){
    + (brokenCount ? '&#9888; '+brokenCount+' record failed signature verification and is excluded from every number here. A tampered record cannot quietly move a metric.'
                   : '&#10003; '+ENTRIES.length+' of '+ENTRIES.length+' records verified. Every number is computed only from records whose signature checks out.')
    + '</div>'
+   + (pending.length ? '<div class="integrity">&#9678; '+pending.length+' record'+(pending.length===1?"":"s")+' filed through the intake chat, awaiting advocate review, excluded from every number above until reviewed.</div>' : '')
    + '<p class="footnote"><b>Keys stay local.</b> ECDSA P-256 generated in this browser via WebCrypto. Records and messages are signed the same way, so a neighbor\u2019s post carries the same proof as an intake record. No network requests, no fonts, no map tiles, no analytics.</p>'
    + '</div>';
 
@@ -2606,10 +2638,6 @@ async function boot(){
       const c = CODES[e.id];
       if(!c) continue;
       e.authTag = await authorTag(await deriveAuth(c.phrase, c.pin), e.id);
-    }
-    for(const e of ENTRIES){
-      const ck = await deriveClaimKey(e.id, e.claim.words);
-      e.claim.verifier = await claimVerifier(ck);
     }
     updateBedChip(); renderArea();
     setInterval(tickBeds, 7000);
