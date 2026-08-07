@@ -2544,6 +2544,228 @@ function wireAccess(){
 }
 
 /* =========================================================
+   16c. INTAKE CHAT — files a new ask through a deterministic,
+   rule-based flow. No network call, no model: every branch below is a
+   fixed pattern match, run entirely in this browser.
+   ========================================================= */
+const CRISIS_PATTERNS = [
+  /\bkill(ing)? myself\b/i, /\bsuicid(e|al)\b/i, /\bend(ing)? my (own )?life\b/i, /\bwant(ed)? to die\b/i,
+  /\b(hurt|harm)(ing)? myself\b/i, /\bself[- ]?harm\b/i, /\boverdos(e|ed|ing)\b/i,
+  /\bcan'?t breathe\b/i, /\bnot breathing\b/i, /\bchest pain\b/i, /\bunconscious\b/i,
+  /\bbleeding (a lot|badly|heavily|won'?t stop)\b/i,
+  /\b(someone|he|she|they)('s| is| are)? (attacking|assaulting|hitting|stabbing|strangling) me\b/i,
+  /\bin danger right now\b/i, /\bhe has a (gun|knife)\b/i, /\bshe has a (gun|knife)\b/i
+];
+const SELF_PATTERNS = [
+  /\bi need\b/i, /\bi('m| am) (homeless|sleeping outside|without (a|my) (home|house|shelter))\b/i,
+  /\bi lost my\b/i, /\bi don'?t have\b/i, /\bmy (id|i\.d\.|card|phone|meds?|medication|documents?)\b/i,
+  /\bi('ve| have) been (sleeping|living) (outside|in|behind|near)\b/i, /\bcan you help me\b/i,
+  /\bi('m| am) (trying to|looking for|asking for)\b/i, /\bwhere can i\b/i, /\bi need to (get|find|replace)\b/i,
+  /\bi'?m out of\b/i
+];
+const THIRD_PARTY_PATTERNS = [
+  /\bsomeone (i know|near|by|outside|nearby)\b/i, /\ba (man|woman|person|guy|girl|kid) (outside|near|by|sleeping)\b/i,
+  /\bi (saw|noticed|met|found)\b.*\b(sleeping|homeless|outside)\b/i, /\bcan you help (him|her|them)\b/i,
+  /\bthey need\b/i, /\b(my|our) (neighbou?r|customer)\b.*\b(needs?|is)\b/i,
+  /\bwant(s)? to (help|donate|volunteer)\b/i, /\bhow (can|do) i help\b/i, /\bon behalf of\b/i
+];
+function checkCrisis(text){ return CRISIS_PATTERNS.some(re => re.test(text)); }
+function classifyIntake(text){
+  const self = SELF_PATTERNS.filter(re => re.test(text)).length;
+  const third = THIRD_PARTY_PATTERNS.filter(re => re.test(text)).length;
+  if(self > 0 && third === 0) return "self";
+  if(third > 0 && self === 0) return "third";
+  return "ambiguous";
+}
+const REDACT_RULES = [
+  {type:"phone number", re:/(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g},
+  {type:"email address", re:/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/gi},
+  {type:"SSN-shaped number", re:/\b\d{3}-\d{2}-\d{4}\b/g},
+  {type:"cross streets", re:/\b(corner of|intersection of)\s+[^,.\n]{3,50}/gi},
+  {type:"street address", re:/\b\d{1,6}\s+[A-Za-z0-9.'\s]{2,30}\b(street|st|avenue|ave|boulevard|blvd|road|rd|drive|dr|lane|ln|way|court|ct|place|pl)\.?\b/gi},
+  {type:"self-introduction", re:/\b(my name is|i'?m called|this is)\s+[a-zA-Z]+\b/gi}
+];
+function redactText(text){
+  let out = text;
+  const removed = [];
+  REDACT_RULES.forEach(r => {
+    let count = 0;
+    out = out.replace(r.re, () => { count++; return "[removed]"; });
+    if(count) removed.push({type:r.type, count:count});
+  });
+  return {clean: out.replace(/\s+/g," ").trim(), removed};
+}
+function lightShape(text){
+  const t = text.replace(/\s+/g," ").trim();
+  if(!t) return t;
+  const cap = t.charAt(0).toUpperCase() + t.slice(1);
+  return /[.!?]$/.test(cap) ? cap : cap + ".";
+}
+
+let chat = null;
+function resetChat(){
+  chat = {log: [], phase: "start", data: {}};
+}
+function chatBubble(role, html){ chat.log.push({role:role, html:html}); }
+function renderChat(){
+  const host = document.getElementById("chatbody");
+  let controls = "";
+  const d = chat.data;
+
+  if(chat.phase === "start"){
+    controls = '<textarea id="cistart" maxlength="600" placeholder="Tell me what is going on, in your own words."></textarea>'
+      + '<div class="cinputrow" style="border-top:0;padding:8px 0 0"><button class="btn btn-send" id="cisend" type="button">Send</button></div>';
+  } else if(chat.phase === "crisis"){
+    controls = '<div class="copts"><button id="cisafe" type="button">I am safe. Continue filing a request.</button>'
+      + '<button id="ciclose1" type="button">Close</button></div>';
+  } else if(chat.phase === "redirect"){
+    controls = '<div class="copts"><button id="cicg" type="button">Go to Common ground</button>'
+      + '<button id="ciclose2" type="button">Close</button></div>';
+  } else if(chat.phase === "ambiguous"){
+    controls = '<div class="copts"><button id="ciself" type="button">I need something myself</button>'
+      + '<button id="cithird" type="button">I am asking for someone else</button></div>';
+  } else if(chat.phase === "category"){
+    controls = '<div class="copts">' + Object.keys(CATEGORY_LABEL).map(c =>
+      '<button data-cat="'+c+'" type="button">'+CATEGORY_LABEL[c]+'</button>').join("") + '</div>';
+  } else if(chat.phase === "zone"){
+    const opts = Object.keys(DISTRICTS).sort((a,b)=>DISTRICTS[a].label.localeCompare(DISTRICTS[b].label))
+      .map(k => '<option value="'+k+'">'+DISTRICTS[k].label+'</option>').join("");
+    controls = '<div class="cinputrow" style="border-top:0"><select id="cizone">'+opts+'</select>'
+      + '<button class="btn btn-send" id="cizonego" type="button">Continue</button></div>';
+  } else if(chat.phase === "amount"){
+    controls = '<div class="cinputrow" style="border-top:0"><input id="ciamount" type="number" min="0" step="1" placeholder="Dollar amount (optional)">'
+      + '<button class="btn btn-send" id="ciamountgo" type="button">Continue</button></div>';
+  } else if(chat.phase === "consent"){
+    controls = '<div class="cmsg bot"><b>This is what would be published.</b> Nothing is written until you say yes.</div>'
+      + '<div class="cmsg bot"><b>Your words, as typed:</b><br>'+esc(d.rawText)+'</div>'
+      + (d.removed.length ? '<div class="cmsg redact"><b>Removed before saving:</b> '
+          + d.removed.map(r => r.count+' '+r.type+(r.count>1?"s":"")).join(", ")
+          + '. On Record never stores exact contact details, addresses, or names — only the neighbourhood.</div>' : '')
+      + '<div class="cmsg bot"><b>What gets published:</b><br>'+esc(d.clean)+'</div>'
+      + '<div class="cmsg bot"><b>Category:</b> '+CATEGORY_LABEL[d.category]+'<br><b>Amount:</b> '+(d.amountUsd!=null?money(d.amountUsd):"none")+'<br><b>Neighbourhood:</b> '+DISTRICTS[d.zone].label+'</div>'
+      + '<div class="copts"><button id="cipublish" type="button">Yes, publish this</button><button id="cirestart" type="button">No, start over</button></div>';
+  } else if(chat.phase === "done"){
+    controls = '<div class="copts"><button id="ciview" type="button">View it on the map</button><button id="ciclose3" type="button">Close</button></div>';
+  }
+
+  host.innerHTML = chat.log.map(m => '<div class="cmsg '+m.role+'">'+m.html+'</div>').join("") + controls;
+  host.scrollTop = host.scrollHeight;
+  wireChatControls();
+}
+function wireChatControls(){
+  const $ = id => document.getElementById(id);
+  if($("cisend")) $("cisend").onclick = onChatStart;
+  if($("cisafe")) $("cisafe").onclick = () => { chatBubble("bot", "Continuing with the request."); classifyAndBranch(chat.data.rawText); };
+  if($("ciclose1")) $("ciclose1").onclick = closeChat;
+  if($("cicg")) $("cicg").onclick = () => { closeChat(); openPanel(); setTab("cg", true); };
+  if($("ciclose2")) $("ciclose2").onclick = closeChat;
+  if($("ciself")) $("ciself").onclick = () => { chatBubble("user","I need something myself."); chat.phase="category"; renderChat(); };
+  if($("cithird")) $("cithird").onclick = () => {
+    chatBubble("user","I am asking for someone else.");
+    chatBubble("bot","This quick form is for someone describing their own unmet need. If you know someone living outside who needs help, the right path is advocate-mediated intake with their recorded consent — the same rule this whole site follows. If you want to answer an existing ask instead, close this and pick a pin on the map.");
+    chat.phase="redirect"; renderChat();
+  };
+  document.querySelectorAll("#chatbody [data-cat]").forEach(b => b.onclick = () => {
+    chat.data.category = b.dataset.cat;
+    chatBubble("user", CATEGORY_LABEL[b.dataset.cat]);
+    chat.phase = "zone"; renderChat();
+  });
+  if($("cizonego")) $("cizonego").onclick = () => {
+    chat.data.zone = $("cizone").value;
+    chatBubble("user", DISTRICTS[chat.data.zone].label);
+    chat.phase = "amount"; renderChat();
+  };
+  if($("ciamountgo")) $("ciamountgo").onclick = () => {
+    const v = $("ciamount").value.trim();
+    const n = v === "" ? null : Number(v);
+    chat.data.amountUsd = (n!=null && Number.isFinite(n) && n>=0) ? n : null;
+    chatBubble("user", chat.data.amountUsd!=null ? money(chat.data.amountUsd) : "No amount.");
+    const r = redactText(chat.data.rawText);
+    chat.data.clean = r.clean; chat.data.removed = r.removed;
+    chat.phase = "consent"; renderChat();
+  };
+  if($("cipublish")) $("cipublish").onclick = submitIntake;
+  if($("cirestart")) $("cirestart").onclick = () => { resetChat(); renderChat(); };
+  if($("ciview")) $("ciview").onclick = () => { const id = chat.data.newId; closeChat(); select(id); };
+  if($("ciclose3")) $("ciclose3").onclick = closeChat;
+}
+function onChatStart(){
+  const el = document.getElementById("cistart");
+  const text = el ? el.value.trim() : "";
+  if(!text) return;
+  onChatText(text);
+}
+function onChatText(text){
+  chat.data.rawText = text;
+  chatBubble("user", esc(text));
+  if(checkCrisis(text)){
+    chatBubble("crisis", "<b>If you are in immediate danger or having a medical emergency, call 911. "
+      + "If you are thinking about suicide or self-harm, call or text 988.</b> An emergency room cannot turn you away "
+      + "for lacking money or ID. This page is a map. It cannot help with an emergency happening right now — "
+      + "please use one of those numbers first.");
+    chat.phase = "crisis"; renderChat(); return;
+  }
+  classifyAndBranch(text);
+}
+function classifyAndBranch(text){
+  const cls = classifyIntake(text);
+  if(cls === "self"){
+    chatBubble("bot", "Got it. A few quick questions, then you will see exactly what gets published before anything is saved.");
+    chat.phase = "category";
+  } else if(cls === "third"){
+    chatBubble("bot", "This quick form is for someone describing their own unmet need. If you know someone living outside who needs help, the right path is advocate-mediated intake with their recorded consent — the same rule this whole site follows. If you want to answer an existing ask instead, close this and pick a pin on the map.");
+    chat.phase = "redirect";
+  } else {
+    chatBubble("bot", "One thing first: is this something you need yourself, or are you asking on behalf of someone else?");
+    chat.phase = "ambiguous";
+  }
+  renderChat();
+}
+async function submitIntake(){
+  const d = chat.data;
+  let id;
+  do { id = "CH-" + String(Math.floor(1000 + Math.random()*9000)); } while(ENTRIES.some(e => e.id === id));
+  const pick = () => WORDS[Math.floor(Math.random()*WORDS.length)];
+  let words = []; while(words.length < 3){ const x = pick(); if(words.indexOf(x) < 0) words.push(x); }
+  const pin = String(Math.floor(1000 + Math.random()*9000));
+  const shaped = lightShape(d.clean);
+  const e = {
+    id: id, zone: d.zone,
+    ask: {category: d.category, summary: d.clean.slice(0,120), amountUsd: d.amountUsd},
+    story: {raw: d.clean, shaped: shaped}, facts: [],
+    consent: {advocateId: "CHAT-DEMO", method: "self-service demo intake chat — no advocate present; a real deployment keeps this step in person and advocate-witnessed", timestamp: new Date().toISOString()},
+    status: "requested", withdrawn: false, pendingReview: true,
+    replies: [], updates: [], offers: [], restores: 0
+  };
+  (byZone[e.zone] = byZone[e.zone] || []);
+  const g = byZone[e.zone], n = g.length + 1, i = g.length;
+  const dist = DISTRICTS[e.zone], rad = Math.min(dist.w, dist.h) * (n === 1 ? 0 : .26);
+  const ang = -Math.PI/2 + (i/Math.max(n,1))*Math.PI*2;
+  e._x = dist.cx + Math.cos(ang)*rad; e._y = dist.cy + Math.sin(ang)*rad;
+  g.push(e);
+  ENTRIES.push(e);
+  if(KEYS){
+    await seal(e);
+    CODES[id] = {phrase: words.join(" "), pin: pin};
+    e.authTag = await authorTag(await deriveAuth(words.join(" "), pin), id);
+  }
+  chat.data.newId = id;
+  buildMap(); renderList(); renderDash(); renderArea();
+  markStep("chat");
+  chatBubble("bot", "<b>Published as "+id+".</b> It is on the map now, marked awaiting review, and excluded from the Accountability numbers until an advocate reviews it.");
+  chatBubble("bot", '<div class="card-print"><div class="eyebrow">On Record · claim card</div><div class="ph">'+words.join(" ")+'</div><div class="pn">'+pin+'</div>'
+    + '<div class="cap">Keep this. It proves you filed '+id+' without proving who you are. Use it under <b>My request</b> to check for replies later.</div></div>');
+  chat.phase = "done"; renderChat();
+  say("Record " + id + " filed through the intake chat.");
+}
+function closeChat(){ document.getElementById("chatdock").hidden = true; resetChat(); }
+function wireChat(){
+  resetChat();
+  document.getElementById("chatbtn").onclick = () => { document.getElementById("chatdock").hidden = false; renderChat(); };
+  document.getElementById("chatclose").onclick = closeChat;
+}
+
+/* =========================================================
    17. BOOT
    ========================================================= */
 function initTheme(){
@@ -2614,6 +2836,8 @@ async function boot(){
   document.addEventListener("keydown", ev => {
     if(ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
     if(ev.key === "Escape"){
+      const cd = document.getElementById("chatdock");
+      if(!cd.hidden){ closeChat(); return; }
       if(!claimModal.hidden){ claimModal.hidden=true; return; }
       if(!modal.hidden){ modal.hidden=true; return; }
       if(state.selected || state.spot){ state.selected=null; state.spot=null; renderStory(); renderCG(); refreshMarkers(); renderList(); }
@@ -2625,6 +2849,7 @@ async function boot(){
   });
 
   wireAccess();
+  wireChat();
   syncPanel(); renderStory(); renderCG(); renderArea(); renderList(); updateBedChip();
 
   try{
