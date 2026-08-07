@@ -39,7 +39,9 @@ import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
 import { verifyFile } from './verify.js';
 import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
 import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
-import { buildC2paAsset } from './c2pa.js';
+import { signC2paAsset } from './c2pa.js';
+import { exportRecordBundle } from './export.js';
+import { recoveryIdentityTag, recoveryTag } from './recovery.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -194,6 +196,17 @@ async function cmdAdd(args: Args): Promise<void> {
 
   const orgClaimText = str(args, 'org-claim');
   const orgClaimSource = str(args, 'source');
+  const recoveryPhrase = str(args, 'recovery-phrase');
+  const recoveryPin = str(args, 'recovery-pin');
+  const identity = {
+    first3: str(args, 'first3'), last3: str(args, 'last3'),
+    dateOfBirth: str(args, 'dob'), postalCode: str(args, 'zip'),
+  };
+  const hasIdentity = Object.values(identity).some(Boolean);
+  if (hasIdentity && Object.values(identity).some((v) => !v)) die('--first3, --last3, --dob, and --zip must be supplied together');
+  if (hasIdentity && recoveryPhrase) die('choose either identity recovery or --recovery-phrase, not both');
+  if ((recoveryPhrase && !recoveryPin) || (!recoveryPhrase && !hasIdentity && recoveryPin)) die('--recovery-phrase or the four identity fields must be supplied with --recovery-pin');
+  if (hasIdentity && !recoveryPin) die('identity recovery also requires --recovery-pin');
 
   const ask: UnsignedEntry['ask'] = { category, summary };
   if (amountUsd !== undefined) ask.amountUsd = amountUsd;
@@ -213,6 +226,8 @@ async function cmdAdd(args: Args): Promise<void> {
     ask,
     story: { raw, shaped: result.shaped },
     consent: { advocateId, method: consentMethod, timestampISO: consentAt },
+    ...(recoveryPhrase && recoveryPin ? { recovery: { scheme: 'claim-card/v1' as const, verifierTag: await recoveryTag(recoveryPhrase, recoveryPin, id) } } : {}),
+    ...(hasIdentity && recoveryPin ? { recovery: { scheme: 'claim-card/identity-v1' as const, verifierTag: await recoveryIdentityTag(identity as { first3: string; last3: string; dateOfBirth: string; postalCode: string }, recoveryPin, id) } } : {}),
     status,
   };
 
@@ -256,24 +271,6 @@ async function cmdAdd(args: Args): Promise<void> {
   await writeFile(ENTRIES_PATH, JSON.stringify(entries, null, 2) + '\n');
   const manifestPath = join(MANIFESTS_DIR, `${entry.id}.json`);
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
-  const c2paCert = process.env['ONRECORD_C2PA_CERT'];
-  const c2paKey = process.env['ONRECORD_C2PA_KEY'];
-  if (c2paCert && c2paKey) {
-    const archive = await buildC2paAsset(entry, {
-      certificatePath: c2paCert,
-      privateKeyPath: c2paKey,
-      aiTransform: {
-        applied: true,
-        model: result.model,
-        promptSha256: await sha256Hex(SYSTEM_PROMPT),
-        method: 'Raw advocate text re-rendered by Claude under a no-fabrication system prompt.',
-        inputTokens: result.inputTokens,
-        outputTokens: result.outputTokens,
-      },
-      ...(orgClaimText && orgClaimSource ? { orgClaim: { text: orgClaimText, source: orgClaimSource, alleged: false } } : {}),
-    });
-    await writeFile(join(MANIFESTS_DIR, `${entry.id}.png`), archive);
-  }
 
   if (bool(args, 'json')) {
     out(JSON.stringify(entry, null, 2));
@@ -306,6 +303,24 @@ async function cmdAdd(args: Args): Promise<void> {
   out(`  signature    ${c.cyan(signaturePreview.slice(0, 44))}…`);
   out(`  key          ${fp}  ${c.dim('(SHA-256 of SPKI, first 8 bytes)')}`);
   out(`  signedAt     ${entry.provenance.signedAtISO}`);
+  if (recoveryPhrase && recoveryPin) {
+    out();
+    rule('RECOVERY CARD — print and hand to the requester');
+    out(`  record       ${entry.id}`);
+    out(`  words        ${recoveryPhrase}`);
+    out(`  PIN          ${recoveryPin}`);
+    out(c.dim('  The words and PIN are not stored in the record. Possession is the recovery credential.'));
+  }
+  if (hasIdentity && recoveryPin) {
+    out();
+    rule('RECOVERY CARD — print and hand to the requester');
+    out(`  record       ${entry.id}`);
+    out(`  name tokens  ${identity.first3} / ${identity.last3}`);
+    out(`  date of birth ${identity.dateOfBirth}`);
+    out(`  ZIP          ${identity.postalCode}`);
+    out(`  PIN          ${recoveryPin}`);
+    out(c.dim('  The identity fields and PIN are not stored in the record; only a keyed verifier tag is signed.'));
+  }
   if (orgClaimText) {
     out();
     if (orgClaimSource) {
@@ -381,6 +396,34 @@ async function cmdVerify(args: Args): Promise<void> {
   }
   out(c.green('  every entry verifies against its embedded public key.'));
   out();
+}
+
+async function cmdC2pa(args: Args): Promise<void> {
+  const id = args.positional[0];
+  const assetPath = str(args, 'asset');
+  const outputPath = str(args, 'output');
+  if (!id || !assetPath || !outputPath) die('usage: on-record c2pa <entry-id> --asset <path> --output <path>');
+  const entries = await readEntriesFile(ENTRIES_PATH);
+  const entry = entries.find((candidate) => candidate.id === id);
+  if (!entry) die(`entry ${id} not found in ${ENTRIES_PATH}`);
+  const certificatePath = str(args, 'cert') ?? process.env['ONRECORD_C2PA_CERT'];
+  const privateKeyPath = str(args, 'key') ?? process.env['ONRECORD_C2PA_KEY'];
+  if (!certificatePath || !privateKeyPath) die('C2PA signing requires --cert/--key or ONRECORD_C2PA_CERT/ONRECORD_C2PA_KEY');
+  await signC2paAsset(entry, { assetPath, outputPath, certificatePath, privateKeyPath });
+  out(`wrote signed C2PA asset ${outputPath}`);
+}
+
+async function cmdExport(args: Args): Promise<void> {
+  const id = args.positional[0];
+  const output = str(args, 'output');
+  if (!id || !output) die('usage: on-record export <entry-id> --output <path.zip>');
+  const entries = await readEntriesFile(ENTRIES_PATH);
+  const entry = entries.find((candidate) => candidate.id === id);
+  if (!entry) die(`entry ${id} not found in ${ENTRIES_PATH}`);
+  const result = await exportRecordBundle(entry, output);
+  out(`wrote ${result.zipPath}`);
+  out(`wrote ${result.signaturePath}`);
+  out(`bundle SHA-256 ${result.contentHash}`);
 }
 
 // --- command: seed ----------------------------------------------------------
@@ -504,6 +547,8 @@ ${c.bold('on-record')} — signed, provenance-wrapped entries for the On Record 
                   ${c.dim('raw story is read from stdin when --file is omitted')}
 
   ${c.bold('on-record verify')} [<file>] [--json]   ${c.dim(`defaults to ${ENTRIES_PATH}`)}
+  ${c.bold('on-record c2pa')} <entry-id> --asset <path> --output <path>  ${c.dim('attach a C2PA manifest to a real asset')}
+  ${c.bold('on-record export')} <entry-id> --output <path.zip>         ${c.dim('export an offline-verifiable record bundle')}
   ${c.bold('on-record seed')} [--force] [--ai]      ${c.dim('write the composite sample set')}
   ${c.bold('on-record serve')} [--port <n>]         ${c.dim('serve the local viewer')}
   ${c.bold('on-record keys')}                       ${c.dim('show the signing key')}
@@ -530,6 +575,12 @@ async function main(): Promise<void> {
       break;
     case 'verify':
       await cmdVerify(args);
+      break;
+    case 'c2pa':
+      await cmdC2pa(args);
+      break;
+    case 'export':
+      await cmdExport(args);
       break;
     case 'seed':
       await cmdSeed(args);

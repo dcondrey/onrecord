@@ -89,6 +89,15 @@ New entries also carry a protocol-v2 envelope: deterministic CBOR, detached COSE
 publisher DID (`did:web` when `ONRECORD_ISSUER_DID` is configured, otherwise a self-contained
 `did:key`). Existing v1 JSON/ECDSA entries remain readable and verifiable.
 
+The accountless recovery path is the product’s primary identity mechanism. The preferred intake flow
+matches the needle-exchange pattern staff already know, without collecting a full name: the first
+three letters of the first name, the first three letters of the last name, date of birth, ZIP code,
+and a short PIN. Use `--first3 abc --last3 xyz --dob YYYY-MM-DD --zip 92101 --recovery-pin 4417`; only a
+PBKDF2/HMAC verifier tag is stored in the signed entry. Nothing identifying is written to the
+ledger, and the card works from any borrowed device. The identity fields are a memorable locator,
+not a substitute for in-person restore when a card is lost. A random four-or-more-word phrase
+(`--recovery-phrase`) remains available when an organization needs a non-PII credential.
+
 The CLI verifier is authoritative for protocol-v2 records. The self-contained demo viewer currently
 renders its embedded composite demo dataset and uses its own legacy interaction seals; it is not a
 network client and does not silently claim to validate the CLI’s v2 envelope.
@@ -115,6 +124,9 @@ hiding behind it.
 on-record add    [--file <path>] --zone <zone> --category <cat> --summary <text>
                  [--amount <usd>] --advocate <id> --consent-method <text>
                  [--consent-at <iso>] [--status <status>] [--id <id>]
+                 [--first3 <3 letters> --last3 <3 letters> --dob <YYYY-MM-DD> --zip <5 digits>
+                  --recovery-pin <4 digits>]
+                 [--recovery-phrase "four or more words" --recovery-pin <4 digits>]
                  [--org-claim <text>] [--source <text>] [--json]
                  (raw story is read from stdin when --file is omitted)
 
@@ -151,10 +163,14 @@ onrecord/
 `keys/` is generated on first run and is git-ignored. The private key never leaves the machine that
 made it; committing one would let anyone forge entries under your identity.
 
-To emit signed C2PA assets for development, run `npm run c2pa:dev-cert`, set
-`ONRECORD_C2PA_CERT=keys/c2pa-chain.pem` and `ONRECORD_C2PA_KEY=keys/c2pa-key.pem`, then run
-`on-record seed --force`. Development certificates are intentionally untrusted; production needs a
-C2PA CA-issued signing certificate.
+To attach C2PA provenance to a real supported asset, run `npm run c2pa:dev-cert`, then:
+
+```sh
+on-record c2pa or_seed_01 --asset intake.png --output intake-signed.png
+```
+
+Development certificates are intentionally untrusted; production needs a C2PA CA-issued signing
+certificate. The ledger never fabricates a PNG or other media file for a text record.
 
 ## Deployment
 

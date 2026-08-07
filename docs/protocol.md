@@ -47,6 +47,15 @@ alone.
 Optional fields are omitted when absent and never emitted as `null`, so an entry with no
 `ask.amountUsd` hashes identically whether the key was missing or explicitly `undefined`.
 
+If present, `recovery` contains only `{ scheme, verifierTag }`. The preferred
+`claim-card/identity-v1` scheme follows the needle-exchange workflow without collecting full names:
+the first three letters of first name, first three letters of last name, date of birth, ZIP code, and
+a four-digit PIN. Those values
+are normalized, stretched with PBKDF2-SHA-256, and keyed with HMAC-SHA-256 over `author:<entry-id>`.
+Only the resulting verifier tag is stored; the identity fields and PIN are never stored, transmitted,
+or recoverable from the tag. `claim-card/v1` remains available for a random four-or-more-word phrase
+plus PIN when using PII-derived recovery is inappropriate.
+
 > [!WARNING]
 > **Key order in `schema.ts` is load-bearing.** Reordering, renaming, or inserting a field changes
 > the canonical bytes and therefore invalidates every signature ever produced. A schema change is a
@@ -148,10 +157,10 @@ The v2 payload is bound back to the JSON entry during verification. A COSE signa
 not enough if the detached payload can be swapped. Existing v1 entries continue to verify with the
 legacy JSON/ECDSA path and should be migrated by re-seeding or re-signing.
 
-The generated JSON manifest has an explicit `org.onrecord.c2pa-bridge/1` claim. When
-`ONRECORD_C2PA_CERT` and `ONRECORD_C2PA_KEY` are configured, the pipeline also emits a signed PNG
-Content Credential beside it. That PNG is created with the official C2PA Node SDK, contains the
-entry CBOR digest/payload as an assertion, and can be independently read by a C2PA validator.
+The generated JSON manifest has an explicit `org.onrecord.c2pa-bridge/1` claim. The CLI can attach
+these assertions to a real supported asset with `on-record c2pa <entry-id> --asset <path> --output
+<path>`. The asset is signed with the official C2PA Node SDK and the entry’s CBOR digest/payload is
+carried as a custom assertion. The ledger never fabricates media merely to obtain a C2PA container.
 Development certificates are intentionally reported as untrusted; production requires a CA-issued
 C2PA signing credential.
 

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeCanonical, decode } from '../dist/cbor.js';
 import { signCoseSign1, verifyCoseSign1 } from '../dist/cose.js';
+import { recoveryIdentityTag } from '../dist/recovery.js';
 import { webcrypto } from 'node:crypto';
 
 const hex = (bytes) => Buffer.from(bytes).toString('hex');
@@ -20,4 +21,12 @@ test('COSE_Sign1 uses detached payload and verifies', async () => {
   const signed = await signCoseSign1(payload, privateJwk, 'key-1');
   assert.equal(await verifyCoseSign1(signed, payload, publicJwk), true);
   assert.equal(await verifyCoseSign1(signed, new TextEncoder().encode('tampered'), publicJwk), false);
+});
+
+test('identity recovery follows the needle-exchange fields without storing them', async () => {
+  const identity = { first3: 'mar', last3: 'del', dateOfBirth: '1984-02-03', postalCode: '92101' };
+  const tag = await recoveryIdentityTag(identity, '4417', 'or_test');
+  assert.equal(tag.length, 64);
+  assert.notEqual(tag, await recoveryIdentityTag(identity, '4418', 'or_test'));
+  assert.notEqual(tag, await recoveryIdentityTag({ ...identity, postalCode: '92102' }, '4417', 'or_test'));
 });
