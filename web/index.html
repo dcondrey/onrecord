@@ -11,10 +11,14 @@
 <meta name="referrer" content="no-referrer" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <!-- Adaptive-loading signal, not a network fetch: reads local device/connection hints
-     (Chromium-only; Safari/Firefox see none of them and just get the full experience)
      and flags data-lite so the CSS below can drop purely-decorative, CPU/GPU-heavy
      effects — blur() compositing and the infinite marker ripple — for whoever is least
-     equipped to pay for them. No content or behavior changes here, only paint cost. -->
+     equipped to pay for them. No content or behavior changes here, only paint cost.
+     Coverage varies by signal, not uniformly "Chromium-only": saveData/effectiveType
+     (navigator.connection) and deviceMemory really are Chromium/Samsung-Internet-only
+     (zero support in Firefox or Safari, any version); hardwareConcurrency is not — it's
+     supported in Firefox 48+ and Safari 15.4+ too, so a quad-core-or-fewer machine can
+     land in data-lite on any of those, not only on Chromium. -->
 <script>
 (function(){
   var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -274,9 +278,12 @@ header{padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset
 
 /* stage */
 /* Left/right cover the landscape-notch case; bottom clears the home-indicator gesture
-   bar. Padding on .stage lands on its padding edge, which is what right:/bottom:-anchored
-   absolutely-positioned children (.zoomctl, .layers, .panel, ...) are offset from, so
-   every one of them clears the cutout without needing its own env() rule. */
+   bar. Padding on .stage lands on its padding edge, which .panel (a direct child) is
+   offset from directly, and which shrinks .mapholder's flow width — .mapholder isn't a
+   direct child positioning-wise everywhere (it's absolute at desktop, in-flow at
+   mobile), so .zoomctl/.layers/.chatdock nested inside it inherit left/right protection
+   only transitively, through .mapholder's own box shrinking. See the mobile block below
+   for the bottom case, which that transitive path doesn't cover. */
 .stage{position:fixed;top:var(--topH);left:0;right:0;bottom:0;
   padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 .mapholder{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:var(--water);overflow:hidden;touch-action:none}
@@ -707,7 +714,11 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     /* Without this the drag-to-pan handling below (touch-action:none at full size)
        also eats vertical swipes, trapping a phone user who wants to scroll past the
        map to the panels below it. pan-y hands vertical swipes back to the browser. */
-    touch-action:pan-y}
+    touch-action:pan-y;
+    /* .mapholder's height is intrinsic here (58vh), not derived from .stage's box the
+       way it is at desktop (inset:0), so .stage's padding-bottom never reaches
+       .zoomctl's bottom:12px offset through it — this closes that gap directly. */
+    padding-bottom:env(safe-area-inset-bottom,0px)}
   .panel{position:static;width:auto;margin:10px;border-radius:var(--r)}
   .panel.left{width:auto;margin-top:10px}
   .panel.right{width:auto}
