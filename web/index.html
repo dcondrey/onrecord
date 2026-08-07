@@ -286,16 +286,16 @@ svg.map.dragging{cursor:grabbing}
 .map[data-level="detail"] .svc .sl,.map[data-level="detail"] .svc .sb{opacity:1}
 .arterial{fill:none;stroke:var(--street);stroke-width:.9;opacity:.55;stroke-linecap:round;transition:opacity .35s,stroke-width .35s}
 .map:not([data-level="county"]) .arterial{opacity:.95;stroke-width:1.15}
-.stlabel{fill:var(--muted);font-size:7px;letter-spacing:.05em;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round}
+.stlabel{fill:var(--muted);font-size:8px;letter-spacing:.05em;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round}
 .map:not([data-level="county"]) .stlabel{opacity:.95}
 .shield rect{fill:var(--panel-solid);stroke:var(--land-line);stroke-width:1}
 .shield text{fill:var(--muted);font-family:var(--mono);font-size:8px;font-weight:700;text-anchor:middle;dominant-baseline:central}
 .fwy-cap{fill:none;stroke:var(--land-hi);stroke-width:4.4;stroke-linecap:round;opacity:.5}
 .border-line{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:7 5;opacity:.75}
-.geo-label{fill:var(--faint);font-size:9px;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s}
+.geo-label{fill:var(--muted);font-size:10.5px;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:3;stroke-linejoin:round}
 .map:not([data-level="county"]) .geo-label{opacity:1}
-.water-label{fill:var(--teal);opacity:.5;letter-spacing:.3em;text-anchor:middle;pointer-events:none;user-select:none;font-size:9px}
-.water-label.big{font-size:13px}
+.water-label{fill:var(--teal);opacity:.62;letter-spacing:.26em;text-anchor:middle;pointer-events:none;user-select:none;font-size:10.5px}
+.water-label.big{font-size:15px}
 
 .district,.district .shape{cursor:pointer}
 .district .shape{fill:rgba(255,255,255,.032);stroke:var(--line-strong);stroke-width:.9;transition:fill .3s,stroke .3s}
@@ -304,7 +304,9 @@ svg.map.dragging{cursor:grabbing}
 .district.has:hover .shape{fill:color-mix(in srgb,var(--amber) 26%,transparent)}
 .district.focused .shape{fill:color-mix(in srgb,var(--amber) 24%,transparent);stroke:var(--amber);stroke-width:1.6}
 .district.muted{opacity:.4;transition:opacity .5s}
-.district .dlabel{fill:var(--muted);font-size:8px;font-weight:650;letter-spacing:.12em;text-transform:uppercase;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s}
+/* Neighborhood names are the primary way into the map, so they get a halo (they sat directly on
+   the land fill before) and enough size to read at a glance. Tracking eases off as size goes up. */
+.district .dlabel{fill:var(--ink-2);font-size:10.5px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:3.4;stroke-linejoin:round}
 .district.has .dlabel{fill:var(--amber);opacity:1}
 .map:not([data-level="county"]) .district .dlabel{opacity:1}
 .district.focused .dlabel{fill:var(--amber)}
@@ -331,7 +333,7 @@ svg.map.dragging{cursor:grabbing}
 .pin .ring{fill:none;stroke:var(--amber);stroke-width:1.5;opacity:0;transition:opacity .25s}
 .pin:hover .core{fill:#fff}
 .pin.selected .ring,.pin:focus-visible .ring{opacity:1}
-.pin .plabel{font-size:9px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
+.pin .plabel{font-size:10.5px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .pin .plabel{opacity:1}
 .pin.broken .core{fill:var(--broken)}
 .pin.broken .halo{fill:url(#glowbad)}
@@ -349,7 +351,7 @@ svg.map.dragging{cursor:grabbing}
 .map:not([data-level="county"]) .spot .scap{opacity:.9}
 .spot:hover .plate{fill:var(--teal-dim)}
 .spot.selected .plate{stroke-width:2.4}
-.spot .slabel{font-size:8.5px;fill:var(--teal);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3;pointer-events:none;opacity:0;transition:opacity .3s}
+.spot .slabel{font-size:9.5px;fill:var(--teal);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .spot .slabel{opacity:1}
 .layer-off{opacity:0 !important;pointer-events:none}
 
@@ -601,6 +603,10 @@ textarea:focus{outline:none;background:var(--panel-2)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;padding:20px;z-index:60}
 .modal[hidden]{display:none}
 .modal .box{max-width:600px;max-height:86vh;overflow-y:auto;background:var(--panel-solid);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+/* Dialogs open their own heading outline at h2, so these carry explicit sizing rather
+   than inheriting the UA default that the old h3 markup relied on. */
+.modal .box h2{font-family:var(--serif);font-weight:400;font-size:21px;margin:0 0 12px;line-height:1.2}
+.modal .box h3{font-size:11px;font-weight:650;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:18px 0 5px}
 .claimrow{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:12px}
 .fld{flex:1;min-width:130px}
 .fld label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
@@ -651,7 +657,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 </head>
 <body>
 
-<a class="skip" href="#reclist">Skip to the record list</a>
+<a class="skip" href="#panel-asks">Skip to the record list</a>
 
 <noscript>
   <div class="banner" style="height:auto;padding:12px 14px;white-space:normal">
@@ -714,9 +720,9 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     <h2 class="sr">Record index</h2>
     <div class="phead">
       <div class="tabs" role="tablist" aria-label="Index view">
-        <button class="tab" role="tab" id="lt-asks" aria-selected="true" aria-controls="reclist" type="button">Asks</button>
-        <button class="tab tl" role="tab" id="lt-spots" aria-selected="false" aria-controls="spotlist" tabindex="-1" type="button">Exchanges</button>
-        <button class="tab" role="tab" id="lt-svc" aria-selected="false" aria-controls="svclist" tabindex="-1" type="button">Services</button>
+        <button class="tab" role="tab" id="lt-asks" aria-selected="true" aria-controls="panel-asks" type="button">Asks</button>
+        <button class="tab tl" role="tab" id="lt-spots" aria-selected="false" aria-controls="panel-spots" tabindex="-1" type="button">Exchanges</button>
+        <button class="tab" role="tab" id="lt-svc" aria-selected="false" aria-controls="panel-svc" tabindex="-1" type="button">Services</button>
       </div>
       <button class="ghost" id="clearfilters" type="button" style="padding:4px 8px">Clear</button>
     </div>
@@ -747,27 +753,28 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
   </aside>
 
   <aside class="panel right" id="rightpanel" aria-label="Detail">
+    <h2 class="sr">Record detail</h2>
     <div class="phead">
-      <div class="tabs" role="tablist">
-        <button class="tab" role="tab" id="tab-area" aria-selected="false" type="button">Neighborhood</button>
-        <button class="tab" role="tab" id="tab-story" aria-selected="false" type="button">Story</button>
-        <button class="tab tl" role="tab" id="tab-cg" aria-selected="false" type="button">Common ground</button>
-        <button class="tab" role="tab" id="tab-dash" aria-selected="true" type="button">Accountability</button>
+      <div class="tabs" role="tablist" aria-label="Detail view">
+        <button class="tab" role="tab" id="tab-area" aria-selected="false" aria-controls="panel-area" tabindex="-1" type="button">Neighborhood</button>
+        <button class="tab" role="tab" id="tab-story" aria-selected="false" aria-controls="panel-story" tabindex="-1" type="button">Story</button>
+        <button class="tab tl" role="tab" id="tab-cg" aria-selected="false" aria-controls="panel-cg" tabindex="-1" type="button">Common ground</button>
+        <button class="tab" role="tab" id="tab-dash" aria-selected="true" aria-controls="panel-dash" type="button">Accountability</button>
       </div>
       <button class="pclose" id="closepanel" type="button" aria-label="Hide panel">&times;</button>
     </div>
     <div class="pbody">
-      <div id="panel-area" role="tabpanel" hidden></div>
-      <div id="panel-story" role="tabpanel" hidden></div>
-      <div id="panel-cg" role="tabpanel" hidden></div>
-      <div id="panel-dash" role="tabpanel"></div>
+      <div id="panel-area" role="tabpanel" aria-labelledby="tab-area" tabindex="0" hidden></div>
+      <div id="panel-story" role="tabpanel" aria-labelledby="tab-story" tabindex="0" hidden></div>
+      <div id="panel-cg" role="tabpanel" aria-labelledby="tab-cg" tabindex="0" hidden></div>
+      <div id="panel-dash" role="tabpanel" aria-labelledby="tab-dash" tabindex="0"></div>
     </div>
   </aside>
-</div>
+</main>
 
 <div class="modal" id="claimmodal" hidden role="dialog" aria-modal="true" aria-labelledby="claimtitle">
   <div class="box">
-    <h3 id="claimtitle">Open or check a request</h3>
+    <h2 id="claimtitle">Open or check a request</h2>
     <p>No phone, no email, no ID, no account. At intake an advocate prints a claim card: a record number and four words. Bring it to any record kiosk on the map, or an advocate brings the kiosk to you.</p>
     <div id="claimstage"></div>
   </div>
@@ -775,13 +782,13 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 
 <div class="modal" id="access" hidden role="dialog" aria-modal="true" aria-labelledby="acctitle">
   <div class="box">
-    <h3 id="acctitle">Your request</h3>
-    <div class="tabs" style="margin-bottom:12px">
-      <button class="tab" id="ac-have" aria-selected="true" type="button">I have a code</button>
-      <button class="tab" id="ac-need" aria-selected="false" type="button">I don&#8217;t have one</button>
+    <h2 id="acctitle">Your request</h2>
+    <div class="tabs" role="tablist" aria-label="How to open your request" style="margin-bottom:12px">
+      <button class="tab" role="tab" id="ac-have" aria-selected="true" aria-controls="ac-pane-have" type="button">I have a code</button>
+      <button class="tab" role="tab" id="ac-need" aria-selected="false" aria-controls="ac-pane-need" tabindex="-1" type="button">I don&#8217;t have one</button>
     </div>
 
-    <div id="ac-pane-have">
+    <div id="ac-pane-have" role="tabpanel" aria-labelledby="ac-have" tabindex="0">
       <p>Enter the three words and the four digits from your card. No name, no phone, no email, no ID. We never stored the words, so nobody here can look them up or hand them to anyone.</p>
       <label class="eyebrow" for="acphrase">Three words</label>
       <input id="acphrase" type="text" autocomplete="off" spellcheck="false" placeholder="river copper lantern" />
@@ -794,12 +801,12 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
       <div id="acresult"></div>
     </div>
 
-    <div id="ac-pane-need" hidden>
+    <div id="ac-pane-need" role="tabpanel" aria-labelledby="ac-need" tabindex="0" hidden>
       <p><b>Any site on this map with document help can issue a card.</b> It takes about three minutes and costs nothing. You do not need ID, an address, a phone, or an email. An advocate writes down what you are asking for, reads it back to you, records your consent, and hands you a paper card with three words and four digits on it.</p>
       <p>Bring the card back to any partner site, any kiosk, or any borrowed phone or library computer. Typing the words proves you are the same person who filed it, without proving who you are. If you lose the card, no one can recover it for you, but any advocate who knows you can verify you in person and issue a new one, which moves the record to the new card.</p>
-      <div class="eyebrow" style="margin-top:14px">Sites on this map that issue cards</div>
+      <h3>Sites on this map that issue cards</h3>
       <div id="acissuers"></div>
-      <div class="eyebrow" style="margin-top:14px">Try it</div>
+      <h3>Try it</h3>
       <p style="margin-top:6px">Generate a card the way an advocate would, so you can see what a person walks away holding.</p>
       <button class="btn btn-send" id="acgen" type="button">Make a demo card</button>
       <div id="acgenout"></div>
@@ -811,13 +818,19 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modaltitle">
   <div class="box">
-    <h3 id="modaltitle">How this works</h3>
-    <p><b>The stories.</b> Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual. No precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only.</p>
-    <p><b>The proof.</b> On load this page generates an ECDSA P-256 keypair in your browser with WebCrypto. Every record and every message is canonicalized to a fixed field order, hashed with SHA-256, and signed. Verify re-canonicalizes the live record and re-checks the signature, so an edit made after sealing cannot pass. Nothing leaves your device: no network requests, no fonts, no map tiles, no analytics.</p>
-    <p><b>Common ground.</b> Friction points are places where two groups of neighbors collide. Anyone with an address can post to a place, never to a person. Posts route through advocate review that strips names and locations before publication. People living outside post only through advocate-mediated intake with recorded consent, because an open channel would let anyone speak in their name and would ask them to identify themselves in public to be heard.</p>
-    <p><b>The service directory.</b> Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page. In a real deployment each count would come from a coordinated-entry system and be signed on arrival, which is the point: a signed count cannot be revised after the night it described.</p>
-    <p><b>Getting in without an ID.</b> Requiring an account to use a service that helps people replace lost documents would repeat the exact trap the records describe. So there is no account. At intake an advocate prints a claim card: a record number and four words. Those words are stretched with PBKDF2 into a key that signs the holder's updates, so the system can tell it is them without ever storing a name, a number, or a password. Any site marked <b>Record kiosk</b> can open a record. If the card is lost, and it will be, an advocate restores access in person and the restore is logged and signed.</p>
-    <p><b>What this is not.</b> Not a directory of people. Not a live feed. Not an accusation against any named organization. Figures marked ALLEGED are unverified placeholders, excluded from all signed data and every metric, and must be sourced before publication.</p>
+    <h2 id="modaltitle">How this works</h2>
+    <h3>The stories</h3>
+    <p>Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual. No precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only.</p>
+    <h3>The proof</h3>
+    <p>On load this page generates an ECDSA P-256 keypair in your browser with WebCrypto. Every record and every message is canonicalized to a fixed field order, hashed with SHA-256, and signed. Verify re-canonicalizes the live record and re-checks the signature, so an edit made after sealing cannot pass. Nothing leaves your device: no network requests, no fonts, no map tiles, no analytics.</p>
+    <h3>Common ground</h3>
+    <p>Friction points are places where two groups of neighbors collide. Anyone with an address can post to a place, never to a person. Posts route through advocate review that strips names and locations before publication. People living outside post only through advocate-mediated intake with recorded consent, because an open channel would let anyone speak in their name and would ask them to identify themselves in public to be heard.</p>
+    <h3>The service directory</h3>
+    <p>Sites, hours, and bed counts are composite demonstration data on a simulated feed, marked sample on every card. Do not route anyone using this page. In a real deployment each count would come from a coordinated-entry system and be signed on arrival, which is the point: a signed count cannot be revised after the night it described.</p>
+    <h3>Getting in without an ID</h3>
+    <p>Requiring an account to use a service that helps people replace lost documents would repeat the exact trap the records describe. So there is no account. At intake an advocate prints a claim card: a record number and four words. Those words are stretched with PBKDF2 into a key that signs the holder's updates, so the system can tell it is them without ever storing a name, a number, or a password. Any site marked <b>Record kiosk</b> can open a record. If the card is lost, and it will be, an advocate restores access in person and the restore is logged and signed.</p>
+    <h3>What this is not</h3>
+    <p>Not a directory of people. Not a live feed. Not an accusation against any named organization. Figures marked ALLEGED are unverified placeholders, excluded from all signed data and every metric, and must be sourced before publication.</p>
     <button class="btn btn-restore" id="closemodal" type="button">Close</button>
   </div>
 </div>
@@ -1727,9 +1740,11 @@ function openSpot(id){
    ========================================================= */
 function renderList(){
   const asks = state.leftTab === "asks", svcs = state.leftTab === "svc";
-  document.getElementById("reclist").hidden = !asks;
-  document.getElementById("spotlist").hidden = (state.leftTab !== "spots");
-  document.getElementById("svclist").hidden = !svcs;
+  /* Toggle the tabpanel wrappers, not the <ul>s: the wrappers carry role=tabpanel, so
+     hiding the inner list would leave an empty panel exposed to assistive tech. */
+  document.getElementById("panel-asks").hidden = !asks;
+  document.getElementById("panel-spots").hidden = (state.leftTab !== "spots");
+  document.getElementById("panel-svc").hidden = !svcs;
   document.getElementById("filters").style.display = asks ? "" : "none";
   document.getElementById("needfilters").hidden = !svcs;
   if(svcs){
@@ -2321,10 +2336,34 @@ function syncPanel(){
 }
 function openPanel(){ state.panelOpen = true; syncPanel(); }
 function togglePanel(){ state.panelOpen = !state.panelOpen; syncPanel(); }
+/* Roving tabindex: the ARIA tabs pattern puts exactly one tab in the page tab order and
+   moves between the rest with arrow keys, so Tab steps over the tablist to the panel
+   instead of stopping on every tab in it. */
+function selectTab(el, selected){
+  el.setAttribute("aria-selected", String(selected));
+  el.setAttribute("tabindex", selected ? "0" : "-1");
+}
+function wireTablist(el){
+  el.addEventListener("keydown", ev => {
+    const tabs = [].slice.call(el.querySelectorAll('[role="tab"]'));
+    const i = tabs.indexOf(document.activeElement);
+    if(i < 0) return;
+    let n = -1;
+    if(ev.key === "ArrowRight" || ev.key === "ArrowDown") n = (i + 1) % tabs.length;
+    else if(ev.key === "ArrowLeft" || ev.key === "ArrowUp") n = (i - 1 + tabs.length) % tabs.length;
+    else if(ev.key === "Home") n = 0;
+    else if(ev.key === "End") n = tabs.length - 1;
+    if(n < 0) return;
+    ev.preventDefault();
+    tabs[n].focus();
+    tabs[n].click();
+  });
+}
+
 function setTab(name, quiet){
   state.tab = name;
   ["area","story","cg","dash"].forEach(t => {
-    document.getElementById("tab-"+t).setAttribute("aria-selected", String(t===name));
+    selectTab(document.getElementById("tab-"+t), t===name);
     document.getElementById("panel-"+t).hidden = (t !== name);
   });
   if(name === "dash"){ markStep("dash"); renderDash(); if(!quiet) say("Accountability dashboard."); }
@@ -2334,9 +2373,9 @@ function setTab(name, quiet){
 }
 function setLeftTab(name){
   state.leftTab = name;
-  document.getElementById("lt-asks").setAttribute("aria-selected", String(name==="asks"));
-  document.getElementById("lt-spots").setAttribute("aria-selected", String(name==="spots"));
-  document.getElementById("lt-svc").setAttribute("aria-selected", String(name==="svc"));
+  selectTab(document.getElementById("lt-asks"), name==="asks");
+  selectTab(document.getElementById("lt-spots"), name==="spots");
+  selectTab(document.getElementById("lt-svc"), name==="svc");
   renderList();
 }
 
