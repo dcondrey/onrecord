@@ -39,7 +39,7 @@ import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
 import { verifyFile } from './verify.js';
 import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
 import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
-import { buildC2paArchive } from './c2pa.js';
+import { buildC2paAsset } from './c2pa.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -259,7 +259,7 @@ async function cmdAdd(args: Args): Promise<void> {
   const c2paCert = process.env['ONRECORD_C2PA_CERT'];
   const c2paKey = process.env['ONRECORD_C2PA_KEY'];
   if (c2paCert && c2paKey) {
-    const archive = await buildC2paArchive(entry, {
+    const archive = await buildC2paAsset(entry, {
       certificatePath: c2paCert,
       privateKeyPath: c2paKey,
       aiTransform: {
@@ -272,7 +272,7 @@ async function cmdAdd(args: Args): Promise<void> {
       },
       ...(orgClaimText && orgClaimSource ? { orgClaim: { text: orgClaimText, source: orgClaimSource, alleged: false } } : {}),
     });
-    await writeFile(join(MANIFESTS_DIR, `${entry.id}.c2pa`), archive);
+    await writeFile(join(MANIFESTS_DIR, `${entry.id}.png`), archive);
   }
 
   if (bool(args, 'json')) {

@@ -32,6 +32,8 @@
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test test/protocol.test.js",
+    "c2pa:dev-cert": "node scripts/generate-c2pa-dev-cert.mjs",
+    "web:sync": "npm run build && npm run seed -- --force && node scripts/sync-web-data.mjs",
     "typecheck": "tsc --noEmit",
     "on-record": "node dist/cli.js",
     "seed": "node dist/cli.js seed",

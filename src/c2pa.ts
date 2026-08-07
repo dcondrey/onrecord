@@ -20,7 +20,25 @@ export interface C2paOptions {
   composite?: boolean;
 }
 
-export async function buildC2paArchive(entry: Entry, options: C2paOptions): Promise<Buffer> {
+const ONE_PIXEL_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', 'base64');
+
+function crc32(bytes: Uint8Array): number {
+  let crc = 0xffffffff;
+  for (const byte of bytes) { crc ^= byte; for (let i = 0; i < 8; i++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1)); }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type: string, data: Uint8Array): Buffer {
+  const body = Buffer.concat([Buffer.from(type, 'ascii'), Buffer.from(data)]);
+  const out = Buffer.alloc(12 + data.length); out.writeUInt32BE(data.length, 0); body.copy(out, 4); out.writeUInt32BE(crc32(body), 8 + data.length); return out;
+}
+
+function recordAsset(entry: Entry): Buffer {
+  const text = Buffer.from(`onrecord\0${entry.id}:${entry.provenance.contentHash}`, 'utf8');
+  return Buffer.concat([ONE_PIXEL_PNG.subarray(0, ONE_PIXEL_PNG.length - 12), pngChunk('tEXt', text), ONE_PIXEL_PNG.subarray(ONE_PIXEL_PNG.length - 12)]);
+}
+
+export async function buildC2paAsset(entry: Entry, options: C2paOptions): Promise<Buffer> {
   const builder = Builder.withJson({
     claim_generator_info: [{ name: 'on-record', version: '2.0' }],
   });
@@ -53,20 +71,17 @@ export async function buildC2paArchive(entry: Entry, options: C2paOptions): Prom
   if (options.composite) builder.addAssertion('org.onrecord.composite', { composite: true });
   if (options.orgClaim?.source) builder.addAssertion('org.onrecord.org-claim', options.orgClaim);
 
-  const unsignedArchive: { buffer: Buffer | null } = { buffer: null };
-  await builder.toArchive(unsignedArchive);
-  if (!unsignedArchive.buffer) throw new Error('C2PA SDK did not produce an archive');
-
   const signer = LocalSigner.newSigner(
     await readFile(options.certificatePath),
     await readFile(options.privateKeyPath),
     'es256',
   );
-  const signed = builder.sign(
+  const destination: { buffer: Buffer | null } = { buffer: null };
+  builder.sign(
     signer,
-    { buffer: unsignedArchive.buffer, mimeType: 'application/c2pa' },
-    { buffer: null },
+    { buffer: recordAsset(entry), mimeType: 'image/png' },
+    destination,
   );
-  if (!signed || signed.length === 0) throw new Error('C2PA SDK returned an empty signed archive');
-  return signed;
+  if (!destination.buffer || destination.buffer.length === 0) throw new Error('C2PA SDK returned an empty signed asset');
+  return destination.buffer;
 }

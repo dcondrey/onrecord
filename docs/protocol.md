@@ -146,11 +146,12 @@ The v2 payload is bound back to the JSON entry during verification. A COSE signa
 not enough if the detached payload can be swapped. Existing v1 entries continue to verify with the
 legacy JSON/ECDSA path and should be migrated by re-seeding or re-signing.
 
-The generated manifest now has an explicit `org.onrecord.c2pa-bridge/1` claim containing the asset
-hash and assertion labels. This is a useful detached bridge, but not yet a complete C2PA Content Credential. Full C2PA interoperability
-still requires a C2PA claim, assertion store, JUMBF packaging, asset hard binding, and a trustable
-signing credential. The existing JSON manifests remain intentionally labelled C2PA-style until that
-packaging is added.
+The generated JSON manifest has an explicit `org.onrecord.c2pa-bridge/1` claim. When
+`ONRECORD_C2PA_CERT` and `ONRECORD_C2PA_KEY` are configured, the pipeline also emits a signed PNG
+Content Credential beside it. That PNG is created with the official C2PA Node SDK, contains the
+entry CBOR digest/payload as an assertion, and can be independently read by a C2PA validator.
+Development certificates are intentionally reported as untrusted; production requires a CA-issued
+C2PA signing credential.
 
 Being precise about the boundary is the point of the exercise:
 
