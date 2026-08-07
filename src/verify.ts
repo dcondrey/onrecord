@@ -1,0 +1,137 @@
+/**
+ * Independent verifier — the accountability guarantee.
+ *
+ * This module deliberately shares nothing with the write path except the schema
+ * and the crypto primitives. It re-reads the JSON file from disk, re-derives the
+ * canonical form from the entry's *actual* content, recomputes the hash, and
+ * checks the signature against the public key embedded in the entry itself.
+ *
+ * It never trusts `provenance.contentHash`. Editing a story and editing the hash
+ * to match still fails, because the signature is over the digest bytes.
+ *
+ * Anyone can run this against a published entries.json without holding a key,
+ * without contacting this server, and without trusting whoever published it.
+ */
+
+import { readFile } from 'node:fs/promises';
+import { canonicalize, parseEntry, type Entry } from './schema.js';
+import { keyFingerprint, verifyEntry, type VerifyResult } from './sign.js';
+
+export interface EntryReport {
+  index: number;
+  id: string;
+  zone: string;
+  status: string;
+  ok: boolean;
+  result: VerifyResult;
+  keyFingerprint: string;
+  /** Populated only on failure, to make the tamper obvious in output. */
+  diagnosis?: string;
+}
+
+export interface VerifyReport {
+  file: string;
+  total: number;
+  verified: number;
+  failed: number;
+  entries: EntryReport[];
+  /** Distinct signing keys seen across the file. More than one is worth noticing. */
+  keys: string[];
+  statusCounts: Record<string, number>;
+  parseError?: string;
+}
+
+function diagnose(result: VerifyResult): string {
+  if (result.error) return `verification error: ${result.error}`;
+  if (!result.hashMatches && !result.signatureValid) {
+    return 'CONTENT MODIFIED — the entry no longer hashes to its recorded contentHash, and the signature does not cover the current content.';
+  }
+  if (!result.hashMatches) {
+    return 'CONTENT MODIFIED — recomputed hash does not match the recorded contentHash.';
+  }
+  return 'SIGNATURE INVALID — content hashes correctly but the signature does not verify under the embedded public key (key swapped, or signature forged/corrupted).';
+}
+
+export async function verifyFile(path: string): Promise<VerifyReport> {
+  const report: VerifyReport = {
+    file: path,
+    total: 0,
+    verified: 0,
+    failed: 0,
+    entries: [],
+    keys: [],
+    statusCounts: {},
+  };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await readFile(path, 'utf8'));
+  } catch (err) {
+    report.parseError = err instanceof Error ? err.message : String(err);
+    return report;
+  }
+
+  if (!Array.isArray(parsed)) {
+    report.parseError = `expected a JSON array of entries in ${path}`;
+    return report;
+  }
+
+  const keys = new Set<string>();
+
+  for (let i = 0; i < parsed.length; i++) {
+    report.total++;
+    let entry: Entry;
+    try {
+      entry = parseEntry(parsed[i], i);
+    } catch (err) {
+      report.failed++;
+      report.entries.push({
+        index: i,
+        id: '(unparseable)',
+        zone: '-',
+        status: '-',
+        ok: false,
+        keyFingerprint: '-',
+        result: {
+          hashMatches: false,
+          signatureValid: false,
+          recomputedHash: '',
+          claimedHash: '',
+          error: err instanceof Error ? err.message : String(err),
+        },
+        diagnosis: `MALFORMED ENTRY — ${err instanceof Error ? err.message : String(err)}`,
+      });
+      continue;
+    }
+
+    const result = await verifyEntry(entry);
+    const ok = result.hashMatches && result.signatureValid;
+    const fp = entry.provenance?.pubKey ? await keyFingerprint(entry.provenance.pubKey) : '-';
+    keys.add(fp);
+
+    report.statusCounts[entry.status] = (report.statusCounts[entry.status] ?? 0) + 1;
+
+    if (ok) report.verified++;
+    else report.failed++;
+
+    report.entries.push({
+      index: i,
+      id: entry.id,
+      zone: entry.zone,
+      status: entry.status,
+      ok,
+      result,
+      keyFingerprint: fp,
+      ...(ok ? {} : { diagnosis: diagnose(result) }),
+    });
+  }
+
+  report.keys = [...keys];
+  return report;
+}
+
+/** Exposed for debugging: show exactly what bytes were hashed for a given entry. */
+export function canonicalFormOf(entry: Entry): string {
+  const { provenance: _provenance, ...rest } = entry;
+  return canonicalize(rest);
+}

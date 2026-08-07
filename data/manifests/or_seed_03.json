@@ -1,0 +1,73 @@
+{
+  "manifestVersion": "1.0",
+  "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
+  "instanceId": "urn:onrecord:entry:or_seed_03",
+  "createdISO": "2026-08-07T02:36:57.699Z",
+  "assertions": [
+    {
+      "label": "org.onrecord.consent",
+      "data": {
+        "advocateId": "adv_dtn_027",
+        "method": "verbal, recorded with permission",
+        "timestampISO": "2026-05-19T20:41:00Z",
+        "recordedBeforePublication": true
+      }
+    },
+    {
+      "label": "org.onrecord.story.hash",
+      "data": {
+        "rawSha256": "468792fe5ffaa63ca191b4722fc082745adeaa2f51af436def4b3b5b9d10e6ce",
+        "shapedSha256": "cfbe82653130abbc1bed8c37f0438faeff1e57f548f2edee16e9b47d321f3b9c",
+        "bothPublished": true
+      }
+    },
+    {
+      "label": "c2pa.actions",
+      "data": {
+        "actions": [
+          {
+            "action": "c2pa.created",
+            "softwareAgent": "on-record/1.0 (ECDSA-P256; hackathon build)",
+            "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture",
+            "description": "Shaped text was written by hand for the seed set; no model call was made."
+          }
+        ]
+      }
+    },
+    {
+      "label": "org.onrecord.ai-transform",
+      "data": {
+        "applied": false,
+        "model": "claude-opus-4-8 (not invoked)",
+        "systemPromptSha256": "d7116b97a3c99541458d811dad54eb7cf130d358078a7bb03cb7ff28c20908fc",
+        "method": "Shaped text was written by hand for the seed set; no model call was made.",
+        "constraint": "Prompt forbids introducing any fact absent from the raw text, softening the account, or adding claims about any organization.",
+        "rawTextRetained": true
+      }
+    },
+    {
+      "label": "org.onrecord.location-precision",
+      "data": {
+        "granularity": "zone",
+        "zone": "Downtown",
+        "note": "Zone only. No coordinates, addresses, or shelter names are collected or stored."
+      }
+    },
+    {
+      "label": "org.onrecord.composite",
+      "data": {
+        "composite": true,
+        "note": "Illustrative composite. Not a real individual. Seed data only."
+      }
+    }
+  ],
+  "signature": {
+    "alg": "ECDSA-P256",
+    "contentHash": "b941d96e856487b08cccb3e6fb227dd92a83fb3f7714867a6d53e2a60374bc4f",
+    "signature": "RUxaTMoBMahT5lg/cjkFpj7yEXKf6KZQAFUeeYjcVreW+QNlAtrBnTEghJZZkWnnIWFam3YJ77nvnN4DtUyW8A==",
+    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQgKJxISFEW/Emjj9nTmW9gvWI/0CTEmE5RXYl5d8WgF3TXy4A+1PmWZpl8lxQdQ7fg/iEFC/nrJSayomLNBwOw==",
+    "keyFingerprint": "c601a496f4f03237",
+    "signedAtISO": "2026-08-07T02:36:57.699Z",
+    "scope": "SHA-256 over the canonical serialization of all entry fields except `provenance`; signature is over those digest bytes."
+  }
+}

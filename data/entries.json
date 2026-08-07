@@ -1,0 +1,81 @@
+[
+  {
+    "id": "or_seed_01",
+    "zone": "East Village",
+    "ask": {
+      "category": "id_documents",
+      "summary": "replacement CA state ID",
+      "amountUsd": 39
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] wallet taken while he slept, back in march. says he cant get the ID without the birth certificate and cant get the birth certificate without the ID. been in that loop 5 months. hes tired of explaining it to people. was a line cook before.",
+      "shaped": "My wallet was taken while I was sleeping back in March. To replace my ID I need my birth certificate, and to get the birth certificate I need my ID. I have been going in that circle for five months. I used to work as a line cook. I am tired of explaining this to people. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_ecv_014",
+      "method": "verbal, in person, witnessed by outreach partner",
+      "timestampISO": "2026-07-14T18:22:00Z"
+    },
+    "status": "requested",
+    "provenance": {
+      "alg": "ECDSA-P256",
+      "contentHash": "20c431a5ade87bcab9b8ba17459f31176c73efbe18a5e151afda695f17003b25",
+      "signature": "JxSqDXxB+WfC3QW8NqoyQt8kX11X/9zZ31/wqSiKGRrwMJKG9vPGjUm0qOR+zNfOaaMemjEg1rt2Nv+OtRCRig==",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQgKJxISFEW/Emjj9nTmW9gvWI/0CTEmE5RXYl5d8WgF3TXy4A+1PmWZpl8lxQdQ7fg/iEFC/nrJSayomLNBwOw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-07T02:36:57.698Z"
+    }
+  },
+  {
+    "id": "or_seed_02",
+    "zone": "Ocean Beach",
+    "ask": {
+      "category": "transit",
+      "summary": "monthly transit pass to reach a job site in Kearny Mesa"
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] got hired on at a warehouse in kearny mesa, starts in two weeks. the commute is the problem — two buses each way and she cant cover the pass until the first check clears. she was very matter of fact about it, no drama.",
+      "shaped": "I have been hired at a warehouse in Kearny Mesa and I start in two weeks. The problem is getting there: it is two buses each way, and I cannot cover a pass until my first check clears. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_ob_003",
+      "method": "written, signed intake form",
+      "timestampISO": "2026-06-30T15:05:00Z"
+    },
+    "status": "answered",
+    "provenance": {
+      "alg": "ECDSA-P256",
+      "contentHash": "9572bf86c4c7778bf5533b11153214b68d304abd886d66cb5b2b0250599a3ae9",
+      "signature": "m5+iyFZxqioy6D5o2We6F7Qqc9FpTkEHEGeU/MfPlDpMbKOuyzcrDYI6DW2FT1/waJ6X4Fv++3HB9GkcWWMvJg==",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQgKJxISFEW/Emjj9nTmW9gvWI/0CTEmE5RXYl5d8WgF3TXy4A+1PmWZpl8lxQdQ7fg/iEFC/nrJSayomLNBwOw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-07T02:36:57.699Z"
+    }
+  },
+  {
+    "id": "or_seed_03",
+    "zone": "Downtown",
+    "ask": {
+      "category": "shelter_bed",
+      "summary": "shelter bed, ground floor if possible"
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] turned away twice now, says the beds were full both times. knee is bad so stairs are hard, hes asking for ground floor if theres any. been sleeping behind a store off broadway. no one has followed up with him since may.",
+      "shaped": "I have been turned away twice; both times I was told the beds were full. My knee is bad, so stairs are hard — I am asking for a ground floor bed if there is one. I have been sleeping behind a store off Broadway. No one has followed up with me since May. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_dtn_027",
+      "method": "verbal, recorded with permission",
+      "timestampISO": "2026-05-19T20:41:00Z"
+    },
+    "status": "unanswered",
+    "provenance": {
+      "alg": "ECDSA-P256",
+      "contentHash": "b941d96e856487b08cccb3e6fb227dd92a83fb3f7714867a6d53e2a60374bc4f",
+      "signature": "RUxaTMoBMahT5lg/cjkFpj7yEXKf6KZQAFUeeYjcVreW+QNlAtrBnTEghJZZkWnnIWFam3YJ77nvnN4DtUyW8A==",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQgKJxISFEW/Emjj9nTmW9gvWI/0CTEmE5RXYl5d8WgF3TXy4A+1PmWZpl8lxQdQ7fg/iEFC/nrJSayomLNBwOw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-07T02:36:57.699Z"
+    }
+  }
+]

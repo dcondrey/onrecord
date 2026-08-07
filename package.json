@@ -1,0 +1,27 @@
+{
+  "name": "on-record",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend companion to the On Record artifact: Claude-dignified stories, ECDSA-signed entries, C2PA-style provenance manifests.",
+  "type": "module",
+  "bin": {
+    "on-record": "./dist/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "on-record": "node dist/cli.js",
+    "seed": "node dist/cli.js seed",
+    "verify": "node dist/cli.js verify",
+    "serve": "node dist/cli.js serve"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
