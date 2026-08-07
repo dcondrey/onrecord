@@ -1,0 +1,72 @@
+<!-- ============================================================
+     ON RECORD · "Guide me" self-driving walkthrough
+     Paste this ENTIRE block into index.html immediately BEFORE </body>.
+     It is inline (no network), drives the demo by clicking existing
+     element IDs, is cancelable (Stop / Escape / touch the map), and
+     honors prefers-reduced-motion. It needs NO edits to your app code.
+     ============================================================ -->
+<style>
+.tourcap{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:min(580px,92vw);
+  background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid var(--line-strong);border-radius:12px;padding:12px 18px;font-family:var(--serif);
+  font-size:15.5px;line-height:1.45;color:var(--ink);box-shadow:var(--shadow);opacity:0;
+  pointer-events:none;transition:opacity .4s;z-index:70;text-align:center}
+.tourcap.show{opacity:1}
+#guidebtn[aria-pressed="true"]{background:var(--broken-dim);border-color:var(--broken);color:var(--broken)}
+</style>
+<script>
+(function(){
+  "use strict";
+  function ready(fn){ if(document.getElementById("svg")) fn(); else setTimeout(function(){ready(fn);},120); }
+  ready(function(){
+    var tr = document.querySelector(".top-right");
+    if(tr) tr.insertAdjacentHTML("afterbegin",
+      '<button class="ghost" id="guidebtn" type="button" aria-pressed="false">Guide me</button>');
+    var capEl = document.createElement("div");
+    capEl.className = "tourcap"; capEl.id = "tourcap";
+    capEl.setAttribute("role","status"); capEl.setAttribute("aria-live","polite");
+    document.body.appendChild(capEl);
+
+    function click(id){
+      var el = document.getElementById(id);
+      if(el) el.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true}));
+      return !!el;
+    }
+
+    var STEPS = [
+      {cap:"Every point is an unhoused San Diegan's real ask. No real person or location is in this data.", run:function(){ click("zreset"); }, wait:3000},
+      {cap:"Drill into a neighborhood.", run:function(){ click("dz-downtown"); }, wait:2500},
+      {cap:"Open one person's record — a birth certificate they've chased for three years.", run:function(){ click("pin-SD-0114"); }, wait:3000},
+      {cap:"Their own words: unedited intake fragments.", run:function(){ click("btn-raw"); }, wait:2900},
+      {cap:"AI-shaped — grammar only. The diff proves zero content words were added.", run:function(){ click("btn-shaped"); }, wait:3100},
+      {cap:"Every record is signed. Here is the C2PA-style manifest.", run:function(){ click("sealchip"); }, wait:2900},
+      {cap:"Now watch what happens if someone edits a sealed record…", run:function(){ click("btn-tamper"); }, wait:3500},
+      {cap:"The seal shatters, the signature fails. Tampering can't hide — and can't move a metric.", run:function(){}, wait:3100},
+      {cap:"Restoring the original record.", run:function(){ click("btn-restore"); }, wait:2200},
+      {cap:"Neighbors — housed and unhoused — actually reach agreements here.", run:function(){ click("sp-CG-01"); }, wait:3300},
+      {cap:"But the system doesn't answer. This is the number that matters.", run:function(){ click("tab-dash"); }, wait:2200}
+    ];
+
+    var on=false, timer=null, idx=0;
+    function btn(){ return document.getElementById("guidebtn"); }
+    function cap(){ return document.getElementById("tourcap"); }
+    function stop(){ on=false; if(timer){ clearTimeout(timer); timer=null; }
+      cap().classList.remove("show"); btn().textContent="Guide me"; btn().setAttribute("aria-pressed","false"); }
+    function step(){
+      if(!on || idx>=STEPS.length){ stop(); return; }
+      var s = STEPS[idx++];
+      cap().textContent = s.cap; cap().classList.add("show");
+      try{ s.run(); }catch(e){}
+      var reduced = window.matchMedia("(prefers-reduced-motion:reduce)").matches;
+      timer = setTimeout(step, reduced ? 1100 : s.wait);
+    }
+    function run(){ if(on){ stop(); return; }
+      on=true; idx=0; btn().textContent="Stop tour"; btn().setAttribute("aria-pressed","true"); step(); }
+
+    btn().onclick = run;
+    var mh = document.getElementById("mapholder");
+    if(mh){ ["pointerdown","wheel"].forEach(function(ev){ mh.addEventListener(ev, function(){ if(on) stop(); }); }); }
+    document.addEventListener("keydown", function(e){ if(e.key==="Escape" && on) stop(); });
+  });
+})();
+</script>

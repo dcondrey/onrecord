@@ -1,0 +1,17 @@
+# Cloudflare Pages headers for On Record.
+# This file must live at the DEPLOY ROOT of the Pages project (not inside a
+# subfolder). The paths below assume the site serves the page at /onrecord/.
+# If you deploy the onrecord folder AS the site root, change /onrecord/* to /*.
+
+/onrecord/*
+  Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'self'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), interest-cohort=()
+  Cache-Control: public, max-age=300, must-revalidate
+
+# Why this CSP matters: the page claims "no network requests." default-src 'none'
+# enforces that claim at the HTTP layer — the browser will BLOCK any fetch, font,
+# tile, image (except data: URIs), or analytics the page might ever try to make.
+# It proves the privacy promise instead of just asserting it. WebCrypto is not
+# affected by CSP. If anything misbehaves, you can safely remove this whole file.
