@@ -340,6 +340,8 @@ svg.map.dragging{cursor:grabbing}
 .pin.broken .ripple{fill:var(--broken);opacity:.32;animation-duration:1.1s}
 .pin.broken .ring{stroke:var(--broken);opacity:1}
 .pin.st-answered .core{fill:var(--ok)}
+.pin.st-claimed .core{fill:var(--amber)}
+.pin.st-disputed .core{fill:var(--broken)}
 .pin.pending .ring{stroke:var(--teal);stroke-dasharray:2.5 2.5;opacity:1}
 .pin.pending .core{fill:var(--teal)}
 .pin.pending .halo{opacity:.6}
@@ -454,6 +456,10 @@ select{width:100%;background:var(--panel-2);color:var(--ink);border:1px solid va
 .st-unanswered,.st-no_response{color:var(--broken);border-color:color-mix(in srgb,var(--broken) 42%,transparent);background:var(--broken-dim)}
 .st-answered,.st-agreed{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 42%,transparent);background:var(--ok-dim)}
 .st-pending{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 42%,transparent);background:color-mix(in srgb,var(--teal) 14%,transparent)}
+.st-claimed{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 42%,transparent);background:var(--amber-dim)}
+.st-disputed{color:var(--broken);border-color:color-mix(in srgb,var(--broken) 42%,transparent);background:var(--broken-dim)}
+.claimblock{margin-top:14px;border:1px solid color-mix(in srgb,var(--amber) 40%,transparent);border-radius:12px;padding:13px;background:var(--amber-dim)}
+.claimblock .btn{margin-top:9px;margin-right:7px}
 .st-acknowledged,.st-requested,.st-proposed,.st-awaiting{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 42%,transparent);background:var(--amber-dim)}
 .ask{margin:13px 0;padding:12px 13px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--amber)}
 .ask .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
@@ -708,6 +714,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
       <div class="keychip" id="bedchip"><span class="pulse" aria-hidden="true" style="background:var(--amber);box-shadow:0 0 10px var(--amber)"></span><span class="mono" id="bedtext">beds…</span></div>
       <div class="keychip" id="keychip"><span class="pulse" aria-hidden="true"></span><span class="mono" id="keytext">generating key…</span></div>
       <button class="ghost" id="chatbtn" type="button" style="border-color:var(--ok);color:var(--ok)">File a request</button>
+      <button class="ghost" id="providerbtn" type="button" style="border-color:var(--teal);color:var(--teal)">Provider tools</button>
       <button class="ghost" id="claimbtn" type="button" style="border-color:var(--amber);color:var(--amber)">My request</button>
       <button class="ghost" id="accessbtn" type="button" style="border-color:var(--amber);color:var(--amber)">Your request</button>
       <button class="ghost" id="panelbtn" type="button" aria-pressed="true">Panel</button>
@@ -848,6 +855,15 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     </div>
 
     <button class="btn btn-restore" id="acclose" type="button" style="margin-top:16px">Close</button>
+  </div>
+</div>
+
+<div class="modal" id="providermodal" hidden role="dialog" aria-modal="true" aria-labelledby="provtitle">
+  <div class="box">
+    <h2 id="provtitle">Provider tools</h2>
+    <p>Sample data: nothing published here routes anyone in real life. A staff card is issued per site, not per person, so it does not need reissuing every time someone leaves. Try one below.</p>
+    <div id="provstage"></div>
+    <button class="btn btn-restore" id="provclose" type="button" style="margin-top:16px">Close</button>
   </div>
 </div>
 
@@ -1242,6 +1258,14 @@ const SERVICES = [
  note:"Citation clearing and records replacement after a cleanup."}
 ];
 const SHELTERS = SERVICES.filter(x => x.beds);
+SHELTERS.forEach(v => { v.beds.frozenUntil = 0; });
+
+/* Which ask categories a site's services[] can plausibly address. Used to
+   show each provider only the open asks it could actually do something about. */
+const CATEGORY_TO_SERVICE = {
+  id_documents: ["id_help"], shelter_bed: ["beds"], medical: ["medical","dental"],
+  work_docs: ["id_help","case_mgmt"], phone: ["phone"], transit: ["transit"], childcare: ["childcare"]
+};
 
 /* consent gate */
 function hasConsent(e){ return !!(e.consent && e.consent.advocateId && e.consent.method && e.consent.timestamp); }
@@ -1272,13 +1296,29 @@ const REPLIES = {
 ENTRIES.forEach(e => { e.replies = (REPLIES[e.id]||[]).slice(); e.withdrawn = false; });
 const WORDS = ["river","harbor","cedar","iron","coast","meadow","granite","otter","juniper","lantern","copper","anchor","ember","willow","amber","compass","fern","slate","beacon","brass","pine","violet","signal","quill","tin","ferry","marsh","kestrel","alder","basalt"];
 
+/* Per-site staff cards. Issued per site, not per person, so turnover at a
+   site does not require reissuing to every individual who works there — the
+   same demo tradeoff as CODES above: derived deterministically here so the
+   demo is reproducible, never a phrase a real deployment would hardcode. */
+const STAFF_CODES = {};
+SERVICES.forEach((v,i) => {
+  const w = [], seen = {};
+  let j = 0;
+  while(w.length < 3){
+    const word = WORDS[(i*13 + j*7 + 11) % WORDS.length];
+    if(!seen[word]){ seen[word] = 1; w.push(word); }
+    j++;
+  }
+  STAFF_CODES[v.id] = {phrase: w.join(" "), pin: String(1000 + ((i*937 + 173) % 9000))};
+});
+
 /* Claim cards. Printed at intake and handed over on paper: a record
    number, three words, and four digits (CODES below). Nothing to lose
    but a card that we already know gets thrown away, which is why an
    advocate can always restore access in person. Both the "Your request"
    and "My request" panels authenticate against the same CODES/authTag
    scheme — there is exactly one claim-card format in this artifact. */
-ENTRIES.forEach(e => { e.updates = []; e.offers = []; e.restores = 0; e.pendingReview = false; });
+ENTRIES.forEach(e => { e.updates = []; e.offers = []; e.restores = 0; e.pendingReview = false; e.providerClaim = null; e.confirmedViaClaim = false; });
 
 /* =========================================================
    5. CRYPTO
@@ -1424,7 +1464,7 @@ function passesNeed(v){
 }
 function passesFilter(e){
   if(e.withdrawn || e.pendingReview) return false;
-  if(state.status === "unanswered" && e.status !== "unanswered") return false;
+  if(state.status === "unanswered" && e.status === "answered") return false;
   if(state.status === "answered" && e.status !== "answered") return false;
   if(state.category !== "all" && e.ask.category !== state.category) return false;
   return true;
@@ -1601,11 +1641,14 @@ function refreshMarkers(){
   }
   ENTRIES.forEach(e => {
     const g = document.getElementById("pin-"+e.id);
+    Array.from(g.classList).forEach(c => { if(c.indexOf("st-") === 0) g.classList.remove(c); });
+    g.classList.add("st-"+e.status);
     g.classList.toggle("hidden", lvl === "county" || !state.layers.asks || e.withdrawn);
     g.classList.toggle("dim", !passesFilter(e));
     g.classList.toggle("broken", !!(e.prov && !e.prov.ok));
     g.classList.toggle("pending", !!e.pendingReview);
     g.classList.toggle("selected", state.selected === e);
+    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status));
   });
   SPOTS.forEach(sp => {
     const g = document.getElementById("sp-"+sp.id);
@@ -2130,6 +2173,7 @@ function renderArea(){
 async function tickBeds(){
   if(!KEYS) return;
   for(const v of SHELTERS){
+    if(Date.now() < v.beds.frozenUntil) continue; /* a provider published its own count recently; the simulated feed does not overwrite it */
     const cap = Math.max(2, Math.round(v.beds.total * .09));
     const delta = [-1,-1,0,0,1][Math.floor(Math.random()*5)];
     v.beds.available = clamp(v.beds.available + delta, 0, cap);
@@ -2144,6 +2188,33 @@ async function tickBeds(){
    14c. CLAIM FLOW — how a person gets back into their own record
    ========================================================= */
 let claimUnlocked = null, claimKey = null;
+
+/* Two-party confirmation. A site can file a claim (status "claimed") but
+   cannot resolve it — only the record holder's own "Yes"/"No" can, from
+   either card flow above. There is no code path from the provider side
+   that sets status to "answered" directly. */
+function claimConfirmHTML(e){
+  if(!(e.providerClaim && e.status === "claimed")) return "";
+  const c = e.providerClaim;
+  return '<div class="claimblock"><div class="eyebrow">A site says it answered this</div>'
+    + '<p style="margin-top:6px"><b>'+esc(c.siteName)+'</b> filed a claim on '+c.ts.slice(0,10)+': &#8220;'+esc(c.note||"No note left.")+'&#8221;</p>'
+    + '<p style="font-size:12px;color:var(--ink-2);margin-top:6px">Only you can confirm this. The site cannot mark its own claim answered.</p>'
+    + '<button class="btn btn-verify" id="claimyes" type="button">Yes, this happened</button>'
+    + '<button class="btn btn-tamper" id="claimno" type="button">No, it did not</button></div>';
+}
+function wireClaimConfirm(e, afterRender){
+  const y = document.getElementById("claimyes"), n = document.getElementById("claimno");
+  if(y) y.onclick = async () => {
+    e.status = "answered"; e.confirmedViaClaim = true; await seal(e);
+    refreshMarkers(); renderList(); renderDash(); afterRender();
+    say("Record " + e.id + " confirmed answered by the record holder.");
+  };
+  if(n) n.onclick = async () => {
+    e.status = "disputed"; await seal(e);
+    refreshMarkers(); renderList(); renderDash(); afterRender();
+    say("Record " + e.id + " marked disputed by the record holder.");
+  };
+}
 
 function claimHome(msg){
   claimUnlocked = null; claimKey = null;
@@ -2209,6 +2280,7 @@ function renderUnlocked(){
       '<div class="unlocked"><div class="uh">&#10003; '+e.id+' opened with your card. Signed as the record holder.</div><div class="ub">'
     + '<div class="eyebrow">Your ask</div><p style="font-family:var(--serif);font-size:16px;margin:6px 0 0">'+esc(e.ask.summary)+'</p>'
     + '<div style="margin-top:10px"><span class="statuspill st-'+e.status+'">'+e.status+'</span></div>'
+    + claimConfirmHTML(e)
     + '<div class="eyebrow" style="margin-top:16px">What came back while you were away</div>'
     + (e.offers.length
         ? e.offers.map(o => '<div class="offer"><div class="oh">'+esc(o.kind)+' · waiting for advocate routing</div><p>'+esc(o.note||"No message left.")+'</p>'
@@ -2232,6 +2304,7 @@ function renderUnlocked(){
     refreshMarkers(); renderList(); renderDash();
   };
   document.getElementById("uptext").addEventListener("keydown", ev => { if(ev.key === "Enter") addUpdate(); });
+  wireClaimConfirm(e, renderUnlocked);
 }
 async function addUpdate(forced){
   const e = claimUnlocked;
@@ -2269,8 +2342,11 @@ function renderDash(){
   const brokenCount = live.length - verified.length;
   const pool = verified.length ? verified : live;
 
-  const unanswered = pool.filter(e => e.status === "unanswered").length;
+  const unanswered = pool.filter(e => e.status !== "answered").length;
   const answered = pool.filter(e => e.status === "answered").length;
+  const claimed = pool.filter(e => e.status === "claimed").length;
+  const disputed = pool.filter(e => e.status === "disputed").length;
+  const confirmed = pool.filter(e => e.confirmedViaClaim).length;
   const pct = pool.length ? Math.round(unanswered/pool.length*100) : 0;
   const openMoney = pool.filter(e => e.status !== "answered" && e.ask.amountUsd).reduce((s,e)=>s+e.ask.amountUsd,0);
   const docAsks = pool.filter(e => e.ask.category === "id_documents" && e.status !== "answered").length;
@@ -2302,6 +2378,13 @@ function renderDash(){
    + '<div class="metric"><div class="v">'+answered+'/'+pool.length+'</div><div class="l">asks answered</div></div>'
    + '<div class="metric"><div class="v">'+money(openMoney)+'</div><div class="l">open ask total</div></div>'
    + '<div class="metric"><div class="v">'+pool.length+'</div><div class="l">records counted</div></div></div>'
+
+   + '<div class="barsec"><h4>Two-party confirmation · a claim is not an answer</h4>'
+   + '<div class="metrics" style="margin-top:0">'
+   + '<div class="metric"><div class="v" style="color:var(--amber)">'+claimed+'</div><div class="l">claims awaiting the requester&#8217;s confirmation</div></div>'
+   + '<div class="metric"><div class="v" style="color:var(--ok)">'+confirmed+'</div><div class="l">confirmed answered by the requester</div></div>'
+   + '<div class="metric"><div class="v" style="color:var(--broken)">'+disputed+'</div><div class="l">disputed — claimed but the requester said no</div></div></div>'
+   + '<p class="disclaim" style="margin-top:9px">A site can file a claim, but only the person who asked can confirm it. Until they do, the claim stays counted as unmet above. A dispute stays counted as unmet permanently, with the claim attached.</p></div>'
 
    + '<div class="barsec"><h4>Beds open tonight · sample directory, signed counts</h4>'
    + '<div class="metrics" style="margin-top:0">'
@@ -2466,6 +2549,8 @@ function renderAuthor(){
     + '<div class="cap">Status: <b style="color:var(--amber)">'+e.status+'</b>'+(e.ask.amountUsd?' · '+money(e.ask.amountUsd):'')
     + ' · filed '+e.consent.timestamp.slice(0,10)+' with advocate '+e.consent.advocateId+'</div></div>'
 
+    + claimConfirmHTML(e)
+
     + '<div class="eyebrow" style="margin-top:16px">'+e.replies.length+' '+(e.replies.length===1?"reply":"replies")+' since you filed this</div>'
     + (e.replies.length ? e.replies.map(r =>
         '<div class="reply'+(r.mine?" mine":"")+'"><div class="rf">'+esc(r.from)+' · '+r.ts+'</div><p>'+esc(r.text)+'</p>'
@@ -2506,6 +2591,7 @@ function renderAuthor(){
     renderAuthor(); renderStory(); renderList(); renderDash(); renderArea(); refreshMarkers();
     say("Record " + e.id + " withdrawn at the author's request.");
   };
+  wireClaimConfirm(e, renderAuthor);
 }
 
 function makeDemoCard(){
@@ -2734,8 +2820,8 @@ async function submitIntake(){
     ask: {category: d.category, summary: d.clean.slice(0,120), amountUsd: d.amountUsd},
     story: {raw: d.clean, shaped: shaped}, facts: [],
     consent: {advocateId: "CHAT-DEMO", method: "self-service demo intake chat — no advocate present; a real deployment keeps this step in person and advocate-witnessed", timestamp: new Date().toISOString()},
-    status: "requested", withdrawn: false, pendingReview: true,
-    replies: [], updates: [], offers: [], restores: 0
+    status: "unanswered", withdrawn: false, pendingReview: true,
+    replies: [], updates: [], offers: [], restores: 0, providerClaim: null, confirmedViaClaim: false
   };
   (byZone[e.zone] = byZone[e.zone] || []);
   const g = byZone[e.zone], n = g.length + 1, i = g.length;
@@ -2763,6 +2849,118 @@ function wireChat(){
   resetChat();
   document.getElementById("chatbtn").onclick = () => { document.getElementById("chatdock").hidden = false; renderChat(); };
   document.getElementById("chatclose").onclick = closeChat;
+}
+
+/* =========================================================
+   16d. PROVIDER TOOLS — per-site staff card, bed publishing, site
+   info editing, and filing (never resolving) a claim on an open ask.
+   ========================================================= */
+let providerSite = null;
+
+function renderProvider(){
+  const host = document.getElementById("provstage");
+  if(!providerSite){
+    host.innerHTML = '<div class="claimrow"><div class="fld"><label for="pvphrase">Staff card &#8212; three words</label>'
+      + '<input id="pvphrase" placeholder="word word word" autocomplete="off" spellcheck="false"></div>'
+      + '<div class="fld"><label for="pvpin">Four digits</label>'
+      + '<input id="pvpin" type="text" inputmode="numeric" maxlength="6" placeholder="4417" autocomplete="off"></div>'
+      + '<button class="btn btn-verify" id="pvgo" type="button">Unlock</button></div>'
+      + '<p class="disclaim" style="margin-top:12px">One card per site, not per person &#8212; it does not need reissuing when staff turn over. Try any site&#8217;s card below.</p>'
+      + '<h3>Sites on this map</h3><div id="pvissuers"></div>';
+    document.getElementById("pvissuers").innerHTML = SERVICES.map(v =>
+      '<button class="arow" type="button" data-svc="'+v.id+'"><span style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--teal)"></span>'
+      + '<span><span class="t">'+esc(v.name)+'</span><span class="d">'+DISTRICTS[v.zone].label+' &#183; '+esc(v.hours)+'</span></span></button>').join("");
+    document.getElementById("pvissuers").querySelectorAll("[data-svc]").forEach(b => b.onclick = () => {
+      const c = STAFF_CODES[b.dataset.svc];
+      document.getElementById("pvphrase").value = c.phrase;
+      document.getElementById("pvpin").value = c.pin;
+    });
+    document.getElementById("pvgo").onclick = openProviderByCode;
+    document.getElementById("pvpin").addEventListener("keydown", ev => { if(ev.key === "Enter") openProviderByCode(); });
+    return;
+  }
+
+  const v = providerSite;
+  const matches = ENTRIES.filter(e => !e.withdrawn && !e.pendingReview && e.status === "unanswered"
+    && (CATEGORY_TO_SERVICE[e.ask.category]||[]).some(s => v.services.indexOf(s) >= 0));
+
+  host.innerHTML = '<div class="eyebrow">Signed in as</div><h3 style="font-family:var(--serif);font-weight:400;margin:4px 0 14px">'+esc(v.name)+' &#183; '+DISTRICTS[v.zone].label+'</h3>'
+
+    + (v.beds ? '<div class="claimrow"><div class="fld"><label for="pvbeds">Publish tonight&#8217;s bed count</label>'
+        + '<input id="pvbeds" type="number" min="0" max="'+v.beds.total+'" value="'+v.beds.available+'"></div>'
+        + '<button class="btn btn-verify" id="pvbedsgo" type="button">Publish</button></div>'
+        + '<p class="disclaim" style="margin-top:8px">Current: '+v.beds.available+' of '+v.beds.total+', signed '+v.beds.observedAt.slice(0,16).replace("T"," ")+'. '
+        + (Date.now() < v.beds.frozenUntil ? 'Holding this count for the next '+Math.ceil((v.beds.frozenUntil-Date.now())/1000)+'s against the simulated feed.' : 'A new publish supersedes this one and holds for two minutes against the simulated feed.')+'</p>' : '')
+
+    + '<h3 style="margin-top:18px">Hours, services, and notes</h3>'
+    + '<div class="claimrow"><div class="fld"><label for="pvhours">Hours</label><input id="pvhours" value="'+esc(v.hours)+'"></div></div>'
+    + '<div class="claimrow"><div class="fld"><label for="pvnote">Note shown on the map</label><textarea id="pvnote" maxlength="220">'+esc(v.note)+'</textarea></div></div>'
+    + '<button class="btn btn-send" id="pvsave" type="button">Save</button>'
+
+    + '<h3 style="margin-top:18px">Open asks this site could address</h3>'
+    + (matches.length ? matches.map(e =>
+        '<div class="reply"><div class="rf">'+e.id+' &#183; '+DISTRICTS[e.zone].label+' &#183; '+CATEGORY_LABEL[e.ask.category]+'</div>'
+        + '<p>'+esc(e.ask.summary)+'</p>'
+        + '<input id="pvnote-'+e.id+'" placeholder="What did you do? (shown to the requester)" style="width:100%;margin-top:6px;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px">'
+        + '<button class="btn btn-verify" data-claim="'+e.id+'" type="button" style="margin-top:7px">Claim this</button></div>').join("")
+      : '<p class="disclaim">No open asks this site&#8217;s services can address right now.</p>')
+    + '<p class="disclaim" style="margin-top:10px">Filing a claim does not mark this answered. Only the person who asked can confirm it, from their own claim card.</p>'
+    + '<button class="btn btn-restore" id="pvsignout" type="button" style="margin-top:12px">Sign out</button>';
+
+  const bg = document.getElementById("pvbedsgo");
+  if(bg) bg.onclick = async () => {
+    const n = Number(document.getElementById("pvbeds").value);
+    if(!Number.isFinite(n) || n < 0 || n > v.beds.total) return;
+    v.beds.available = n; v.beds.frozenUntil = Date.now() + 120000;
+    await sealBeds(v);
+    updateBedChip(); refreshMarkers(); renderArea(); renderDash();
+    renderProvider();
+    say(v.name + " published a new bed count.");
+  };
+  document.getElementById("pvsave").onclick = () => {
+    v.hours = document.getElementById("pvhours").value.trim() || v.hours;
+    v.note = document.getElementById("pvnote").value.trim() || v.note;
+    buildMap(); renderArea(); renderProvider();
+    say(v.name + " updated its site information.");
+  };
+  document.querySelectorAll("#provstage [data-claim]").forEach(b => b.onclick = async () => {
+    const id = b.dataset.claim;
+    const e = ENTRIES.find(x => x.id === id);
+    if(!e) return;
+    const noteEl = document.getElementById("pvnote-"+id);
+    e.status = "claimed";
+    e.providerClaim = {siteId: v.id, siteName: v.name, note: noteEl ? noteEl.value.trim() : "", ts: new Date().toISOString()};
+    await seal(e);
+    refreshMarkers(); renderList(); renderDash(); renderStory();
+    renderProvider();
+    say(v.name + " filed a claim on record " + id + ".");
+  });
+  document.getElementById("pvsignout").onclick = () => { providerSite = null; renderProvider(); };
+}
+async function openProviderByCode(){
+  const phrase = document.getElementById("pvphrase").value;
+  const pin = document.getElementById("pvpin").value;
+  if(!phrase.trim() || !pin.trim() || !KEYS) return;
+  const key = await deriveAuth(phrase, pin);
+  let found = null;
+  for(const v of SERVICES){
+    if(!v.staffTag) continue;
+    if(await authorTag(key, "staff:"+v.id) === v.staffTag){ found = v; break; }
+  }
+  if(!found){
+    document.getElementById("provstage").insertAdjacentHTML("beforeend",
+      '<div class="claimerr">No site matches that card. Check the spacing between words and the four digits.</div>');
+    return;
+  }
+  providerSite = found;
+  renderProvider();
+  say(found.name + " signed in with its staff card.");
+}
+function wireProvider(){
+  const m = document.getElementById("providermodal");
+  document.getElementById("providerbtn").onclick = () => { m.hidden = false; renderProvider(); };
+  document.getElementById("provclose").onclick = () => { m.hidden = true; };
+  m.addEventListener("click", ev => { if(ev.target === m) m.hidden = true; });
 }
 
 /* =========================================================
@@ -2833,12 +3031,14 @@ async function boot(){
   document.getElementById("moreinfo").onclick = () => { modal.hidden=false; document.getElementById("closemodal").focus(); };
   document.getElementById("closemodal").onclick = () => { modal.hidden=true; };
   modal.addEventListener("click", ev => { if(ev.target===modal) modal.hidden=true; });
+  const providerModal = document.getElementById("providermodal");
   document.addEventListener("keydown", ev => {
     if(ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
     if(ev.key === "Escape"){
       const cd = document.getElementById("chatdock");
       if(!cd.hidden){ closeChat(); return; }
       if(!claimModal.hidden){ claimModal.hidden=true; return; }
+      if(!providerModal.hidden){ providerModal.hidden=true; return; }
       if(!modal.hidden){ modal.hidden=true; return; }
       if(state.selected || state.spot){ state.selected=null; state.spot=null; renderStory(); renderCG(); refreshMarkers(); renderList(); }
       else if(state.focusedZone) resetView();
@@ -2850,6 +3050,7 @@ async function boot(){
 
   wireAccess();
   wireChat();
+  wireProvider();
   syncPanel(); renderStory(); renderCG(); renderArea(); renderList(); updateBedChip();
 
   try{
@@ -2863,6 +3064,10 @@ async function boot(){
       const c = CODES[e.id];
       if(!c) continue;
       e.authTag = await authorTag(await deriveAuth(c.phrase, c.pin), e.id);
+    }
+    for(const v of SERVICES){
+      const c = STAFF_CODES[v.id];
+      v.staffTag = await authorTag(await deriveAuth(c.phrase, c.pin), "staff:"+v.id);
     }
     updateBedChip(); renderArea();
     setInterval(tickBeds, 7000);
