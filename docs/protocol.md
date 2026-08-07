@@ -3,9 +3,9 @@
 How an entry is canonicalized, hashed, signed, and wrapped in a provenance manifest — and what that
 does and does not prove.
 
-The whole design constraint is that a browser must be able to re-verify an entry using nothing but
-`crypto.subtle`, offline, with no library. That rules out DER parsing, JOSE, COSE, and full C2PA, and
-it is why the scheme below is as small as it is.
+Protocol v1 is retained for backwards compatibility. New entries use protocol v2: deterministic
+CBOR payloads and detached COSE_Sign1 ES256 signatures. The browser and CLI must consume the same
+published entry bytes; a browser implementation should use the v2 envelope when present.
 
 ## 1. The entry
 
@@ -129,6 +129,29 @@ not authorization. See below.
 
 ## 6. What this does not prove
 
+### Protocol v2: CBOR, COSE, and DID
+
+V2 stores the canonical unsigned entry as `provenance.cborPayload` (base64) and signs it with a
+detached COSE_Sign1 structure in `provenance.coseSign1`. The protected COSE headers identify ES256
+(`-7`) and `application/cbor`; `contentHash` is SHA-256 of the CBOR payload. The issuer is a
+configurable `did:web` in production (`ONRECORD_ISSUER_DID`) or a self-contained `did:key` derived
+from the P-256 public key by default. `data/did.json` is emitted alongside generated data.
+
+For an actual trust decision, pass a locally pinned DID document to
+`on-record verify --did-doc data/did.json`. Without `--did-doc`, verification checks internal
+consistency and (for `did:key`) that the DID encodes the embedded public key; it does not establish
+that a `did:web` issuer is authorized.
+
+The v2 payload is bound back to the JSON entry during verification. A COSE signature by itself is
+not enough if the detached payload can be swapped. Existing v1 entries continue to verify with the
+legacy JSON/ECDSA path and should be migrated by re-seeding or re-signing.
+
+The generated manifest now has an explicit `org.onrecord.c2pa-bridge/1` claim containing the asset
+hash and assertion labels. This is a useful detached bridge, but not yet a complete C2PA Content Credential. Full C2PA interoperability
+still requires a C2PA claim, assertion store, JUMBF packaging, asset hard binding, and a trustable
+signing credential. The existing JSON manifests remain intentionally labelled C2PA-style until that
+packaging is added.
+
 Being precise about the boundary is the point of the exercise:
 
 - **The public key travels with the entry.** Anyone can generate a keypair and sign a fabricated
@@ -140,9 +163,9 @@ Being precise about the boundary is the point of the exercise:
   the signing time is a claim by the signer, not evidence. Backdating is undetectable. RFC 3161
   timestamps or a SCITT log would fix this.
 - **No revocation.** A compromised key cannot be retired; every entry it ever signed keeps verifying.
-- **This is not C2PA.** It borrows the manifest shape and the `c2pa.actions` label, but there is no
-  COSE signing, no certificate chain, no trust list, and no hard binding to a media asset. Do not
-  hand these manifests to a C2PA validator and expect them to parse.
+- **The JSON manifest is not yet C2PA.** Protocol v2 does use COSE for the entry envelope, but the
+  manifest still lacks C2PA's certificate chain/trust list and JUMBF hard binding to an asset. Do
+  not hand these JSON manifests to a C2PA validator and expect them to parse.
 - **The consent gate is a schema gate.** It proves an advocate id and a method string were recorded.
   It cannot prove consent was actually obtained — nothing in software can. That remains a human
   obligation.

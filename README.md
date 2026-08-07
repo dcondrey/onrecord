@@ -85,6 +85,14 @@ IEEE P-1363 `r||s` pair — what WebCrypto emits, not DER. `pubKey` is base64 SP
 therefore answers two independent questions: *did the content change* (the hash), and *was this key
 the signer* (the signature).
 
+New entries also carry a protocol-v2 envelope: deterministic CBOR, detached COSE_Sign1 ES256, and a
+publisher DID (`did:web` when `ONRECORD_ISSUER_DID` is configured, otherwise a self-contained
+`did:key`). Existing v1 JSON/ECDSA entries remain readable and verifiable.
+
+The CLI verifier is authoritative for protocol-v2 records. The self-contained demo viewer currently
+renders its embedded composite demo dataset and uses its own legacy interaction seals; it is not a
+network client and does not silently claim to validate the CLI’s v2 envelope.
+
 Key order in `src/schema.ts` is load-bearing. `canonicalize()` serializes fields in exactly that
 order, so reordering a field there invalidates every signature ever produced. Full format,
 manifest structure, and threat model: **[docs/protocol.md](./docs/protocol.md)**.
@@ -110,7 +118,7 @@ on-record add    [--file <path>] --zone <zone> --category <cat> --summary <text>
                  [--org-claim <text>] [--source <text>] [--json]
                  (raw story is read from stdin when --file is omitted)
 
-on-record verify [<file>] [--json]    independently re-check every signature
+on-record verify [<file>] [--did-doc <path>] [--json]    independently re-check every signature
 on-record seed   [--force] [--ai]     write the composite sample set
 on-record serve  [--port <n>]         serve the local viewer
 on-record keys                        show the signing key in use

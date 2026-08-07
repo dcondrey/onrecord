@@ -33,11 +33,12 @@ import {
   keyFingerprint,
   loadOrCreateKeyPair,
   sha256Hex,
-  signEntry,
+  signEntryCose,
 } from './sign.js';
 import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
 import { verifyFile } from './verify.js';
 import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
+import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -222,7 +223,10 @@ async function cmdAdd(args: Args): Promise<void> {
   }
 
   const keys = await loadOrCreateKeyPair();
-  const entry = await signEntry(unsigned, keys);
+  const issuer = process.env['ONRECORD_ISSUER_DID']?.trim() || didKeyFromPublicJwk(keys.publicJwk);
+  await mkdir(DATA_DIR, { recursive: true });
+  await writeFile(join(DATA_DIR, 'did.json'), JSON.stringify(buildDidDocument(issuer, keys.publicJwk), null, 2) + '\n');
+  const entry = await signEntryCose(unsigned, keys);
 
   const manifest = await buildManifest({
     entry,
@@ -310,7 +314,13 @@ async function cmdVerify(args: Args): Promise<void> {
     die(`${path} not found. Run \`on-record seed\` first, or pass a file path.`);
   }
 
-  const report = await verifyFile(path);
+  const didDocPath = str(args, 'did-doc');
+  let trustDocument: import('./did.js').DidTrustDocument | undefined;
+  if (didDocPath) {
+    if (!existsSync(didDocPath)) die(`${didDocPath} not found`);
+    trustDocument = JSON.parse(await readFile(didDocPath, 'utf8')) as import('./did.js').DidTrustDocument;
+  }
+  const report = await verifyFile(path, { trustDocument });
 
   if (report.parseError) die(`could not read ${path}: ${report.parseError}`);
 
@@ -386,12 +396,15 @@ async function cmdSeed(args: Args): Promise<void> {
 
 async function cmdKeys(): Promise<void> {
   const keys = await loadOrCreateKeyPair();
+  const issuer = process.env['ONRECORD_ISSUER_DID']?.trim() || didKeyFromPublicJwk(keys.publicJwk);
   const fp = await keyFingerprint(keys.pubKey);
   out();
   out(`  alg          ECDSA P-256 (SHA-256)`);
   out(`  fingerprint  ${c.cyan(fp)}`);
   out(`  created      ${keys.createdISO}`);
   out(`  public key   ${c.dim('(base64 SPKI — embedded in every entry)')}`);
+  out(`  issuer DID   ${issuer}`);
+  out(`  method       ${verificationMethodForDid(issuer)}`);
   out();
   out(wrap(keys.pubKey, 74, '    '));
   out();

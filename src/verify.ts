@@ -15,7 +15,8 @@
 
 import { readFile } from 'node:fs/promises';
 import { canonicalize, parseEntry, type Entry } from './schema.js';
-import { keyFingerprint, verifyEntry, type VerifyResult } from './sign.js';
+import { keyFingerprint, verifyCoseEntry, verifyEntry, type VerifyResult } from './sign.js';
+import type { DidTrustDocument } from './did.js';
 
 export interface EntryReport {
   index: number;
@@ -52,7 +53,7 @@ function diagnose(result: VerifyResult): string {
   return 'SIGNATURE INVALID — content hashes correctly but the signature does not verify under the embedded public key (key swapped, or signature forged/corrupted).';
 }
 
-export async function verifyFile(path: string): Promise<VerifyReport> {
+export async function verifyFile(path: string, options: { trustDocument?: DidTrustDocument } = {}): Promise<VerifyReport> {
   const report: VerifyReport = {
     file: path,
     total: 0,
@@ -104,7 +105,9 @@ export async function verifyFile(path: string): Promise<VerifyReport> {
       continue;
     }
 
-    const result = await verifyEntry(entry);
+    const result = entry.provenance.protocolVersion === '2.0'
+      ? await verifyCose(entry, options.trustDocument)
+      : await verifyEntry(entry);
     const ok = result.hashMatches && result.signatureValid;
     const fp = entry.provenance?.pubKey ? await keyFingerprint(entry.provenance.pubKey) : '-';
     keys.add(fp);
@@ -128,6 +131,17 @@ export async function verifyFile(path: string): Promise<VerifyReport> {
 
   report.keys = [...keys];
   return report;
+}
+
+async function verifyCose(entry: Entry, trustDocument?: DidTrustDocument): Promise<VerifyResult> {
+  const valid = await verifyCoseEntry(entry, trustDocument);
+  return {
+    hashMatches: valid,
+    signatureValid: valid,
+    recomputedHash: entry.provenance.contentHash,
+    claimedHash: entry.provenance.contentHash,
+    ...(valid ? {} : { error: 'COSE_Sign1 or detached CBOR payload failed verification' }),
+  };
 }
 
 /** Exposed for debugging: show exactly what bytes were hashed for a given entry. */

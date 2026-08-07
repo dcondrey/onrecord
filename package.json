@@ -31,6 +31,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test test/protocol.test.js",
     "typecheck": "tsc --noEmit",
     "on-record": "node dist/cli.js",
     "seed": "node dist/cli.js seed",
@@ -39,10 +40,15 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.70.0"
+    "@anthropic-ai/sdk": "^0.70.0",
+    "@contentauth/c2pa-node": "^0.8.3",
+    "cborg": "^6.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.20.1",
     "typescript": "^5.7.0"
+  },
+  "allowScripts": {
+    "@contentauth/c2pa-node@0.8.3": true
   }
 }

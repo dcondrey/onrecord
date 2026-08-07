@@ -17,6 +17,10 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { canonicalize, type Entry, type Provenance, type UnsignedEntry } from './schema.js';
+import { fromBase64, toBase64, toHex } from './encoding.js';
+import { encodeCanonical } from './cbor.js';
+import { signCoseSign1, verifyCoseSign1 } from './cose.js';
+import { didKeyFromPublicJwk, resolvePinnedVerificationMethod, samePublicJwk, type DidTrustDocument, verificationMethodForDid } from './did.js';
 
 const subtle = webcrypto.subtle;
 
@@ -28,19 +32,7 @@ export const MANIFEST_VERSION = '1.0';
 
 // --- encoding helpers -------------------------------------------------------
 
-export function toBase64(bytes: ArrayBuffer | Uint8Array): string {
-  const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  return Buffer.from(view).toString('base64');
-}
-
-export function fromBase64(b64: string): Uint8Array {
-  return new Uint8Array(Buffer.from(b64, 'base64'));
-}
-
-export function toHex(bytes: ArrayBuffer | Uint8Array): string {
-  const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  return Buffer.from(view).toString('hex');
-}
+export { fromBase64, toBase64, toHex } from './encoding.js';
 
 export async function sha256Hex(input: string): Promise<string> {
   const digest = await subtle.digest('SHA-256', new TextEncoder().encode(input));
@@ -131,6 +123,46 @@ export async function signEntry(unsigned: UnsignedEntry, keys: KeyPairFiles): Pr
   return { ...unsigned, provenance };
 }
 
+/**
+ * Protocol v2: deterministic CBOR payload + detached COSE_Sign1 ES256.
+ * The legacy provenance shape remains present for readers that only display
+ * entries; v2 verifiers select the COSE envelope explicitly.
+ */
+export async function signEntryCose(unsigned: UnsignedEntry, keys: KeyPairFiles): Promise<Entry> {
+  const payload = encodeCanonical(JSON.parse(canonicalize(unsigned)) as Record<string, unknown>);
+  const cose = await signCoseSign1(payload, keys.privateJwk, 'key-1');
+  const digest = await subtle.digest('SHA-256', payload);
+  const issuer = process.env['ONRECORD_ISSUER_DID']?.trim() || didKeyFromPublicJwk(keys.publicJwk);
+  const provenance: Provenance = {
+    alg: 'COSE-ES256', contentHash: toHex(digest), pubKey: keys.pubKey,
+    manifestVersion: MANIFEST_VERSION, signedAtISO: new Date().toISOString(), protocolVersion: '2.0',
+    issuer, verificationMethod: verificationMethodForDid(issuer), cborPayload: toBase64(payload), coseSign1: cose.sign1,
+  };
+  return { ...unsigned, provenance };
+}
+
+export async function verifyCoseEntry(entry: Entry, trustDocument?: DidTrustDocument): Promise<boolean> {
+  const p = entry.provenance;
+  if (p.protocolVersion !== '2.0' || !p.cborPayload || !p.coseSign1) return false;
+  if (!p.issuer || p.verificationMethod !== verificationMethodForDid(p.issuer)) return false;
+  const payload = fromBase64(p.cborPayload);
+  const { provenance: _provenance, ...rest } = entry;
+  const expectedPayload = encodeCanonical(JSON.parse(canonicalize(rest)) as Record<string, unknown>);
+  if (payload.length !== expectedPayload.length || payload.some((byte, i) => byte !== expectedPayload[i])) return false;
+  if (p.issuer?.startsWith('did:key:')) {
+    const publicJwkForDid = await subtle.exportKey('jwk', await subtle.importKey('spki', fromBase64(p.pubKey), ALGORITHM, true, ['verify'])) as JsonWebKey;
+    if (didKeyFromPublicJwk(publicJwkForDid) !== p.issuer) return false;
+  }
+  const digest = await subtle.digest('SHA-256', payload);
+  if (toHex(digest) !== p.contentHash) return false;
+  const publicJwk = await subtle.exportKey('jwk', await subtle.importKey('spki', fromBase64(p.pubKey), ALGORITHM, true, ['verify'])) as JsonWebKey;
+  if (trustDocument) {
+    const trusted = resolvePinnedVerificationMethod(trustDocument, p.verificationMethod);
+    if (!trusted || !samePublicJwk(trusted, publicJwk)) return false;
+  }
+  return verifyCoseSign1({ sign1: p.coseSign1, payload: p.cborPayload, algorithm: 'ES256' }, payload, publicJwk);
+}
+
 export interface VerifyResult {
   hashMatches: boolean;
   signatureValid: boolean;
@@ -151,6 +183,7 @@ export async function verifyEntry(entry: Entry): Promise<VerifyResult> {
 
   let recomputedHash = '';
   try {
+    if (!provenance.signature) throw new Error('legacy provenance has no signature');
     const digest = await digestOf(unsigned);
     recomputedHash = toHex(digest);
     const claimedHash = provenance?.contentHash ?? '';
@@ -201,6 +234,8 @@ export interface OrgClaim {
 }
 
 export interface Manifest {
+  /** Explicit bridge format; this is not a claim of C2PA conformance. */
+  format: 'org.onrecord.c2pa-bridge/1';
   manifestVersion: string;
   claimGenerator: string;
   instanceId: string;
@@ -213,7 +248,7 @@ export interface Manifest {
    */
   unsignedNotes?: Record<string, unknown>[];
   signature: {
-    alg: 'ECDSA-P256';
+    alg: 'ECDSA-P256' | 'COSE-ES256';
     contentHash: string;
     signature: string;
     pubKey: string;
@@ -221,6 +256,15 @@ export interface Manifest {
     signedAtISO: string;
     /** What the signature actually covers. */
     scope: string;
+    protocolVersion?: string;
+    issuer?: string;
+    verificationMethod?: string;
+    coseSign1?: string;
+  };
+  claim: {
+    instanceId: string;
+    asset: { mediaType: 'application/json'; cborSha256: string };
+    assertions: string[];
   };
 }
 
@@ -327,6 +371,7 @@ export async function buildManifest(input: BuildManifestInput): Promise<Manifest
   }
 
   return {
+    format: 'org.onrecord.c2pa-bridge/1',
     manifestVersion: MANIFEST_VERSION,
     claimGenerator: CLAIM_GENERATOR,
     instanceId: `urn:onrecord:entry:${entry.id}`,
@@ -336,12 +381,27 @@ export async function buildManifest(input: BuildManifestInput): Promise<Manifest
     signature: {
       alg: entry.provenance.alg,
       contentHash: entry.provenance.contentHash,
-      signature: entry.provenance.signature,
+      signature: entry.provenance.coseSign1 ?? entry.provenance.signature ?? '',
       pubKey: entry.provenance.pubKey,
       keyFingerprint: await keyFingerprint(entry.provenance.pubKey),
       signedAtISO: entry.provenance.signedAtISO,
       scope:
-        'SHA-256 over the canonical serialization of all entry fields except `provenance`; signature is over those digest bytes.',
+        entry.provenance.protocolVersion === '2.0'
+          ? 'Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.'
+          : 'SHA-256 over the canonical serialization of all entry fields except `provenance`; legacy signature retained for v1 compatibility.',
+      ...(entry.provenance.protocolVersion === '2.0'
+        ? {
+            protocolVersion: entry.provenance.protocolVersion,
+            issuer: entry.provenance.issuer,
+            verificationMethod: entry.provenance.verificationMethod,
+            coseSign1: entry.provenance.coseSign1,
+          }
+        : {}),
+    },
+    claim: {
+      instanceId: `urn:onrecord:entry:${entry.id}`,
+      asset: { mediaType: 'application/json', cborSha256: entry.provenance.contentHash },
+      assertions: assertions.map((assertion) => assertion.label),
     },
   };
 }

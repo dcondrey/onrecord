@@ -51,12 +51,19 @@ export interface Consent {
 }
 
 export interface Provenance {
-  alg: 'ECDSA-P256';
+  alg: 'ECDSA-P256' | 'COSE-ES256';
   contentHash: string;
-  signature: string;
+  /** Legacy v1 raw P-1363 signature. Absent for protocol v2. */
+  signature?: string;
   pubKey: string;
   manifestVersion: '1.0';
   signedAtISO: string;
+  /** Standards envelope, present on protocol v2 entries. */
+  protocolVersion?: '1.0' | '2.0';
+  issuer?: string;
+  verificationMethod?: string;
+  cborPayload?: string;
+  coseSign1?: string;
 }
 
 export interface Entry {

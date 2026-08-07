@@ -24,8 +24,9 @@ import {
   type Entry,
   type UnsignedEntry,
 } from './schema.js';
-import { buildManifest, loadOrCreateKeyPair, sha256Hex, signEntry } from './sign.js';
+import { buildManifest, loadOrCreateKeyPair, sha256Hex, signEntryCose } from './sign.js';
 import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
+import { buildDidDocument, didKeyFromPublicJwk } from './did.js';
 
 export const DATA_DIR = 'data';
 export const ENTRIES_PATH = join(DATA_DIR, 'entries.json');
@@ -72,6 +73,8 @@ export interface SeedOutcome {
 export async function runSeed(options: SeedOptions): Promise<SeedOutcome> {
   const baseDir = options.baseDir ?? process.cwd();
   const keys = await loadOrCreateKeyPair(baseDir);
+  const issuer = process.env['ONRECORD_ISSUER_DID']?.trim() || didKeyFromPublicJwk(keys.publicJwk);
+  await writeFile(join(baseDir, DATA_DIR, 'did.json'), JSON.stringify(buildDidDocument(issuer, keys.publicJwk), null, 2) + '\n');
   const promptSha256 = await sha256Hex(SYSTEM_PROMPT);
 
   await mkdir(join(baseDir, MANIFESTS_DIR), { recursive: true });
@@ -102,7 +105,7 @@ export async function runSeed(options: SeedOptions): Promise<SeedOutcome> {
     }
 
     validateUnsigned(unsigned);
-    const entry = await signEntry(unsigned, keys);
+    const entry = await signEntryCose(unsigned, keys);
     entries.push(entry);
 
     const manifest = await buildManifest({
