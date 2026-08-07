@@ -27,6 +27,7 @@ import {
 import { buildManifest, loadOrCreateKeyPair, sha256Hex, signEntryCose } from './sign.js';
 import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
 import { buildDidDocument, didKeyFromPublicJwk } from './did.js';
+import { buildC2paArchive } from './c2pa.js';
 
 export const DATA_DIR = 'data';
 export const ENTRIES_PATH = join(DATA_DIR, 'entries.json');
@@ -124,6 +125,24 @@ export async function runSeed(options: SeedOptions): Promise<SeedOutcome> {
       join(baseDir, MANIFESTS_DIR, `${entry.id}.json`),
       JSON.stringify(manifest, null, 2) + '\n',
     );
+
+    const c2paCert = process.env['ONRECORD_C2PA_CERT'];
+    const c2paKey = process.env['ONRECORD_C2PA_KEY'];
+    if (c2paCert && c2paKey) {
+      const archive = await buildC2paArchive(entry, {
+        certificatePath: c2paCert,
+        privateKeyPath: c2paKey,
+        composite: true,
+        aiTransform: {
+          applied: aiApplied,
+          model: aiApplied ? model : modelId() + ' (not invoked)',
+          promptSha256,
+          method,
+          ...(usage ?? {}),
+        },
+      });
+      await writeFile(join(baseDir, MANIFESTS_DIR, `${entry.id}.c2pa`), archive);
+    }
   }
 
   await writeFile(join(baseDir, ENTRIES_PATH), JSON.stringify(entries, null, 2) + '\n');

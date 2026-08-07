@@ -39,6 +39,7 @@ import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
 import { verifyFile } from './verify.js';
 import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
 import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
+import { buildC2paArchive } from './c2pa.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -255,6 +256,24 @@ async function cmdAdd(args: Args): Promise<void> {
   await writeFile(ENTRIES_PATH, JSON.stringify(entries, null, 2) + '\n');
   const manifestPath = join(MANIFESTS_DIR, `${entry.id}.json`);
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
+  const c2paCert = process.env['ONRECORD_C2PA_CERT'];
+  const c2paKey = process.env['ONRECORD_C2PA_KEY'];
+  if (c2paCert && c2paKey) {
+    const archive = await buildC2paArchive(entry, {
+      certificatePath: c2paCert,
+      privateKeyPath: c2paKey,
+      aiTransform: {
+        applied: true,
+        model: result.model,
+        promptSha256: await sha256Hex(SYSTEM_PROMPT),
+        method: 'Raw advocate text re-rendered by Claude under a no-fabrication system prompt.',
+        inputTokens: result.inputTokens,
+        outputTokens: result.outputTokens,
+      },
+      ...(orgClaimText && orgClaimSource ? { orgClaim: { text: orgClaimText, source: orgClaimSource, alleged: false } } : {}),
+    });
+    await writeFile(join(MANIFESTS_DIR, `${entry.id}.c2pa`), archive);
+  }
 
   if (bool(args, 'json')) {
     out(JSON.stringify(entry, null, 2));
@@ -283,7 +302,8 @@ async function cmdAdd(args: Args): Promise<void> {
   rule('PROVENANCE');
   out(`  alg          ${entry.provenance.alg}`);
   out(`  contentHash  ${c.cyan(entry.provenance.contentHash)}`);
-  out(`  signature    ${c.cyan(entry.provenance.signature.slice(0, 44))}…`);
+  const signaturePreview = entry.provenance.coseSign1 ?? entry.provenance.signature ?? '';
+  out(`  signature    ${c.cyan(signaturePreview.slice(0, 44))}…`);
   out(`  key          ${fp}  ${c.dim('(SHA-256 of SPKI, first 8 bytes)')}`);
   out(`  signedAt     ${entry.provenance.signedAtISO}`);
   if (orgClaimText) {

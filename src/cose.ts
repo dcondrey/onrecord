@@ -34,14 +34,16 @@ export async function signCoseSign1(payload: Uint8Array, privateJwk: JsonWebKey,
 }
 
 export async function verifyCoseSign1(value: CoseSign1, payloadOverride?: Uint8Array, publicJwk?: JsonWebKey): Promise<boolean> {
-  const decoded = decode(fromBase64(value.sign1));
+  const decoded = decode(fromBase64(value.sign1), { useMaps: true });
   if (!Array.isArray(decoded) || decoded.length !== 4) return false;
   const [protectedRaw, unprotected, embeddedPayload, signature] = decoded;
   if (!(protectedRaw instanceof Uint8Array) || !(signature instanceof Uint8Array) || !(unprotected instanceof Map || (unprotected && typeof unprotected === 'object'))) return false;
   const payload = payloadOverride ?? fromBase64(value.payload);
   if (embeddedPayload !== null) return false;
-  const protectedHeaders = decode(protectedRaw);
-  const alg = protectedHeaders instanceof Map ? protectedHeaders.get(1) : undefined;
+  const protectedHeaders = decode(protectedRaw, { useMaps: true });
+  const alg = protectedHeaders instanceof Map
+    ? protectedHeaders.get(1)
+    : (protectedHeaders as Record<string, unknown>)['1'];
   if (alg !== -7) return false;
   if (!publicJwk) return false;
   const key = await subtle.importKey('jwk', publicJwk, ECDSA, false, ['verify']);
@@ -50,9 +52,9 @@ export async function verifyCoseSign1(value: CoseSign1, payloadOverride?: Uint8A
 
 /** Extract the COSE key identifier (kid) from a signed structure, if present. */
 export function coseKid(sign1: string): string | undefined {
-  const decoded = decode(fromBase64(sign1));
+  const decoded = decode(fromBase64(sign1), { useMaps: true });
   if (!Array.isArray(decoded) || !(decoded[0] instanceof Uint8Array)) return undefined;
-  const headers = decode(decoded[0]);
-  const value = headers instanceof Map ? headers.get(4) : undefined;
+  const headers = decode(decoded[0], { useMaps: true });
+  const value = headers instanceof Map ? headers.get(4) : (headers as Record<string, unknown>)['4'];
   return value instanceof Uint8Array ? new TextDecoder().decode(value) : undefined;
 }
