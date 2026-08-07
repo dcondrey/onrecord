@@ -1,8 +1,9 @@
 {
+  "format": "org.onrecord.c2pa-bridge/1",
   "manifestVersion": "1.0",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
   "instanceId": "urn:onrecord:entry:or_seed_02",
-  "createdISO": "2026-08-07T02:36:57.699Z",
+  "createdISO": "2026-08-07T23:18:56.865Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
@@ -62,12 +63,31 @@
     }
   ],
   "signature": {
-    "alg": "ECDSA-P256",
-    "contentHash": "9572bf86c4c7778bf5533b11153214b68d304abd886d66cb5b2b0250599a3ae9",
-    "signature": "m5+iyFZxqioy6D5o2We6F7Qqc9FpTkEHEGeU/MfPlDpMbKOuyzcrDYI6DW2FT1/waJ6X4Fv++3HB9GkcWWMvJg==",
-    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEQgKJxISFEW/Emjj9nTmW9gvWI/0CTEmE5RXYl5d8WgF3TXy4A+1PmWZpl8lxQdQ7fg/iEFC/nrJSayomLNBwOw==",
-    "keyFingerprint": "c601a496f4f03237",
-    "signedAtISO": "2026-08-07T02:36:57.699Z",
-    "scope": "SHA-256 over the canonical serialization of all entry fields except `provenance`; signature is over those digest bytes."
+    "alg": "COSE-ES256",
+    "contentHash": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7B5xwOKg1Dc6Is+Ls+q/z8hvcyELrRWQyIjj0cbAs7hNQRpflWD6+JY0vZeKkdFL+GlAhMIsh47GXcVTLzeRBQ==",
+    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
+    "keyFingerprint": "571fc6d0edab0675",
+    "signedAtISO": "2026-08-07T23:18:56.865Z",
+    "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
+    "protocolVersion": "2.0",
+    "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+    "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7B5xwOKg1Dc6Is+Ls+q/z8hvcyELrRWQyIjj0cbAs7hNQRpflWD6+JY0vZeKkdFL+GlAhMIsh47GXcVTLzeRBQ=="
+  },
+  "claim": {
+    "instanceId": "urn:onrecord:entry:or_seed_02",
+    "asset": {
+      "mediaType": "application/json",
+      "cborSha256": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858"
+    },
+    "assertions": [
+      "org.onrecord.consent",
+      "org.onrecord.story.hash",
+      "c2pa.actions",
+      "org.onrecord.ai-transform",
+      "org.onrecord.location-precision",
+      "org.onrecord.composite"
+    ]
   }
 }

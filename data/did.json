@@ -1,0 +1,26 @@
+{
+  "id": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+  "verificationMethod": [
+    {
+      "id": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "type": "JsonWebKey2020",
+      "controller": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+      "publicKeyJwk": {
+        "key_ops": [
+          "verify"
+        ],
+        "ext": true,
+        "kty": "EC",
+        "x": "hfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFSc",
+        "y": "M7c6-Ia4ooJRYFy8CeVbeBSWP7ABkSUQkO7CpS-MyYc",
+        "crv": "P-256"
+      }
+    }
+  ],
+  "authentication": [
+    "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1"
+  ],
+  "assertionMethod": [
+    "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1"
+  ]
+}
