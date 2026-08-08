@@ -1025,40 +1025,66 @@ const GEO_LABELS = [["La Jolla",-117.258,32.845],["Pacific Beach",-117.240,32.80
 ["Barrio Logan",-117.142,32.690],["National City",-117.098,32.674],["Lemon Grove",-117.032,32.737],
 ["Spring Valley",-116.985,32.739],["Santee",-116.975,32.843],["Otay Mesa",-116.960,32.570],
 ["San Ysidro",-117.040,32.553],["Imperial Beach",-117.115,32.577],["Tijuana",-116.980,32.522],
-["Coronado",-117.181,32.690],["Mira Mesa",-117.140,32.876]];
+["Coronado",-117.181,32.690],["Mira Mesa",-117.140,32.876],
+["East Village",-117.157,32.712],["Hillcrest",-117.165,32.753],["Little Italy",-117.174,32.725],["South Park",-117.128,32.718]];
 
 /* =========================================================
-   2. DISTRICTS — outlines follow real edges: coast, river,
-   freeways, and the boundary streets locals actually use.
-   8 carry records, 18 give context.
+   2. DISTRICTS — City of San Diego polygons are simplified from the
+   official Community Planning Area boundaries (data.sandiego.gov / SanGIS,
+   geo.sandag.org/server/rest/directories/downloads/Community_Plan_SD.geojson),
+   clipped to this map's existing lat/lon bounds and Douglas-Peucker
+   simplified to roughly hand-drawn density. Independent cities and
+   unincorporated communities (Coronado, National City, Chula Vista,
+   Imperial Beach, La Mesa, El Cajon, Lemon Grove, Spring Valley, Santee)
+   aren't in that dataset and remain hand-drawn.
+   15 carry records, 30 give context.
    ========================================================= */
 const DISTRICTS = {
-"la-jolla":{label:"La Jolla", poly:[[-117.2775,32.8455],[-117.2605,32.8325],[-117.2555,32.8185],[-117.244,32.816],[-117.236,32.828],[-117.238,32.845],[-117.248,32.860],[-117.2705,32.8555]]},
-"pacific-beach":{label:"Pacific Beach", poly:[[-117.2545,32.800],[-117.2535,32.782],[-117.240,32.780],[-117.226,32.785],[-117.224,32.803],[-117.232,32.811],[-117.2495,32.8115]]},
-"mission-beach":{label:"Mission Beach", poly:[[-117.2538,32.780],[-117.2478,32.7795],[-117.2452,32.766],[-117.2512,32.7625]]},
-"clairemont":{label:"Clairemont", poly:[[-117.226,32.803],[-117.205,32.800],[-117.185,32.804],[-117.176,32.816],[-117.180,32.838],[-117.205,32.845],[-117.224,32.840]]},
-"kearny-mesa":{label:"Kearny Mesa", poly:[[-117.176,32.812],[-117.150,32.806],[-117.126,32.808],[-117.116,32.822],[-117.122,32.842],[-117.150,32.846],[-117.172,32.838]]},
-"ocean-beach":{label:"Ocean Beach", poly:[[-117.2512,32.7585],[-117.240,32.7565],[-117.2335,32.748],[-117.2355,32.7365],[-117.2492,32.7355],[-117.2532,32.7445]]},
-"point-loma":{label:"Point Loma", poly:[[-117.2532,32.7335],[-117.240,32.732],[-117.2305,32.722],[-117.2285,32.706],[-117.238,32.6935],[-117.2482,32.6975],[-117.2522,32.716]]},
-"mission-valley":{label:"Mission Valley", poly:[[-117.200,32.766],[-117.170,32.762],[-117.140,32.764],[-117.130,32.774],[-117.140,32.786],[-117.172,32.788],[-117.198,32.782]]},
-"hillcrest":{label:"Hillcrest", poly:[[-117.178,32.744],[-117.160,32.742],[-117.152,32.748],[-117.154,32.760],[-117.166,32.766],[-117.178,32.760]]},
-"north-park":{label:"North Park", poly:[[-117.140,32.734],[-117.116,32.734],[-117.106,32.742],[-117.108,32.756],[-117.126,32.760],[-117.138,32.752]]},
-"balboa-park":{label:"Balboa Park", poly:[[-117.1585,32.7175],[-117.1345,32.7175],[-117.132,32.732],[-117.136,32.7455],[-117.1585,32.7455]]},
-"south-park":{label:"South Park", poly:[[-117.140,32.706],[-117.120,32.708],[-117.116,32.720],[-117.124,32.730],[-117.138,32.728]]},
-"little-italy":{label:"Little Italy", poly:[[-117.176,32.720],[-117.164,32.722],[-117.162,32.734],[-117.172,32.736],[-117.178,32.730]]},
-"downtown":{label:"Downtown", poly:[[-117.180,32.719],[-117.169,32.707],[-117.158,32.701],[-117.152,32.708],[-117.162,32.720],[-117.172,32.724]]},
-"east-village":{label:"East Village", poly:[[-117.158,32.716],[-117.138,32.712],[-117.134,32.702],[-117.146,32.694],[-117.157,32.702]]},
-"barrio-logan":{label:"Barrio Logan", poly:[[-117.157,32.700],[-117.146,32.692],[-117.134,32.684],[-117.126,32.690],[-117.134,32.700],[-117.148,32.704]]},
-"coronado":{label:"Coronado", poly:[[-117.192,32.694],[-117.180,32.700],[-117.172,32.694],[-117.170,32.682],[-117.180,32.678],[-117.190,32.684]]},
-"national-city":{label:"National City", poly:[[-117.122,32.686],[-117.100,32.680],[-117.080,32.666],[-117.074,32.676],[-117.086,32.690],[-117.110,32.692]]},
-"chula-vista":{label:"Chula Vista", poly:[[-117.104,32.652],[-117.070,32.646],[-117.040,32.632],[-117.030,32.610],[-117.056,32.602],[-117.088,32.612],[-117.100,32.634]]},
-"imperial-beach":{label:"Imperial Beach", poly:[[-117.1285,32.5875],[-117.108,32.584],[-117.100,32.572],[-117.112,32.5655],[-117.1265,32.5705]]},
-"san-ysidro":{label:"San Ysidro", poly:[[-117.062,32.564],[-117.036,32.560],[-117.020,32.548],[-117.030,32.540],[-117.056,32.544]]},
-"la-mesa":{label:"La Mesa", poly:[[-117.046,32.756],[-117.020,32.750],[-117.000,32.756],[-116.998,32.774],[-117.012,32.788],[-117.038,32.784]]},
-"el-cajon":{label:"El Cajon", poly:[[-116.992,32.782],[-116.964,32.774],[-116.936,32.780],[-116.928,32.796],[-116.940,32.814],[-116.972,32.816],[-116.990,32.802]]},
-"lemon-grove":{label:"Lemon Grove", poly:[[-117.050,32.730],[-117.028,32.724],[-117.014,32.732],[-117.020,32.746],[-117.040,32.750]]},
+"la-jolla":{label:"La Jolla", poly:[[-117.252,32.88],[-117.26,32.853],[-117.282,32.843],[-117.281,32.822],[-117.263,32.806],[-117.226,32.819],[-117.237,32.843],[-117.238,32.872]]},
+"pacific-beach":{label:"Pacific Beach", poly:[[-117.212,32.802],[-117.226,32.819],[-117.265,32.81],[-117.256,32.791],[-117.242,32.791],[-117.238,32.78],[-117.231,32.796],[-117.222,32.802],[-117.209,32.796]]},
+"mission-beach":{label:"Mission Beach", poly:[[-117.251,32.772],[-117.251,32.79],[-117.256,32.791],[-117.253,32.759],[-117.26,32.758],[-117.248,32.76]]},
+"clairemont-mesa":{label:"Clairemont Mesa", poly:[[-117.178,32.847],[-117.235,32.839],[-117.233,32.826],[-117.207,32.792],[-117.207,32.77],[-117.184,32.777],[-117.189,32.791],[-117.184,32.797],[-117.154,32.807]]},
+"kearny-mesa":{label:"Kearny Mesa", poly:[[-117.118,32.788],[-117.112,32.798],[-117.121,32.842],[-117.157,32.837],[-117.178,32.847],[-117.151,32.804],[-117.127,32.809]]},
+"university-city":{label:"University City", poly:[[-117.244,32.88],[-117.235,32.838],[-117.207,32.847],[-117.178,32.847],[-117.19,32.876],[-117.174,32.88]]},
+"military-facilities":{label:"Military Facilities", poly:[[-117.007,32.875],[-117.001,32.88],[-117.161,32.88],[-117.19,32.872],[-117.178,32.847],[-117.153,32.837],[-117.094,32.841],[-117.068,32.854],[-117.053,32.854],[-117.054,32.875]],noLabel:true},
+"east-elliott":{label:"East Elliott", poly:[[-117.03,32.875],[-117.054,32.875],[-117.053,32.854],[-117.033,32.851],[-117.023,32.84],[-117.005,32.875]]},
+"tierrasanta":{label:"Tierrasanta", poly:[[-117.026,32.845],[-117.064,32.855],[-117.084,32.843],[-117.121,32.842],[-117.114,32.788],[-117.096,32.797],[-117.097,32.807],[-117.077,32.809],[-117.045,32.839],[-117.022,32.838]]},
+"navajo":{label:"Navajo", poly:[[-117.102,32.779],[-117.044,32.777],[-117.031,32.79],[-117.038,32.791],[-117.006,32.791],[-117.006,32.813],[-117.038,32.831],[-117.037,32.839],[-117.03,32.838],[-117.045,32.839],[-117.077,32.809],[-117.097,32.807]]},
+"serra-mesa":{label:"Serra Mesa", poly:[[-117.126,32.808],[-117.151,32.804],[-117.153,32.809],[-117.163,32.781],[-117.118,32.788]]},
+"linda-vista":{label:"Linda Vista", poly:[[-117.153,32.809],[-117.158,32.801],[-117.167,32.804],[-117.189,32.793],[-117.184,32.777],[-117.2,32.776],[-117.207,32.77],[-117.205,32.762],[-117.162,32.771]]},
+"ocean-beach":{label:"Ocean Beach", poly:[[-117.227,32.757],[-117.236,32.751],[-117.254,32.754],[-117.254,32.747],[-117.259,32.75],[-117.256,32.736],[-117.252,32.733]]},
+"point-loma":{label:"Point Loma", poly:[[-117.237,32.668],[-117.236,32.716],[-117.224,32.718],[-117.232,32.708],[-117.22,32.718],[-117.227,32.725],[-117.217,32.721],[-117.204,32.735],[-117.213,32.744],[-117.208,32.748],[-117.224,32.758],[-117.257,32.735],[-117.256,32.699],[-117.245,32.666]]},
+"mission-valley":{label:"Mission Valley", poly:[[-117.104,32.788],[-117.163,32.781],[-117.164,32.77],[-117.205,32.762],[-117.16,32.757],[-117.157,32.763],[-117.1,32.777]]},
+"mission-bay-park":{label:"Mission Bay Park", poly:[[-117.209,32.796],[-117.222,32.802],[-117.231,32.796],[-117.235,32.78],[-117.242,32.791],[-117.252,32.79],[-117.248,32.76],[-117.259,32.756],[-117.236,32.751],[-117.236,32.756],[-117.204,32.76]]},
+"uptown":{label:"Uptown", poly:[[-117.143,32.764],[-117.16,32.757],[-117.19,32.759],[-117.192,32.747],[-117.159,32.723],[-117.159,32.741],[-117.148,32.741]]},
+"north-park":{label:"North Park", poly:[[-117.148,32.741],[-117.134,32.741],[-117.134,32.73],[-117.125,32.73],[-117.12,32.721],[-117.112,32.728],[-117.13,32.769],[-117.146,32.762]]},
+"balboa-park":{label:"Balboa Park", poly:[[-117.142,32.741],[-117.159,32.741],[-117.159,32.723],[-117.134,32.72],[-117.134,32.741]]},
+"greater-golden-hill":{label:"Golden Hill", poly:[[-117.134,32.73],[-117.134,32.72],[-117.148,32.719],[-117.148,32.714],[-117.118,32.717],[-117.125,32.73]]},
+"downtown":{label:"Downtown", poly:[[-117.169,32.728],[-117.18,32.728],[-117.173,32.724],[-117.176,32.711],[-117.151,32.697],[-117.149,32.723]]},
+"barrio-logan":{label:"Barrio Logan", poly:[[-117.152,32.697],[-117.129,32.684],[-117.13,32.679],[-117.111,32.682],[-117.147,32.705]]},
+"college-area":{label:"College Area", poly:[[-117.088,32.768],[-117.075,32.758],[-117.039,32.77],[-117.051,32.777],[-117.094,32.781],[-117.101,32.778]]},
+"kensington-talmadge":{label:"Kensington-Talmadge", poly:[[-117.099,32.776],[-117.113,32.774],[-117.109,32.755],[-117.079,32.758]]},
+"normal-heights":{label:"Normal Heights", poly:[[-117.112,32.776],[-117.129,32.771],[-117.125,32.755],[-117.109,32.755]]},
+"eastern-area":{label:"Eastern Area", poly:[[-117.064,32.729],[-117.049,32.744],[-117.053,32.763],[-117.04,32.769],[-117.079,32.758],[-117.079,32.744],[-117.094,32.718]]},
+"old-town":{label:"Old Town", poly:[[-117.19,32.758],[-117.204,32.759],[-117.193,32.747]]},
+"midway":{label:"Midway", poly:[[-117.204,32.758],[-117.224,32.758],[-117.208,32.748],[-117.213,32.744],[-117.208,32.735],[-117.184,32.74],[-117.17,32.731]]},
+"city-heights":{label:"City Heights", poly:[[-117.118,32.717],[-117.094,32.718],[-117.079,32.744],[-117.079,32.758],[-117.125,32.755],[-117.112,32.733]]},
+"encanto":{label:"Encanto", poly:[[-117.066,32.729],[-117.084,32.718],[-117.103,32.719],[-117.094,32.689],[-117.078,32.693],[-117.075,32.688],[-117.052,32.697],[-117.056,32.711],[-117.047,32.714],[-117.049,32.732]]},
+"skyline-paradise-hills":{label:"Skyline-Paradise Hills", poly:[[-117.03,32.722],[-117.032,32.715],[-117.042,32.721],[-117.056,32.711],[-117.052,32.697],[-117.073,32.682],[-117.065,32.662],[-117.021,32.688],[-117.025,32.699],[-117.018,32.709]]},
+"southeastern":{label:"Southeastern", poly:[[-117.103,32.718],[-117.147,32.714],[-117.148,32.706],[-117.111,32.682],[-117.094,32.689]]},
+"otay-mesa-nestor":{label:"Otay Mesa-Nestor", poly:[[-117.114,32.605],[-117.119,32.591],[-117.106,32.588],[-117.101,32.561],[-117.062,32.557],[-117.073,32.566],[-117.04,32.569],[-117.036,32.591],[-117.084,32.591],[-117.092,32.605]]},
+"otay-mesa":{label:"Otay Mesa", poly:[[-117.036,32.588],[-117.041,32.565],[-117.027,32.543],[-116.928,32.551],[-116.936,32.568],[-116.954,32.568],[-116.952,32.586],[-117,32.578],[-117.014,32.584],[-117.014,32.591]]},
+"san-ysidro":{label:"San Ysidro", poly:[[-117.059,32.568],[-117.073,32.565],[-117.055,32.544],[-117.026,32.543],[-117.041,32.568]]},
+"tijuana-river-valley":{label:"Tijuana River Valley", poly:[[-117.082,32.561],[-117.119,32.558],[-117.119,32.535],[-117.037,32.542],[-117.055,32.544],[-117.062,32.557]]},
+"coronado":{label:"Coronado", poly:[[-117.192,32.694],[-117.18,32.7],[-117.172,32.694],[-117.17,32.682],[-117.18,32.678],[-117.19,32.684]]},
+"national-city":{label:"National City", poly:[[-117.122,32.686],[-117.1,32.68],[-117.08,32.666],[-117.074,32.676],[-117.086,32.69],[-117.11,32.692]]},
+"chula-vista":{label:"Chula Vista", poly:[[-117.104,32.652],[-117.07,32.646],[-117.04,32.632],[-117.03,32.61],[-117.056,32.602],[-117.088,32.612],[-117.1,32.634]]},
+"imperial-beach":{label:"Imperial Beach", poly:[[-117.1285,32.5875],[-117.108,32.584],[-117.1,32.572],[-117.112,32.5655],[-117.1265,32.5705]]},
+"la-mesa":{label:"La Mesa", poly:[[-117.046,32.756],[-117.02,32.75],[-117,32.756],[-116.998,32.774],[-117.012,32.788],[-117.038,32.784]]},
+"el-cajon":{label:"El Cajon", poly:[[-116.992,32.782],[-116.964,32.774],[-116.936,32.78],[-116.928,32.796],[-116.94,32.814],[-116.972,32.816],[-116.99,32.802]]},
+"lemon-grove":{label:"Lemon Grove", poly:[[-117.05,32.73],[-117.028,32.724],[-117.014,32.732],[-117.02,32.746],[-117.04,32.75]]},
 "spring-valley":{label:"Spring Valley", poly:[[-117.012,32.726],[-116.988,32.718],[-116.964,32.726],[-116.958,32.744],[-116.976,32.758],[-117.004,32.752]]},
-"santee":{label:"Santee", poly:[[-117.006,32.828],[-116.982,32.824],[-116.956,32.830],[-116.944,32.844],[-116.960,32.860],[-116.994,32.856]]}
+"santee":{label:"Santee", poly:[[-117.006,32.828],[-116.982,32.824],[-116.956,32.83],[-116.944,32.844],[-116.96,32.86],[-116.994,32.856]]}
 };
 for(const k in DISTRICTS){
   const p = DISTRICTS[k].poly;
@@ -1147,7 +1173,7 @@ const SEED = [
     shaped:"I lost my wallet on the trolley. No birth certificate, no nothing. They want ID to get ID. I have been going to the office for three years now. Three years. I had a job lined up at the warehouse; the guy said just bring me your papers. I could not."},
   facts:["birth certificate","three years","warehouse","trolley"],
   consent:{advocateId:"ADV-114", method:"verbal, witnessed by two advocates", timestamp:"2026-03-11T16:20:00Z"} },
-{ id:"SD-0207", zone:"east-village", status:"unanswered",
+{ id:"SD-0207", zone:"downtown", status:"unanswered",
   ask:{category:"shelter_bed", summary:"One shelter bed, any night, with a callback that comes.", amountUsd:null},
   story:{raw:"the list. they call it the list. i called 211 nine times. nine. they said check back monday. every monday is a monday.",
     shaped:"The list. They call it the list. I called 211 nine times. Nine. They said check back Monday. Every Monday is a Monday."},
@@ -1159,7 +1185,7 @@ const SEED = [
     shaped:"My insulin ran out. The clinic would not see me without an address. My sister let me use hers. That is the only reason I got seen."},
   facts:["insulin","address","sister","clinic"],
   consent:{advocateId:"ADV-088", method:"verbal, recorded with permission", timestamp:"2026-02-27T19:41:00Z"} },
-{ id:"SD-0422", zone:"hillcrest", status:"unanswered",
+{ id:"SD-0422", zone:"uptown", status:"unanswered",
   ask:{category:"work_docs", summary:"Certified replacement of a welding certification card.", amountUsd:65},
   story:{raw:"i been a welder 11 years. cert card burned up in the van fire. shop said come back when you got paper.",
     shaped:"I have been a welder 11 years. My cert card burned up in the van fire. The shop said come back when you got paper."},
@@ -1195,7 +1221,7 @@ const SEED = [
     shaped:"Food handler card and Live Scan. That is it. That is the whole barrier. 85 dollars between me and a paycheck."},
   facts:["food handler","live scan","85","paycheck"],
   consent:{advocateId:"ADV-305", method:"signed release form", timestamp:"2026-06-01T15:20:00Z"} },
-{ id:"SD-1002", zone:"hillcrest", status:"unanswered",
+{ id:"SD-1002", zone:"uptown", status:"unanswered",
   ask:{category:"medical", summary:"Withheld pending consent verification.", amountUsd:null},
   story:{raw:"", shaped:""}, facts:[], consent:null }
 ];
@@ -1290,15 +1316,15 @@ const KIND_LABEL = {shelter:"Shelter", day_center:"Day center", clinic:"Health",
    fabricated action to a real, named organization. Only demo:true sites are signable; see the
    STAFF_CODES/pvissuers filters below. */
 const SERVICES = [
-{id:"SVC-01", zone:"east-village", lon:-117.1484, lat:32.7082, name:"San Diego (Neil Good) Day Center", kind:"day_center",
+{id:"SVC-01", zone:"downtown", lon:-117.1484, lat:32.7082, name:"San Diego (Neil Good) Day Center", kind:"day_center",
  services:["shower","laundry","mail","charging","storage","case_mgmt"], hours:"Mon–Fri 6:00–16:00, Sat–Sun 6:00–14:00",
  intake:"Walk-in, 18+, no ID required", note:"City-funded day center operated by Father Joe's Villages.",
  source:"https://www.sandiego.gov/homelessness-strategies-and-solutions/services/day-center"},
-{id:"SVC-02", zone:"east-village", lon:-117.1502, lat:32.7062, name:"Village Family Health Center", kind:"clinic",
+{id:"SVC-02", zone:"downtown", lon:-117.1502, lat:32.7062, name:"Village Family Health Center", kind:"clinic",
  services:["medical","dental","case_mgmt"], hours:"Mon–Fri 8:30–16:45, Thu to 20:45",
  intake:"Federally Qualified Health Center; walk-in registration or online; cannot be turned away for inability to pay",
  note:"On Father Joe's Villages' Paul Mirabile Center campus.", source:"https://my.neighbor.org/newpatient/"},
-{id:"SVC-03", zone:"east-village", lon:-117.1502, lat:32.7062, name:"Franklin Antonio Public Lunch Program", kind:"food",
+{id:"SVC-03", zone:"downtown", lon:-117.1502, lat:32.7062, name:"Franklin Antonio Public Lunch Program", kind:"food",
  services:["food"], hours:"Mon–Sat 11:00–12:30, Sun 9:30–11:30, 365 days/year",
  intake:"Walk-in; first-time visitors get a badge from the Day Center or Joan Kroc Center front desk",
  note:"Same Father Joe's Villages campus as the Day Center and Village Family Health Center.",
@@ -1312,7 +1338,7 @@ const SERVICES = [
  intake:"Coordinated Entry System referral only, no walk-in",
  note:"70 city-funded interim shelter beds inside a 223-unit building; the rest is permanent supportive housing.",
  source:"https://sdhc.org/homelessness-solutions/city-homeless-shelters-services/"},
-{id:"SVC-06", zone:"east-village", lon:-117.1507, lat:32.7033, name:"Alpha Project Bridge Shelter — 16th & Newton", kind:"shelter",
+{id:"SVC-06", zone:"downtown", lon:-117.1507, lat:32.7033, name:"Alpha Project Bridge Shelter — 16th & Newton", kind:"shelter",
  services:["beds","case_mgmt"], beds:{total:326, available:11}, hours:"24/7 for residents",
  intake:"Coordinated Entry System only, vulnerability-assessment based, no walk-in",
  note:"One of the city's largest bridge shelters for single adults, across two co-located buildings.",
@@ -1321,7 +1347,7 @@ const SERVICES = [
  services:["medical"], hours:"Mon–Fri 8:00–17:00, closed 12:00–13:00", intake:"Call ahead or use the MyHealthRecord portal",
  note:"Family Health Centers of San Diego site on the Logan Memorial High School campus.",
  source:"https://www.fhcsd.org/logan-memorial-family-health-center/"},
-{id:"SVC-08", zone:"hillcrest", lon:-117.1477, lat:32.7489, name:"Safe STAY Wellness Center", kind:"shelter",
+{id:"SVC-08", zone:"uptown", lon:-117.1477, lat:32.7489, name:"Safe STAY Wellness Center", kind:"shelter",
  services:["beds","shower","laundry","case_mgmt"], beds:{total:43, available:2}, hours:"Referral-based; call or email to arrange intake",
  intake:"Coordinated Entry; ages 18–24, LGBTQ-affirming",
  note:"Run jointly by the San Diego LGBT Community Center, San Diego Youth Services, and YMCA of San Diego County.",
@@ -1340,7 +1366,7 @@ const SERVICES = [
  services:["medical"], hours:"Mon–Fri 8:30–17:30, closed 12:30–13:30", intake:"Call ahead",
  note:"Part of Family Health Centers of San Diego's Healthcare for the Homeless program, including a mobile medical unit.",
  source:"https://www.fhcsd.org/beach-area-family-health-center/"},
-{id:"SVC-12", zone:"clairemont", lon:-117.2011, lat:32.8055, name:"CCSA Clairemont Service Center", kind:"food",
+{id:"SVC-12", zone:"clairemont-mesa", lon:-117.2011, lat:32.8055, name:"CCSA Clairemont Service Center", kind:"food",
  services:["food","id_help","transit"], hours:"Mon–Fri 9:30–15:30", intake:"Walk-in",
  note:"Daily emergency food distribution; also helps with ID cards and bus tokens.",
  source:"https://www.ccsasandiego.org/about-ccsa/locations"},
@@ -1378,11 +1404,11 @@ const SERVICES = [
  services:["shower","food"], hours:"Saturdays — published hours conflict between sources; call ahead to confirm",
  intake:"Call to confirm walk-in availability", note:"Also offers personal-care items and food alongside showers.",
  source:"https://211sandiego.org/wp-content/uploads/2026/02/PITC-SOUTH-San-Diego-2026-Final.pptx.pdf"},
-{id:"SVC-21", demo:true, kiosk:true, zone:"east-village", lon:-117.1485, lat:32.7075, name:"East Village Bridge Shelter", kind:"shelter",
+{id:"SVC-21", demo:true, kiosk:true, zone:"downtown", lon:-117.1485, lat:32.7075, name:"East Village Bridge Shelter", kind:"shelter",
  services:["beds","food","storage","case_mgmt"], beds:{total:324, available:11}, hours:"Intake 16:00–20:00",
  intake:"Referral, or walk-in after 18:00 if beds remain",
  note:"Sample account for the interactive provider-tools demo below — not a real organization. Pets kenneled on site. Partners are not separated."},
-{id:"SVC-22", demo:true, kiosk:true, zone:"east-village", lon:-117.1525, lat:32.7055, name:"Village Legal Clinic", kind:"legal",
+{id:"SVC-22", demo:true, kiosk:true, zone:"downtown", lon:-117.1525, lat:32.7055, name:"Village Legal Clinic", kind:"legal",
  services:["legal","id_help"], hours:"Tue & Thu 9:00–15:00", intake:"Walk-in",
  note:"Sample account for the interactive provider-tools demo below — not a real organization. Files fee waivers for birth certificates and state ID the same day."},
 {id:"SVC-23", demo:true, kiosk:true, zone:"pacific-beach", lon:-117.2385, lat:32.7955, name:"Beach Access Point", kind:"outreach",
@@ -1405,8 +1431,15 @@ const WITHHELD = SEED.filter(e => !hasConsent(e));
 /* Generated by `npm run web:sync` from data/entries.json. The fallback keeps
    the standalone composite demo usable when no signed dataset is present. */
 const V2_ENTRIES = /* ONRECORD_V2_DATA_START */ [{"id":"or_seed_01","zone":"East Village","ask":{"category":"id_documents","summary":"replacement CA state ID","amountUsd":39},"story":{"raw":"[COMPOSITE — not a real individual] wallet taken while he slept, back in march. says he cant get the ID without the birth certificate and cant get the birth certificate without the ID. been in that loop 5 months. hes tired of explaining it to people. was a line cook before.","shaped":"My wallet was taken while I was sleeping back in March. To replace my ID I need my birth certificate, and to get the birth certificate I need my ID. I have been going in that circle for five months. I used to work as a line cook. I am tired of explaining this to people. (Composite illustration.)"},"consent":{"advocateId":"adv_ecv_014","method":"verbal, in person, witnessed by outreach partner","timestampISO":"2026-07-14T18:22:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.0","signedAtISO":"2026-08-07T23:18:56.852Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAxY2Fza6Nnc3VtbWFyeXdyZXBsYWNlbWVudCBDQSBzdGF0ZSBJRGhjYXRlZ29yeWxpZF9kb2N1bWVudHNpYW1vdW50VXNkGCdkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3kBFFtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gd2FsbGV0IHRha2VuIHdoaWxlIGhlIHNsZXB0LCBiYWNrIGluIG1hcmNoLiBzYXlzIGhlIGNhbnQgZ2V0IHRoZSBJRCB3aXRob3V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBhbmQgY2FudCBnZXQgdGhlIGJpcnRoIGNlcnRpZmljYXRlIHdpdGhvdXQgdGhlIElELiBiZWVuIGluIHRoYXQgbG9vcCA1IG1vbnRocy4gaGVzIHRpcmVkIG9mIGV4cGxhaW5pbmcgaXQgdG8gcGVvcGxlLiB3YXMgYSBsaW5lIGNvb2sgYmVmb3JlLmZzaGFwZWR5AShNeSB3YWxsZXQgd2FzIHRha2VuIHdoaWxlIEkgd2FzIHNsZWVwaW5nIGJhY2sgaW4gTWFyY2guIFRvIHJlcGxhY2UgbXkgSUQgSSBuZWVkIG15IGJpcnRoIGNlcnRpZmljYXRlLCBhbmQgdG8gZ2V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBJIG5lZWQgbXkgSUQuIEkgaGF2ZSBiZWVuIGdvaW5nIGluIHRoYXQgY2lyY2xlIGZvciBmaXZlIG1vbnRocy4gSSB1c2VkIHRvIHdvcmsgYXMgYSBsaW5lIGNvb2suIEkgYW0gdGlyZWQgb2YgZXhwbGFpbmluZyB0aGlzIHRvIHBlb3BsZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNpcmVxdWVzdGVkZ2NvbnNlbnSjZm1ldGhvZHgwdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCBwYXJ0bmVyamFkdm9jYXRlSWRrYWR2X2Vjdl8wMTRsdGltZXN0YW1wSVNPdDIwMjYtMDctMTRUMTg6MjI6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAJ+q34EGV+R5Gu1TZwZ9pEuxh6Zighg2J3tnNCATK5y6XbzB9q21Dfk05Yw0TFNc5pRet5YeGjCFfVBORUtHw7g=="}},{"id":"or_seed_02","zone":"Ocean Beach","ask":{"category":"transit","summary":"monthly transit pass to reach a job site in Kearny Mesa"},"story":{"raw":"[COMPOSITE — not a real individual] got hired on at a warehouse in kearny mesa, starts in two weeks. the commute is the problem — two buses each way and she cant cover the pass until the first check clears. she was very matter of fact about it, no drama.","shaped":"I have been hired at a warehouse in Kearny Mesa and I start in two weeks. The problem is getting there: it is two buses each way, and I cannot cover a pass until my first check clears. (Composite illustration.)"},"consent":{"advocateId":"adv_ob_003","method":"written, signed intake form","timestampISO":"2026-06-30T15:05:00Z"},"status":"answered","provenance":{"alg":"COSE-ES256","contentHash":"1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.0","signedAtISO":"2026-08-07T23:18:56.865Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAyY2Fza6Jnc3VtbWFyeXg3bW9udGhseSB0cmFuc2l0IHBhc3MgdG8gcmVhY2ggYSBqb2Igc2l0ZSBpbiBLZWFybnkgTWVzYWhjYXRlZ29yeWd0cmFuc2l0ZHpvbmVrT2NlYW4gQmVhY2hlc3RvcnmiY3Jhd3kBAltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IGhpcmVkIG9uIGF0IGEgd2FyZWhvdXNlIGluIGtlYXJueSBtZXNhLCBzdGFydHMgaW4gdHdvIHdlZWtzLiB0aGUgY29tbXV0ZSBpcyB0aGUgcHJvYmxlbSDigJQgdHdvIGJ1c2VzIGVhY2ggd2F5IGFuZCBzaGUgY2FudCBjb3ZlciB0aGUgcGFzcyB1bnRpbCB0aGUgZmlyc3QgY2hlY2sgY2xlYXJzLiBzaGUgd2FzIHZlcnkgbWF0dGVyIG9mIGZhY3QgYWJvdXQgaXQsIG5vIGRyYW1hLmZzaGFwZWR40kkgaGF2ZSBiZWVuIGhpcmVkIGF0IGEgd2FyZWhvdXNlIGluIEtlYXJueSBNZXNhIGFuZCBJIHN0YXJ0IGluIHR3byB3ZWVrcy4gVGhlIHByb2JsZW0gaXMgZ2V0dGluZyB0aGVyZTogaXQgaXMgdHdvIGJ1c2VzIGVhY2ggd2F5LCBhbmQgSSBjYW5ub3QgY292ZXIgYSBwYXNzIHVudGlsIG15IGZpcnN0IGNoZWNrIGNsZWFycy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNoYW5zd2VyZWRnY29uc2VudKNmbWV0aG9keBt3cml0dGVuLCBzaWduZWQgaW50YWtlIGZvcm1qYWR2b2NhdGVJZGphZHZfb2JfMDAzbHRpbWVzdGFtcElTT3QyMDI2LTA2LTMwVDE1OjA1OjAwWg==","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7B5xwOKg1Dc6Is+Ls+q/z8hvcyELrRWQyIjj0cbAs7hNQRpflWD6+JY0vZeKkdFL+GlAhMIsh47GXcVTLzeRBQ=="}},{"id":"or_seed_03","zone":"Downtown","ask":{"category":"shelter_bed","summary":"shelter bed, ground floor if possible"},"story":{"raw":"[COMPOSITE — not a real individual] turned away twice now, says the beds were full both times. knee is bad so stairs are hard, hes asking for ground floor if theres any. been sleeping behind a store off broadway. no one has followed up with him since may.","shaped":"I have been turned away twice; both times I was told the beds were full. My knee is bad, so stairs are hard — I am asking for a ground floor bed if there is one. I have been sleeping behind a store off Broadway. No one has followed up with me since May. (Composite illustration.)"},"consent":{"advocateId":"adv_dtn_027","method":"verbal, recorded with permission","timestampISO":"2026-05-19T20:41:00Z"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"d66091f4a558b8da775934b175c1b9f08e70112778b11d23c4ad537c4a126116","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.0","signedAtISO":"2026-08-07T23:18:56.873Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAzY2Fza6Jnc3VtbWFyeXglc2hlbHRlciBiZWQsIGdyb3VuZCBmbG9vciBpZiBwb3NzaWJsZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25laERvd250b3duZXN0b3J5omNyYXd5AQFbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIHR1cm5lZCBhd2F5IHR3aWNlIG5vdywgc2F5cyB0aGUgYmVkcyB3ZXJlIGZ1bGwgYm90aCB0aW1lcy4ga25lZSBpcyBiYWQgc28gc3RhaXJzIGFyZSBoYXJkLCBoZXMgYXNraW5nIGZvciBncm91bmQgZmxvb3IgaWYgdGhlcmVzIGFueS4gYmVlbiBzbGVlcGluZyBiZWhpbmQgYSBzdG9yZSBvZmYgYnJvYWR3YXkuIG5vIG9uZSBoYXMgZm9sbG93ZWQgdXAgd2l0aCBoaW0gc2luY2UgbWF5LmZzaGFwZWR5ARlJIGhhdmUgYmVlbiB0dXJuZWQgYXdheSB0d2ljZTsgYm90aCB0aW1lcyBJIHdhcyB0b2xkIHRoZSBiZWRzIHdlcmUgZnVsbC4gTXkga25lZSBpcyBiYWQsIHNvIHN0YWlycyBhcmUgaGFyZCDigJQgSSBhbSBhc2tpbmcgZm9yIGEgZ3JvdW5kIGZsb29yIGJlZCBpZiB0aGVyZSBpcyBvbmUuIEkgaGF2ZSBiZWVuIHNsZWVwaW5nIGJlaGluZCBhIHN0b3JlIG9mZiBCcm9hZHdheS4gTm8gb25lIGhhcyBmb2xsb3dlZCB1cCB3aXRoIG1lIHNpbmNlIE1heS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRrYWR2X2R0bl8wMjdsdGltZXN0YW1wSVNPdDIwMjYtMDUtMTlUMjA6NDE6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAdU3PprwwJjQp3ICj6tj98+RnzBz7UE7F0w/yFsxGd3IRlFrniGNVJA0gbqH2j/GxH9g1Fb2rA9NvFH8j/wsCUw=="}}] /* ONRECORD_V2_DATA_END */;
+/* Community-plan boundaries change over time (e.g. real CPA data superseded the
+   hand-drawn "East Village" polygon by folding it into "Downtown"). A signed
+   record's zone is part of its hashed payload and must never be edited after
+   the fact, so legacy zone labels are aliased to their current DISTRICTS key
+   here at render time rather than mutated in the record itself. */
+const ZONE_ALIASES = {"east-village":"downtown","hillcrest":"uptown","little-italy":"downtown","south-park":"greater-golden-hill","clairemont":"clairemont-mesa"};
 function projectV2(e){
-  return {id:e.id, zone:e.zone.toLowerCase().replace(/ /g,"-"), status:e.status,
+  const slug = e.zone.toLowerCase().replace(/ /g,"-");
+  return {id:e.id, zone:ZONE_ALIASES[slug] || slug, status:e.status,
     ask:{category:e.ask.category, summary:e.ask.summary, amountUsd:e.ask.amountUsd ?? null},
     story:e.story, facts:[], consent:{advocateId:e.consent.advocateId, method:e.consent.method, timestamp:e.consent.timestampISO},
     provenance:e.provenance, recovery:e.recovery, __v2Zone:e.zone, __v2ConsentTimestamp:e.consent.timestampISO};
@@ -1713,7 +1746,7 @@ function buildMap(){
     const d = DISTRICTS[k], has = !!(byZone[k] && byZone[k].length);
     s += '<g class="district'+(has?" has":"")+'" id="dz-'+k+'" data-zone="'+k+'">'
        + '<path class="shape" d="'+path(d.poly)+'"><title>'+d.label+'</title></path>'
-       + '<text class="dlabel" data-cs="1" data-px="'+d.cx.toFixed(1)+'" data-py="'+(d.cy - d.h*.5 - 6).toFixed(1)+'" transform="translate('+d.cx.toFixed(1)+','+(d.cy-d.h*.5-6).toFixed(1)+')">'+d.label.toUpperCase()+'</text>'
+       + (d.noLabel ? '' : '<text class="dlabel" data-cs="1" data-px="'+d.cx.toFixed(1)+'" data-py="'+(d.cy - d.h*.5 - 6).toFixed(1)+'" transform="translate('+d.cx.toFixed(1)+','+(d.cy-d.h*.5-6).toFixed(1)+')">'+d.label.toUpperCase()+'</text>')
        + '</g>';
   }
 
@@ -1746,7 +1779,7 @@ function buildMap(){
   });
 
   /* block grid, revealed only at street zoom, clipped to each district */
-  const GRID_ZONES = ["downtown","east-village","little-italy","hillcrest","north-park","south-park",
+  const GRID_ZONES = ["downtown","uptown","north-park","greater-golden-hill",
     "barrio-logan","ocean-beach","pacific-beach","mission-beach","national-city","chula-vista",
     "la-mesa","el-cajon","point-loma","lemon-grove","imperial-beach","san-ysidro","coronado"];
   let clips = "";
