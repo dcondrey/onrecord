@@ -116,6 +116,8 @@ confidentiality training/agreement, encrypted, and recorded in append-only audit
 [provider security baseline](./docs/security-and-provider-policy.md) is the implementation gate for
 connecting this project to an HMIS or real service system. The static viewer’s provider cards are
 deliberately demo-only and are not compliant authentication.
+See [HMIS alignment boundary](./docs/hmis-alignment.md) for the public/private split, evolving HUD
+data standards, and VAWA-sensitive provider workflows.
 
 ## The AI step, and its limits
 

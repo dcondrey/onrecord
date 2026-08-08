@@ -757,6 +757,11 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
      html,body's overflow-x:hidden instead of dropping to a second line. */
   .top-right{width:100%;flex-wrap:wrap;row-gap:8px}
   .zoomctl button{width:44px;height:44px}
+  /* Quick filters become a thumb-friendly bottom sheet on phones, keeping the
+     map readable while making asks, services, exchanges, and heat one tap away. */
+  .layers{top:auto;bottom:8px;left:8px;right:8px !important;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;padding:7px;border-radius:14px}
+  .layers .eyebrow{grid-column:1 / -1}
+  .layers .lb{min-height:40px;padding:7px 8px}
   .pclose{width:44px;height:44px}
   .tab{padding:9px 12px}
   .fchip,.needchip{padding:8px 11px}
@@ -794,7 +799,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 <header>
   <div class="banner">
     <span class="dot" aria-hidden="true"></span>
-    <span><b>Composite, advocate-mediated, consent-verified stories.</b> No real individuals located. Pins are neighborhood-level only.</span>
+    <span><b>Public layer: de-identified, advocate-mediated stories.</b> Private intake and provider records are not published. No real individuals located; pins are neighborhood-level only.</span>
     <button type="button" id="moreinfo">How this works</button>
   </div>
 
@@ -963,7 +968,8 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modaltitle">
   <div class="box">
     <h2 id="modaltitle">How this works</h2>
-    <h3>The stories</h3>
+    <h3>The stories and their boundary</h3>
+    <p><b>Public:</b> this map contains composite/de-identified asks, exchanges, service-directory facts, and neighborhood-level metrics. <b>Private:</b> intake notes, recovery inputs, provider credentials, protected client details, and audit records belong behind an authorized provider system and are never part of this public artifact. Do not enter names, dates of birth, ZIP codes, health information, victim-service information, or other protected data here.</p>
     <p>Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual. No precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only.</p>
     <h3>The proof</h3>
     <p>On load this page generates an ECDSA P-256 keypair in your browser with WebCrypto. Every record and every message is canonicalized to a fixed field order, hashed with SHA-256, and signed. Verify re-canonicalizes the live record and re-checks the signature, so an edit made after sealing cannot pass. Nothing leaves your device: no network requests, no fonts, no map tiles, no analytics.</p>
