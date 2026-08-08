@@ -4,17 +4,23 @@ GitHub Discussion categories are repository settings, not files. This document d
 categories so maintainers can configure them consistently once an authenticated administrator applies
 the changes.
 
-## Recommended categories
+## Recommended sections and categories
 
-| Category | Format | Purpose | Examples | Moderation note |
+GitHub provides discussion categories and formats, but it does not currently provide a nested
+“section → category” hierarchy in the same way a forum does. We should still use three conceptual
+sections in the welcome text, sidebar, and moderation workflow. The **Section** column below is the
+grouping maintainers use when explaining where a conversation belongs.
+
+| Section | Category | Format | Brief description | Examples | Moderation note |
 |---|---|---|---|---|
-| **Announcements** | Announcement | Maintainer decisions, releases, policy changes, and review dates | Pilot gate; privacy revision | Maintainers only for new topics |
-| **Pilot Design** | Discussion | The smallest safe governed pilot | First use case; stop conditions | Invite lived-experience reviewers first |
-| **Community Experience** | Discussion | Accessibility, dignity, field use, and practical feedback | Recovery card; paper workflow | No real stories or identifiers |
-| **Safety & Privacy** | Discussion | Public/private boundaries, moderation, recovery, and threat modeling | Data minimization; abuse response | Never disclose secrets or protected records |
-| **Provider & Government Practice** | Discussion | Provider workflows, accountability, HMIS, and coordination | Neutral events; interoperability | No confidential agency/client information |
-| **Ideas & Improvements** | Idea | Feature proposals with benefit, harm, data, owner, and stop rule | Offline mode; translations | Reject surveillance without need |
-| **Q&A** | Q&A | Maintainer answers about the prototype and handbook | “What does a green seal prove?” | Pin corrections and link the handbook |
+| Welcome & orientation | **Announcements** | Announcement | Official project updates, decisions, releases, policy changes, and review dates | Pilot gate; privacy revision | Maintainers only for new topics |
+| Welcome & orientation | **Q&A** | Question/Answer | Maintainer answers about the prototype, handbook, limits, and how to participate | “What does a green seal prove?” | Pin corrections and link the handbook |
+| Design & governance | **Pilot Design** | Open-ended discussion | Design the smallest safe governed pilot and define success and stop conditions | First use case; staffing | Invite lived-experience reviewers first |
+| Design & governance | **Safety & Privacy** | Open-ended discussion | Public/private boundaries, moderation, recovery, threat modeling, and harm prevention | Data minimization; abuse response | Never disclose secrets or protected records |
+| Design & governance | **Provider & Government Practice** | Open-ended discussion | Provider workflows, accountability, HMIS boundaries, and public-sector coordination | Neutral events; interoperability | No confidential agency/client information |
+| Community experience | **Community Experience** | Open-ended discussion | Accessibility, dignity, field use, paper workflows, and lived-experience feedback | Recovery card; borrowed phone | No real stories or identifiers |
+| Community experience | **Ideas & Improvements** | Open-ended discussion | Feature proposals that name benefits, harms, data, owner, and stop rule | Offline mode; translations | Reject surveillance without need |
+| Community experience | **Community Polls** | Poll | Small, non-sensitive preference checks after context is provided | Wording; print layout; meeting time | Never poll about identity, trauma, service eligibility, or a person’s case |
 
 ## Category rules
 
@@ -35,6 +41,19 @@ the changes.
 | Provider participation | Provider & Government Practice |
 | Field accessibility | Community Experience |
 | HMIS boundary | Provider & Government Practice |
+
+The seven prepared seeds intentionally use open-ended discussion categories. Polls should be used only
+after a discussion has explained the tradeoffs; a poll must not replace consent, accessibility testing,
+lived-experience review, or a safety decision.
+
+## Should we use sections?
+
+Yes—but as a clear information architecture rather than pretending GitHub has nested categories. Use the
+three sections above in the repository welcome post, wiki sidebar, pinned category descriptions, and
+moderator triage. Do not create a separate category for every audience; that would fragment conversations
+and make safety review harder. The “For the general public,” “For people living outdoors,” and “For
+providers and government” pages remain documentation and commitments, while Discussions remain questions
+about improving the project.
 
 ## Administrator publication steps
 

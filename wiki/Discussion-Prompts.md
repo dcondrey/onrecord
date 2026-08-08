@@ -14,12 +14,26 @@ birth, ZIP codes, recovery material, exact locations, health details, or protect
 Close each thread with the decision, owner, review date, unresolved risks, and a link to the resulting
 change. Keep participation voluntary and accessible.
 
-## Recommended categories
+## Sections and formats
 
-- **Announcements:** maintainer decisions and release notes.
-- **Pilot Design:** the smallest safe governed pilot and stop conditions.
-- **Community Experience:** lived-experience, accessibility, paper, and field feedback.
-- **Safety & Privacy:** public/private boundaries, moderation, recovery, and threat modeling.
-- **Provider & Government Practice:** provider workflows, accountability, HMIS, and coordination.
-- **Ideas & Improvements:** proposals with benefits, harms, owner, and stop rule.
-- **Q&A:** maintainer explanations of the prototype and handbook.
+GitHub categories are flat, so we organize them into three visible sections:
+
+### Welcome & orientation
+
+- **Announcements** — *Announcement format:* official project updates, decisions, releases, and review dates.
+- **Q&A** — *Question/Answer format:* questions about the prototype, limits, handbook, and participation.
+
+### Design & governance
+
+- **Pilot Design** — *Open-ended discussion:* the smallest safe pilot, success measures, and stop conditions.
+- **Safety & Privacy** — *Open-ended discussion:* boundaries, moderation, recovery, threats, and harm prevention.
+- **Provider & Government Practice** — *Open-ended discussion:* provider workflows, accountability, HMIS, and coordination.
+
+### Community experience
+
+- **Community Experience** — *Open-ended discussion:* accessibility, dignity, field use, paper, and lived experience.
+- **Ideas & Improvements** — *Open-ended discussion:* proposals with benefits, harms, data, owner, and stop rule.
+- **Community Polls** — *Poll format:* limited, non-sensitive preferences after context is provided.
+
+Do not use polls for identity, trauma, eligibility, a person’s case, or a safety decision. Polls measure a
+preference; they do not replace consent, accessibility testing, lived-experience review, or governance.
