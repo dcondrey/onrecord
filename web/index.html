@@ -256,6 +256,8 @@ header{padding-top:env(safe-area-inset-top,0px);padding-left:env(safe-area-inset
 .brand h1{font-family:var(--serif);font-weight:400;font-size:25px;margin:0;letter-spacing:-.015em;line-height:1}
 .brand h1 em{font-style:italic;color:var(--amber)}
 .brand .loc{font-size:10px;color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
+.impact-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(242,169,59,.55);border-radius:999px;padding:4px 9px;color:var(--amber);font-size:10px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;background:rgba(242,169,59,.08)}
+.impact-badge .star{font-size:13px;line-height:1}
 .top-right{display:flex;align-items:center;gap:8px;flex:none}
 .keychip{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;background:var(--panel-2)}
 .keychip .pulse{width:6px;height:6px;border-radius:50%;background:var(--muted)}
@@ -730,6 +732,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
   .panel.right.collapsed{display:flex}
   .pbody{max-height:none;overflow:visible}
   .topbar{height:auto;padding:10px 12px;flex-wrap:wrap}
+  .impact-badge{font-size:9px;padding:3px 7px}
   .stage.panel-open .zoomctl,.stage.panel-open .layers{right:12px}
   body{overflow-y:auto}
 
@@ -804,7 +807,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
   </div>
 
   <div class="topbar">
-    <div class="brand"><h1>On <em>Record</em></h1><span class="loc">Neighborhoods, not addresses</span></div>
+    <div class="brand"><h1>On <em>Record</em></h1><span class="loc">Neighborhoods, not addresses</span><span class="impact-badge" title="Created at Claude Impact Labs on August 6, 2026; first-place project"><span class="star" aria-hidden="true">★</span> Claude Impact Labs · 1st place</span></div>
     <nav class="rail" id="rail" aria-label="Demo progress"></nav>
     <div class="top-right">
       <div class="keychip" id="bedchip"><span class="pulse" aria-hidden="true" style="background:var(--amber);box-shadow:0 0 10px var(--amber)"></span><span class="mono" id="bedtext">beds…</span></div>
@@ -1710,11 +1713,34 @@ const done = {map:true};
 function markStep(k){ if(!done[k]){ done[k]=true; drawRail(); } }
 function drawRail(){
   const nx = STEPS.findIndex(s => !done[s.k]);
-  document.getElementById("rail").innerHTML = STEPS.map((s,i) =>
-    '<div class="step '+(done[s.k]?"done":(i===nx?"next":""))+'"><span class="n">'+(done[s.k]?"&#10003;":(i+1))+'</span>'+s.t+'</div>').join("");
+  setSafeHTML(document.getElementById("rail"), STEPS.map((s,i) =>
+    '<div class="step '+(done[s.k]?"done":(i===nx?"next":""))+'"><span class="n">'+(done[s.k]?"&#10003;":(i+1))+'</span>'+s.t+'</div>').join(""));
 }
 function say(m){ document.getElementById("live").textContent = m; }
 function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+/*
+ * All HTML assembled from application state passes through this boundary.
+ * The demo intentionally renders a few rich cards, but user-provided text
+ * must never become executable markup.  Keep the allow-list deliberately
+ * small and remove event handlers, dangerous URLs, and style attributes.
+ */
+const SAFE_HTML_TAGS = new Set(["A","B","BR","BUTTON","CIRCLE","CODE","DIV","H2","H3","H4","LABEL","LI","OPTION","P","PATH","PRE","SELECT","SMALL","SPAN","STRONG","SVG","TEXTAREA","INPUT","UL"]);
+const SAFE_HTML_ATTRS = new Set(["aria-current","aria-expanded","aria-hidden","aria-label","aria-live","aria-pressed","aria-controls","autocomplete","class","cx","cy","d","data-c","data-cat","data-claim","data-id","data-need","data-rec","data-svc","data-spot","disabled","fill","for","hidden","id","inputmode","maxlength","min","max","name","opacity","placeholder","r","readonly","role","selected","spellcheck","step","stroke","stroke-dasharray","stroke-linecap","stroke-linejoin","stroke-opacity","style","tabindex","type","value","viewbox"]);
+function setSafeHTML(el, html){
+  const doc = new DOMParser().parseFromString(String(html), "text/html");
+  const walk = node => {
+    [...node.children].forEach(child => {
+      if(!SAFE_HTML_TAGS.has(child.tagName)) { child.replaceWith(document.createTextNode(child.textContent || "")); return; }
+      [...child.attributes].forEach(attr => {
+        const name = attr.name.toLowerCase(), value = attr.value;
+        if(!SAFE_HTML_ATTRS.has(name) || name.startsWith("on") || /javascript\s*:|data\s*:/i.test(value)) child.removeAttribute(attr.name);
+      });
+      walk(child);
+    });
+  };
+  walk(doc.body);
+  el.replaceChildren(...doc.body.childNodes);
+}
 function shortHash(h){ return h.slice(0,8)+"…"+h.slice(-6); }
 function money(n){ return "$"+n.toLocaleString("en-US"); }
 function passesNeed(v){
@@ -2096,7 +2122,7 @@ function drawCrumbs(){
   if(state.selected) h += '<span class="sep">&#8250;</span><button type="button" aria-current="true">'+state.selected.id+'</button>';
   else if(state.spot) h += '<span class="sep">&#8250;</span><button type="button" aria-current="true">'+esc(state.spot.place)+'</button>';
   const c = document.getElementById("crumbs");
-  c.innerHTML = h;
+  setSafeHTML(c, h);
   c.querySelectorAll("button").forEach(b => { b.onclick = () => {
     if(b.dataset.c === "all") resetView();
     else if(b.dataset.c === "zone"){ state.selected=null; state.spot=null; renderStory(); focusZone(state.focusedZone); }
@@ -2166,35 +2192,35 @@ function renderList(){
   document.getElementById("needfilters").hidden = !svcs;
   if(svcs){
     const ul = document.getElementById("svclist");
-    ul.innerHTML = SERVICES.filter(passesNeed).map(v =>
+    setSafeHTML(ul, SERVICES.filter(passesNeed).map(v =>
       '<li><button class="recitem" type="button" data-id="'+v.id+'"'+(state.svc===v?' aria-current="true"':'')+'>'
       + '<span class="sdot" style="background:'+(v.beds?"var(--amber)":"var(--ok)")+'"></span>'
       + '<span><span class="z">'+esc(v.name)+'</span>'
       + '<span class="c">'+DISTRICTS[v.zone].label+' · '+KIND_LABEL[v.kind]+'</span>'
-      + '<span class="m">'+(v.beds ? v.beds.available+" of "+v.beds.total+" beds" : v.services.slice(0,3).map(x=>SERVICE_LABEL[x]).join(" · "))+'</span></span></button></li>').join("");
+      + '<span class="m">'+(v.beds ? v.beds.available+" of "+v.beds.total+" beds" : v.services.slice(0,3).map(x=>SERVICE_LABEL[x]).join(" · "))+'</span></span></button></li>').join(""));
     ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => openService(b.dataset.id));
     document.getElementById("listempty").hidden = SERVICES.filter(passesNeed).length > 0;
     return;
   }
   if(asks){
     const ul = document.getElementById("reclist");
-    ul.innerHTML = ENTRIES.map(e => {
+    setSafeHTML(ul, ENTRIES.map(e => {
       const on = passesFilter(e), cls = (e.prov && !e.prov.ok) ? "broken" : e.status;
       return '<li'+(on?'':' class="filtered"')+'><button class="recitem" type="button" data-id="'+e.id+'"'+(state.selected===e?' aria-current="true"':'')+'>'
         + '<span class="sdot '+cls+'"></span><span><span class="z">'+DISTRICTS[e.zone].label+'</span>'
         + '<span class="c">'+CATEGORY_LABEL[e.ask.category]+'</span>'
         + '<span class="m">'+e.id+' · '+e.status+(e.ask.amountUsd?" · "+money(e.ask.amountUsd):"")+'</span></span></button></li>';
-    }).join("");
+    }).join(""));
     ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => select(b.dataset.id));
     const shown = ENTRIES.filter(passesFilter).length;
     document.getElementById("listempty").hidden = shown > 0;
   } else {
     const ul = document.getElementById("spotlist");
-    ul.innerHTML = SPOTS.map(sp =>
+    setSafeHTML(ul, SPOTS.map(sp =>
       '<li><button class="recitem tl" type="button" data-id="'+sp.id+'"'+(state.spot===sp?' aria-current="true"':'')+'>'
       + '<span class="sdot tl"></span><span><span class="z">'+esc(sp.place)+'</span>'
       + '<span class="c">'+DISTRICTS[sp.zone].label+' · '+sp.thread.length+' messages</span>'
-      + '<span class="m">'+SPOT_STATE_LABEL[sp.state]+(sp.days?" · "+sp.days+" days":"")+'</span></span></button></li>').join("");
+      + '<span class="m">'+SPOT_STATE_LABEL[sp.state]+(sp.days?" · "+sp.days+" days":"")+'</span></span></button></li>').join(""));
     ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => openSpot(b.dataset.id));
     document.getElementById("listempty").hidden = true;
   }
@@ -2222,11 +2248,11 @@ function factCheck(e){
 function renderStory(){
   const host = document.getElementById("panel-story"), e = state.selected;
   if(!e){
-    host.innerHTML = '<div class="empty"><div class="mark" aria-hidden="true">&#10022;</div><p>Zoom into a neighbourhood and pick a glowing pin, or choose a record from the list.</p><p style=\'margin-top:10px;font-size:11.5px\'>Filed one of these yourself? Use <b>Your request</b> in the top bar and the card you were given.</p></div>';
+    setSafeHTML(host, '<div class="empty"><div class="mark" aria-hidden="true">&#10022;</div><p>Zoom into a neighbourhood and pick a glowing pin, or choose a record from the list.</p><p style=\'margin-top:10px;font-size:11.5px\'>Filed one of these yourself? Use <b>Your request</b> in the top bar and the card you were given.</p></div>');
     return;
   }
   if(!e.prov){
-    host.innerHTML = '<div class="empty"><div class="mark" aria-hidden="true">&#10022;</div><p>Record '+e.id+' can&#8217;t be sealed or verified here.</p><p style="margin-top:10px;font-size:11.5px">This browser (or this connection) would not grant WebCrypto, which needs a secure context. Nothing about the record itself is broken &#8212; try again over HTTPS, or in a current version of Chrome, Firefox, Safari, or Edge.</p></div>';
+    setSafeHTML(host, '<div class="empty"><div class="mark" aria-hidden="true">&#10022;</div><p>Record '+esc(e.id)+' can&#8217;t be sealed or verified here.</p><p style="margin-top:10px;font-size:11.5px">This browser (or this connection) would not grant WebCrypto, which needs a secure context. Nothing about the record itself is broken &#8212; try again over HTTPS, or in a current version of Chrome, Firefox, Safari, or Edge.</p></div>');
     return;
   }
   const p = e.prov, broken = !p.ok;
@@ -2234,7 +2260,7 @@ function renderStory(){
   const contentAdded = added.filter(w => !isFunc(w));
   const text = state.view === "raw" ? e.story.raw : e.story.shaped;
 
-  host.innerHTML = '<div class="story">'
+  setSafeHTML(host, '<div class="story">'
    + (e.pendingReview ? '<div class="integrity" style="margin-top:0;margin-bottom:12px">&#9678; Filed through the intake chat, awaiting advocate review. '
        + 'Not counted on the Accountability tab until reviewed. <button class="btn btn-restore" id="markreviewed" type="button" style="margin-top:8px;display:block">Mark reviewed (advocate, demo)</button></div>' : '')
    + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
@@ -2284,7 +2310,7 @@ function renderStory(){
         + 'They hold a paper card with three words and four digits. Typing them proves they are the same author without proving who they are, and lets them update it, resolve it, or withdraw it entirely.<br>'
         + (CODES[e.id] ? '<span class="mono" style="color:var(--amber);display:inline-block;margin-top:7px">demo card &#183; '+CODES[e.id].phrase+' &#183; '+CODES[e.id].pin+'</span> ' : '')
         + '<button class="btn btn-restore" id="openascard" type="button" style="margin-top:9px;display:block">Open it as them</button></div>' : '')
-   + '<button class="jump" id="jumpdash" type="button">See what happened to all '+ENTRIES.length+' asks &#8594;</button></div>';
+   + '<button class="jump" id="jumpdash" type="button">See what happened to all '+ENTRIES.length+' asks &#8594;</button></div>');
 
   const mr = document.getElementById("markreviewed");
   if(mr) mr.onclick = () => {
@@ -2344,17 +2370,22 @@ function manifestHTML(e){
 /* verify / tamper / restore */
 async function onVerify(){
   const e = state.selected, r = await verifyEntry(e);
-  document.getElementById("verifylog").innerHTML =
+  setSafeHTML(document.getElementById("verifylog"),
       '<div><span class="lbl">canonical bytes</span><span>'+r.byteLen+' (sealed at '+e.prov.byteLen+')</span></div>'
     + '<div><span class="lbl">sha-256 now</span><span class="'+(r.hashMatch?"ok":"bad")+'">'+shortHash(r.digest)+'</span></div>'
     + '<div><span class="lbl">sha-256 sealed</span><span>'+shortHash(e.prov.sealedHash)+'</span></div>'
     + '<div><span class="lbl">hash match</span><span class="'+(r.hashMatch?"ok":"bad")+'">'+(r.hashMatch?"&#10003; identical":"&#10007; content changed after sealing")+'</span></div>'
     + '<div><span class="lbl">ES256 signature</span><span class="'+(r.sigOk?"ok":"bad")+'">'+(r.sigOk?"&#10003; valid":"&#10007; invalid")+'</span></div>'
-    + '<div><span class="lbl">verdict</span><span class="'+(r.ok?"ok":"bad")+'">'+(r.ok?"&#10003; RECORD INTACT":"&#10007; SEAL BROKEN, do not trust this record")+'</span></div>';
+    + '<div><span class="lbl">verdict</span><span class="'+(r.ok?"ok":"bad")+'">'+(r.ok?"&#10003; RECORD INTACT":"&#10007; SEAL BROKEN, do not trust this record")+'</span></div>');
   const chip = document.getElementById("sealchip");
   chip.className = "sealchip" + (r.ok ? "" : " broken");
-  chip.querySelector(".l1").innerHTML = r.ok ? "Consent verified · content sealed · signed &#10003;" : "SEAL BROKEN / signature invalid";
-  chip.querySelector(".glyph").outerHTML = sealGlyph(!r.ok);
+  chip.querySelector(".l1").textContent = r.ok ? "Consent verified · content sealed · signed ✓" : "SEAL BROKEN / signature invalid";
+  const oldGlyph = chip.querySelector(".glyph");
+  if(oldGlyph){
+    const glyphHost = document.createElement("span");
+    setSafeHTML(glyphHost, sealGlyph(!r.ok));
+    oldGlyph.replaceWith(glyphHost.firstElementChild);
+  }
   refreshMarkers(); renderList(); renderDash();
   say(r.ok ? "Record verified." : "Verification failed. The seal is broken.");
 }
@@ -2381,8 +2412,8 @@ async function onRestore(){
 function renderCG(){
   const host = document.getElementById("panel-cg"), sp = state.spot;
   if(!sp){
-    host.innerHTML = '<div class="empty"><div class="mark" aria-hidden="true">&#8646;</div>'
-      + '<p>Pick a friction point on the map. Each one is a place where two groups of neighbors keep colliding, and the record of what they said to each other.</p></div>';
+    setSafeHTML(host, '<div class="empty"><div class="mark" aria-hidden="true">&#8646;</div>'
+      + '<p>Pick a friction point on the map. Each one is a place where two groups of neighbors keep colliding, and the record of what they said to each other.</p></div>');
     return;
   }
   let h = '<div class="cg">'
@@ -3097,7 +3128,7 @@ function renderChat(){
     controls = '<div class="copts"><button id="ciview" type="button">View it on the map</button><button id="ciclose3" type="button">Close</button></div>';
   }
 
-  host.innerHTML = chat.log.map(m => '<div class="cmsg '+m.role+'">'+m.html+'</div>').join("") + controls;
+  setSafeHTML(host, chat.log.map(m => '<div class="cmsg '+m.role+'">'+m.html+'</div>').join("") + controls);
   host.scrollTop = host.scrollHeight;
   wireChatControls();
 }

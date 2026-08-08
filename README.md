@@ -2,12 +2,18 @@
 
 # On Record
 
+> **Created at Claude Impact Labs on August 6, 2026 — First Place winner.**
+>
+> On Record began as a focused build sprint project and is now being developed as an open,
+> privacy-first prototype for dignity, community support, and accountable service coordination.
+
 ### A consented, de-identified request ledger with checkable provenance
 
 Every entry is signed. Every AI transform is disclosed. The page verifies<br>
 itself in your browser — offline, with zero network requests.
 
 <p align="center">
+  <img alt="Claude Impact Labs first-place project, August 6 2026" src="https://img.shields.io/badge/Claude%20Impact%20Labs-1st%20Place%20%7C%20Aug%206%2C%202026-d99a2b?labelColor=34261b">
   <a href="https://github.com/writerslogic/onrecord/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/writerslogic/onrecord/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/writerslogic/onrecord/actions/workflows/pages.yml"><img alt="Pages" src="https://github.com/writerslogic/onrecord/actions/workflows/pages.yml/badge.svg"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/writerslogic/onrecord"><img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/writerslogic/onrecord/badge"></a>
@@ -348,6 +354,9 @@ now and any future interactive deployment.
 
 Discussion triage is documented in [moderation automation](./docs/moderation-automation.md). The workflow
 flags review signals but does not auto-delete, auto-ban, or send discussion content to a third-party AI.
+The [code-scanning triage guide](./docs/code-scanning-triage.md) explains how to disposition alerts, and
+`bash scripts/configure-github-labels.sh` bootstraps the project’s issue, quality, security, and moderation
+labels from an authenticated local GitHub CLI session.
 
 Discussion seeds are intentionally not promises or policy. A maintainer should post them one at a time,
 identify the decision needed, invite people with lived experience first, summarize disagreement without
