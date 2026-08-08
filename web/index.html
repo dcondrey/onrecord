@@ -1717,7 +1717,12 @@ function drawRail(){
     '<div class="step '+(done[s.k]?"done":(i===nx?"next":""))+'"><span class="n">'+(done[s.k]?"&#10003;":(i+1))+'</span>'+s.t+'</div>').join(""));
 }
 function say(m){ document.getElementById("live").textContent = m; }
-function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+/* Escapes both quote characters, not just &<>: esc()'s output lands inside HTML
+   attributes (href="...", value="...", aria-label="...") throughout this file, not only
+   text content, and an unescaped " or ' there is exactly how a quoted attribute gets
+   broken out of. CodeQL (js/incomplete-html-attribute-sanitization) flagged three call
+   sites on this basis; the fix belongs here, once, rather than at each call site. */
+function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 /*
  * All HTML assembled from application state passes through this boundary.
  * The demo intentionally renders a few rich cards, but user-provided text
@@ -2638,7 +2643,7 @@ function showCard(){
   if(!c) return;
   host.insertAdjacentHTML("beforeend",
       '<div class="card3"><div class="eyebrow">Claim card · printed at intake, handed over on paper</div>'
-    + '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:6px">'+id+'</div>'
+    + '<div style="font-family:var(--mono);font-size:12px;color:var(--ink-2);margin-top:6px">'+esc(id)+'</div>'
     + '<div class="w">'+c.phrase+'</div><div class="pn">'+c.pin+'</div>'
     + '<p class="disclaim" style="margin-top:9px">Shown here only because this is a demo. In use it is never displayed on a public screen, and a kiosk clears the field the moment you walk away.</p></div>');
   document.getElementById("cw").value = c.phrase;
