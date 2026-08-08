@@ -56,7 +56,7 @@ function tokenNumber(token: string): number | undefined {
 }
 function normalizedDate(year: number | undefined, month: number | undefined, day: number | undefined): string {
   const currentYear = new Date().getFullYear();
-  if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31 || year < currentYear - 115 || year > currentYear) throw new Error('could not understand that date of birth');
+  if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31 || year < currentYear - 100 || year > currentYear) throw new Error('could not understand that date of birth');
   const date = new Date(Date.UTC(year, month - 1, day));
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) throw new Error('that date of birth is not a real calendar date');
   return `${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
