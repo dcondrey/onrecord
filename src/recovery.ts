@@ -13,6 +13,15 @@ export interface RecoveryIdentity {
   postalCode: string;
 }
 
+/** Normalizes a US ZIP or ZIP+4 to its five-digit base for recovery matching. */
+export function normalizeZip(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length !== 5 && digits.length !== 9) throw new Error('postal code must contain five digits or ZIP+4');
+  const base = Number(digits.slice(0, 5));
+  if (base < 501 || base > 99950) throw new Error('postal code is outside the valid US ZIP range');
+  return digits.slice(0, 5);
+}
+
 function letters(value: string): string { return value.normalize('NFKD').replace(/[^a-z]/gi, '').toLowerCase(); }
 const MONTHS: Record<string, number> = { january: 1, jan: 1, february: 2, feb: 2, march: 3, mar: 3, april: 4, apr: 4, may: 5, june: 6, jun: 6, july: 7, jul: 7, august: 8, aug: 8, september: 9, sept: 9, sep: 9, october: 10, oct: 10, november: 11, nov: 11, december: 12, dec: 12 };
 const NUMBER_WORDS: Record<string, number> = { zero: 0, oh: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
@@ -104,8 +113,7 @@ export async function recoveryIdentityTag(identity: RecoveryIdentity, pin: strin
   const first = letters(identity.first3);
   const last = letters(identity.last3);
   if (first.length !== 3 || last.length !== 3) throw new Error('first3 and last3 must each contain exactly three letters');
-  const zip = identity.postalCode.replace(/\D/g, '');
-  if (!/^\d{5}$/.test(zip)) throw new Error('postal code must contain exactly five digits');
+  const zip = normalizeZip(identity.postalCode);
   if (!/^\d{4}$/.test(pin)) throw new Error('recovery PIN must contain exactly four digits');
   const material = `${first}:${last}:${normalizeDob(identity.dateOfBirth)}:${zip}:${pin}`;
   const base = await subtle.importKey('raw', new TextEncoder().encode(material), 'PBKDF2', false, ['deriveKey']);

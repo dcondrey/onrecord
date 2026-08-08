@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeCanonical, decode } from '../dist/cbor.js';
 import { signCoseSign1, verifyCoseSign1 } from '../dist/cose.js';
-import { dobCandidates, dobIsAmbiguous, normalizeDob, recoveryIdentityTag } from '../dist/recovery.js';
+import { dobCandidates, dobIsAmbiguous, normalizeDob, normalizeZip, recoveryIdentityTag } from '../dist/recovery.js';
 import { webcrypto } from 'node:crypto';
 
 const hex = (bytes) => Buffer.from(bytes).toString('hex');
@@ -39,4 +39,11 @@ test('DOB intake accepts human formats and flags ambiguity', () => {
   assert.equal(dobIsAmbiguous('01/02/1980'), true);
   assert.deepEqual(dobCandidates('01-01-01'), ['2001-01-01']);
   assert.equal(dobIsAmbiguous('13/02/1980'), false);
+});
+
+test('ZIP intake accepts ZIP+4 but signs the stable five-digit base', async () => {
+  assert.equal(normalizeZip('ZIP 92101'), '92101');
+  assert.equal(normalizeZip('92101-1234'), '92101');
+  assert.equal(normalizeZip('00501'), '00501');
+  await assert.rejects(() => recoveryIdentityTag({ first3: 'mar', last3: 'del', dateOfBirth: '1984-02-03', postalCode: '00001' }, '4417', 'or_test'));
 });
