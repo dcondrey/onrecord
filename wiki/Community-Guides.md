@@ -11,6 +11,8 @@
   form for voluntary, time-limited permission on private property.
 - [Respectful Neighbor tent placard](../docs/respectful-neighbor-tent-placard.md): a voluntary, visible
   cleanliness, access, quiet, safety, and communication commitment.
+- [Respectful Neighbor sticker](../docs/sticker-guide.md): a mass-printable QR sticker linking to the
+  shared standard and community guides.
 - [Emergency resource directory](../docs/san-diego-emergency-resource-directory.md): verify-before-travel
   food, hygiene, medical, crisis, day-center, and document resources.
 - [Emergency health card](../docs/emergency-health-card.md): private paper-only health information card.

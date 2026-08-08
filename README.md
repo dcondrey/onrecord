@@ -262,6 +262,8 @@ These guides are intentionally separate from the technical protocol:
 - [Respectful Neighbor / Considerate Camper placard](./docs/respectful-neighbor-tent-placard.md) — a
   high-contrast, printable good-neighbor commitment for a tent or outdoor living space; see the
   [print-ready placard](./web/forms/respectful-neighbor-tent-placard.html).
+- [Respectful Neighbor sticker](./docs/sticker-guide.md) — a mass-printable 3.5 × 2.5 inch SVG with a
+  large QR code and a six-up sheet.
 - [San Diego emergency resource directory](./docs/san-diego-emergency-resource-directory.md) — a
   verify-before-travel pocket guide anchored to 2-1-1 and official provider pages.
 - [Emergency health card](./docs/emergency-health-card.md) — a private paper-only card; never upload it

@@ -35,6 +35,7 @@
     "c2pa:dev-cert": "node scripts/generate-c2pa-dev-cert.mjs",
     "web:sync": "npm run build && npm run seed -- --force && node scripts/sync-web-data.mjs",
     "web:geo": "node scripts/sync-geo.mjs",
+    "sticker": "node scripts/generate-respectful-neighbor-sticker.mjs",
     "typecheck": "tsc --noEmit",
     "on-record": "node dist/cli.js",
     "seed": "node dist/cli.js seed",
@@ -46,7 +47,8 @@
     "@anthropic-ai/sdk": "^0.70.0",
     "@contentauth/c2pa-node": "^0.8.3",
     "cborg": "^6.1.1",
-    "fflate": "^0.8.3"
+    "fflate": "^0.8.3",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.20.1",
