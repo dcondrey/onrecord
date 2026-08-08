@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeCanonical, decode } from '../dist/cbor.js';
 import { signCoseSign1, verifyCoseSign1 } from '../dist/cose.js';
-import { dobIsAmbiguous, normalizeDob, recoveryIdentityTag } from '../dist/recovery.js';
+import { dobCandidates, dobIsAmbiguous, normalizeDob, recoveryIdentityTag } from '../dist/recovery.js';
 import { webcrypto } from 'node:crypto';
 
 const hex = (bytes) => Buffer.from(bytes).toString('hex');
@@ -37,5 +37,6 @@ test('DOB intake accepts human formats and flags ambiguity', () => {
   assert.equal(normalizeDob('5 March nineteen eighty four'), '1984-03-05');
   assert.equal(normalizeDob("03/5/'84"), '1984-03-05');
   assert.equal(dobIsAmbiguous('01/02/1980'), true);
+  assert.deepEqual(dobCandidates('01-01-01'), ['1901-01-01', '2001-01-01']);
   assert.equal(dobIsAmbiguous('13/02/1980'), false);
 });

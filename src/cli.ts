@@ -41,7 +41,7 @@ import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
 import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
-import { dobIsAmbiguous, normalizeDob, recoveryIdentityTag, recoveryTag } from './recovery.js';
+import { dobCandidates, dobIsAmbiguous, normalizeDob, recoveryIdentityTag, recoveryTag } from './recovery.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -209,8 +209,8 @@ async function cmdAdd(args: Args): Promise<void> {
   if ((recoveryPhrase && !recoveryPin) || (!recoveryPhrase && !hasIdentity && recoveryPin)) die('--recovery-phrase or the four identity fields must be supplied with --recovery-pin');
   if (hasIdentity && !recoveryPin) die('identity recovery also requires --recovery-pin');
   if (hasIdentity && identity.dateOfBirth && dobIsAmbiguous(identity.dateOfBirth)) {
-    if (!confirmedDob || normalizeDob(confirmedDob) !== normalizeDob(identity.dateOfBirth)) {
-      die(`DOB "${identity.dateOfBirth}" is ambiguous. Confirm the intended ISO date with --confirm-dob YYYY-MM-DD.`);
+    if (!confirmedDob || !/^\d{4}-\d{2}-\d{2}$/.test(confirmedDob) || !dobCandidates(identity.dateOfBirth).includes(normalizeDob(confirmedDob))) {
+      die(`DOB "${identity.dateOfBirth}" is ambiguous. Confirm one intended ISO date with --confirm-dob YYYY-MM-DD. Options: ${dobCandidates(identity.dateOfBirth).join(', ')}`);
     }
   }
 

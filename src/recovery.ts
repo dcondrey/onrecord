@@ -83,10 +83,19 @@ export function normalizeDob(value: string): string {
   throw new Error('could not understand that date of birth; try month/day/year, day-month-year, or spell it out');
 }
 export function dobIsAmbiguous(value: string): boolean {
+  return dobCandidates(value).length > 1;
+}
+export function dobCandidates(value: string): string[] {
   const tokens = value.trim().replace(/[’']/g, '').split(/[\s/\\.-]+/).filter(Boolean);
-  if (tokens.length !== 3 || !/^\d{1,2}$/.test(tokens[0]!) || !/^\d{1,2}$/.test(tokens[1]!) || !/^\d{2,4}$/.test(tokens[2]!)) return false;
-  const [a, b] = tokens.map(Number);
-  return a! >= 1 && a! <= 12 && b! >= 1 && b! <= 12;
+  if (tokens.length !== 3 || !/^\d{1,2}$/.test(tokens[0]!) || !/^\d{1,2}$/.test(tokens[1]!) || !/^\d{2,4}$/.test(tokens[2]!)) return [normalizeDob(value)];
+  const a = Number(tokens[0]); const b = Number(tokens[1]); const rawYear = Number(tokens[2]);
+  const years = tokens[2]!.length === 2 ? [1900 + rawYear, 2000 + rawYear] : [rawYear];
+  const pairs = a >= 1 && a <= 12 && b >= 1 && b <= 12 ? [[a, b], [b, a]] : a > 12 ? [[b, a]] : [[a, b]];
+  const candidates: string[] = [];
+  for (const year of years) for (const [month, day] of pairs) {
+    try { candidates.push(normalizedDate(year, month, day)); } catch { /* invalid candidate */ }
+  }
+  return [...new Set(candidates)];
 }
 
 /** A familiar intake identifier, never stored—only a keyed verifier tag is. */
