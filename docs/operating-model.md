@@ -1,5 +1,8 @@
 # Operating model: support before scorekeeping
 
+**Design principle:** make a person’s request easier to answer without making the person easier to
+identify.
+
 On Record should complement—not duplicate—HMIS, coordinated entry, Shelter Ready, or a provider’s
 case-management system.
 
@@ -23,6 +26,16 @@ response badges only when the underlying event is verified and consented.
 Providers should be able to acknowledge, defer with a date, or decline with a reason. The requester
 still controls whether a provider claim becomes an answered outcome. No provider can resolve its own
 claim unilaterally.
+
+Use neutral, auditable events rather than a single “provider score”: `received`, `acknowledged`,
+`needs-information`, `referred`, `scheduled`, `completed-by-provider`, `confirmed-by-requester`,
+`declined`, `expired`, and `withdrawn`. Each event needs an actor, timestamp, reason, visibility, and
+correction path. Never infer “no-show,” “fraud,” or “uncooperative” from an incomplete event.
+
+Every public status change should have an operational owner and a way for the requester or advocate to
+challenge it. A moderation decision should be reversible, time-limited, and explainable in plain
+language. Track aggregate appeals and reversals; do not publish a person-level history merely to prove
+that an appeal existed.
 
 ## Integration over duplicate data entry
 

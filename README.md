@@ -2,7 +2,7 @@
 
 # On Record
 
-### A public ledger of requests that can't be quietly edited
+### A consented, de-identified request ledger with checkable provenance
 
 Every entry is signed. Every AI transform is disclosed. The page verifies<br>
 itself in your browser — offline, with zero network requests.
@@ -27,6 +27,12 @@ itself in your browser — offline, with zero network requests.
 > individual, and dollar figures shown against institutions are illustrative placeholders, not
 > sourced claims about any real agency or budget. See [Ethics](#ethics-and-the-data-in-this-repo).
 
+> [!WARNING]
+> This is a research prototype, not a live service. Do not enter a real person’s name, date of
+> birth, ZIP code, health information, recovery credential, exact sleeping location, or protected
+> provider/HMIS information. Start with [Limitations](./docs/limitations.md) and the [deployment
+> roadmap](./docs/roadmap.md).
+
 On Record is two things that fit together. The **map** (`web/index.html`) is one self-contained HTML
 file: it renders San Diego by neighborhood, shows what people have asked for, and lets any visitor
 check the signature on every entry — then deliberately *break* one and watch the seal fail. The
@@ -47,6 +53,13 @@ python3 -m http.server 8080 --directory web
 
 Open <http://localhost:8080/>. Nothing else is required — no build, no dependencies, no API key. The
 map generates its own signing key in the browser on load.
+
+For a first-time contributor, the shortest safe path is:
+
+1. read [Limitations](./docs/limitations.md) and [Privacy Notice](./docs/privacy-notice.md);
+2. run the synthetic demo locally;
+3. run the test suite before changing protocol code; and
+4. propose any real-data or provider integration in a discussion before implementing it.
 
 To work with the signing pipeline instead:
 
@@ -234,6 +247,19 @@ duplicating HMIS or coordinated-entry systems. It would provide:
 That aspiration is conditional. If a feature increases surveillance, stigma, exposure, or administrative
 burden for people with the least power, the feature should be narrowed or removed.
 
+## A decision rule for new features
+
+Every proposed field, metric, integration, and public view should answer five questions before code is
+written:
+
+1. What concrete problem does this solve for a person living outdoors?
+2. Can the same benefit be delivered with less data, less exposure, or less staff burden?
+3. Who can see, correct, withdraw, export, and delete the data—and on what schedule?
+4. What happens when a device, provider, model, network, or key is wrong or unavailable?
+5. What evidence from lived-experience testing would make us stop or redesign it?
+
+If those answers are not written down, the change is not ready for a production pilot.
+
 ## What this is—and is not
 
 | This project is | This project is not |
@@ -306,6 +332,11 @@ The [wiki mirror](./wiki/Home.md) organizes architecture, limitations, roadmap, 
 rights information for readers who prefer a handbook. Before publishing a page to a live wiki or
 starting a discussion, remove any real client story, recovery material, precise location, or protected
 provider information from the draft.
+
+Discussion seeds are intentionally not promises or policy. A maintainer should post them one at a time,
+identify the decision needed, invite people with lived experience first, summarize disagreement without
+identifying participants, and record an owner and review date for any accepted action. Close a thread with
+what changed, what did not change, and why.
 
 ## Contributing responsibly
 

@@ -2,6 +2,9 @@
 
 **Plain-language notice for people using the service.**
 
+**Template only:** the operator must add its identity, translate it, test comprehension, and obtain
+jurisdiction-specific review before collecting real information.
+
 On Record collects only what is needed to create, protect, and follow up on a request:
 
 - the request and the person’s own words;
@@ -25,6 +28,22 @@ decline optional fields, ask what is held about their record, request correction
 where applicable, and ask an advocate about restore or deletion policy. A real deployment must add
 its operator identity, retention schedule, complaint contact, legal authority, and jurisdiction-specific
 rights before production use.
+
+## Before you agree
+
+Ask the intake worker to show you exactly what will be public and what will stay private. You can ask for
+an interpreter, paper copy, extra time, or an advocate, and you can decline optional fields. Declining
+must not affect unrelated services. Ask how to correct, pause, withdraw, or delete the record; consent is
+an ongoing choice, not just a signature.
+
+## Operator completion checklist
+
+- Operator/legal name and contact: __________________________________________
+- Privacy contact and complaint route: ______________________________________
+- Retention and deletion schedule: __________________________________________
+- Authorized providers and permitted uses: __________________________________
+- Incident contact and notification plan: ___________________________________
+- Translation, disability, and paper-access options: _________________________
 
 This repository’s static viewer is a demonstration. It is not an HMIS, does not connect to a live
 provider system, and must not be used to route a person or store real protected information.

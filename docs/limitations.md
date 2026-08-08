@@ -1,5 +1,7 @@
 # Limitations and non-goals
 
+**Status:** prototype boundary · **Owner:** project maintainers · **Review before every pilot**
+
 On Record is a prototype for consented, de-identified requests and verifiable provenance. It is not
 an HMIS, coordinated-entry system, shelter-placement system, case-management system, emergency service,
 legal service, medical record, or crisis line.
@@ -27,6 +29,14 @@ An anonymous or accountless return path can be guessed, cards can be lost, publi
 misused, and providers can be overwhelmed. Rate limits, advocate restoration, moderation, abuse
 response, accessibility testing, and trauma-informed governance are required before real use.
 
+The three-letter-name/date/ZIP pattern is familiar in some outreach settings, but it is not a secret
+and may be guessable. Treat it as a convenience locator, never as strong authentication: use a separate
+PIN, limit attempts, avoid revealing whether a guess matched, and offer advocate-led restore. Do not use
+it where a person could face retaliation, stalking, or coercion.
+
+When month/day order or two-digit years are ambiguous, the operator must show the normalized date and
+obtain explicit confirmation. An age floor is a validation rule, not proof of identity.
+
 ## Non-goals
 
 This project will not rank the worthiness of people, publish encampment locations, expose individual
@@ -38,3 +48,10 @@ public dashboard.
 Do not connect real client data or a real provider system until the deployment roadmap, privacy notice,
 security baseline, data-sharing agreements, threat model, incident plan, retention rules, and an
 independent privacy/security review are complete.
+
+## Stop conditions
+
+Pause a pilot if a person is exposed, a recovery credential is disclosed, correction/withdrawal cannot
+be honored, a public view reveals a precise location, or staff use the prototype as HMIS or shelter
+placement. Preserve only the minimum incident evidence, notify the privacy/security lead, and return to
+the last safe phase in [the roadmap](./roadmap.md).
