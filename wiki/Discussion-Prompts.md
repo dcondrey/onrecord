@@ -13,3 +13,13 @@ birth, ZIP codes, recovery material, exact locations, health details, or protect
 
 Close each thread with the decision, owner, review date, unresolved risks, and a link to the resulting
 change. Keep participation voluntary and accessible.
+
+## Recommended categories
+
+- **Announcements:** maintainer decisions and release notes.
+- **Pilot Design:** the smallest safe governed pilot and stop conditions.
+- **Community Experience:** lived-experience, accessibility, paper, and field feedback.
+- **Safety & Privacy:** public/private boundaries, moderation, recovery, and threat modeling.
+- **Provider & Government Practice:** provider workflows, accountability, HMIS, and coordination.
+- **Ideas & Improvements:** proposals with benefits, harms, owner, and stop rule.
+- **Q&A:** maintainer explanations of the prototype and handbook.

@@ -4,6 +4,8 @@ These are ready-to-post GitHub Discussion topics. Each is written to invite usef
 than abstract debate. Do not include real client stories, recovery material, names, DOBs, ZIPs, precise
 locations, or protected provider data in replies.
 
+The recommended category design and publication mapping is in [categories.md](./categories.md).
+
 - [01 — What should the first governed pilot do?](01-first-pilot.md)
 - [02 — What would make a recovery card usable?](02-recovery-card.md)
 - [03 — Public map, private service layer](03-public-private-boundary.md)
