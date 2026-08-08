@@ -356,6 +356,11 @@ svg.map.dragging{cursor:grabbing}
 
 .pin{cursor:pointer;transition:opacity .35s}
 .pin.hidden{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+/* Collision-suppressed label: the marker/pin/dot stays visible and clickable,
+   only its text is hidden. !important overrides the level-based opacity:1
+   rules (e.g. .map:not([data-level="county"]) .district .dlabel) which are
+   more specific than a bare class selector. */
+.label-collapsed{opacity:0 !important;pointer-events:none}
 /* .dim is filtered-out-but-still-drawn: keep it visible, but take it out of the tab order
    via the tabindex/aria-hidden sync in refreshMarkers(). */
 .pin.dim{opacity:.13;pointer-events:none}
@@ -1621,6 +1626,7 @@ function applyView(){
   });
   const lvl = view.k >= K_DETAIL ? "detail" : (view.k >= K_DRILL ? "zone" : "county");
   if(svg.dataset.level !== lvl){ svg.dataset.level = lvl; refreshMarkers(); }
+  else if(view.k !== lastDeclutterK){ declutterLabels(); }
 }
 function easeOut(t){ return 1 - Math.pow(1-t,3); }
 function flyTo(tx, ty, k, ms){
@@ -1813,6 +1819,7 @@ function buildMap(){
   svg.querySelectorAll(".spot").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) openSpot(g.dataset.id); }));
   svg.querySelectorAll(".svc").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) openService(g.dataset.id); }));
 
+  collectLabelDefs();
   wirePanZoom(); applyView(); refreshMarkers();
 }
 
@@ -1869,6 +1876,102 @@ function refreshMarkers(){
     z.classList.toggle("muted", !!state.focusedZone && state.focusedZone !== z.dataset.zone && lvl === "zone");
   });
   drawCrumbs();
+  declutterLabels();
+}
+
+/* =========================================================
+   LABEL DECLUTTER — bbox-collision pass over district, pin, spot,
+   service, shield, street and geo labels, in that priority order.
+   dlabel/plabel/sl/sb/slabel/scap/shield-text live inside a data-cs
+   group that is counter-scaled by 1/view.k every frame, so their own
+   getBBox() is invariant of zoom: measure it once here and the same
+   width/height stays correct at every k. stlabel/geo-label have no
+   such group, so their on-screen size scales with view.k directly.
+   ========================================================= */
+let labelDefs = [];
+function collectLabelDefs(){
+  labelDefs = [];
+  const add = (el, opts) => { if(el) labelDefs.push(Object.assign({el}, opts)); };
+  document.querySelectorAll(".district").forEach(g => {
+    const label = g.querySelector(".dlabel");
+    if(!label) return;
+    add(label, {priority:0, pinned:true, ax:parseFloat(label.dataset.px), ay:parseFloat(label.dataset.py),
+      dx:0, dy:0, w:label.getBBox().width, h:label.getBBox().height,
+      forced:() => state.focusedZone === g.dataset.zone});
+  });
+  ENTRIES.forEach(e => {
+    const g = document.getElementById("pin-"+e.id);
+    add(g && g.querySelector(".plabel"), {priority:1, pinned:true, ax:parseFloat(g.dataset.px), ay:parseFloat(g.dataset.py),
+      dx:0, dy:-15, w:g.querySelector(".plabel").getBBox().width, h:g.querySelector(".plabel").getBBox().height,
+      forced:() => state.selected === e});
+  });
+  SPOTS.forEach(sp => {
+    const g = document.getElementById("sp-"+sp.id);
+    [[".slabel",-17],[".scap",17]].forEach(([sel,dy]) => {
+      const el = g.querySelector(sel);
+      add(el, {priority:2, pinned:true, ax:parseFloat(g.dataset.px), ay:parseFloat(g.dataset.py),
+        dx:0, dy, w:el ? el.getBBox().width : 0, h:el ? el.getBBox().height : 0, forced:() => state.spot === sp});
+    });
+  });
+  SERVICES.forEach(v => {
+    const g = document.getElementById("sv-"+v.id);
+    [[".sl",-11],[".sb",17]].forEach(([sel,dy]) => {
+      const el = g.querySelector(sel);
+      add(el, {priority:3, pinned:true, ax:parseFloat(g.dataset.px), ay:parseFloat(g.dataset.py),
+        dx:0, dy, w:el ? el.getBBox().width : 0, h:el ? el.getBBox().height : 0, forced:() => state.svc === v});
+    });
+  });
+  document.querySelectorAll(".shield").forEach(g => {
+    const label = g.querySelector("text");
+    add(label, {priority:4, pinned:true, ax:parseFloat(g.dataset.px), ay:parseFloat(g.dataset.py),
+      dx:0, dy:0, w:label.getBBox().width, h:label.getBBox().height, forced:() => false});
+  });
+  /* stlabel/geo-label have no data-cs group, so getBBox() returns their box
+     in world units directly (unlike the pinned families above, whose box is
+     local to a transformed parent). Center on the measured box, not the x/y
+     attribute — that attribute is the text baseline, not the glyph's
+     vertical center, and since these scale with view.k the gap between
+     baseline and true center grows right along with the zoom. */
+  document.querySelectorAll(".stlabel").forEach(label => {
+    const bb = label.getBBox();
+    add(label, {priority:5, pinned:false, ax:bb.x+bb.width/2, ay:bb.y+bb.height/2, w:bb.width, h:bb.height, forced:() => false});
+  });
+  document.querySelectorAll(".geo-label").forEach(label => {
+    const bb = label.getBBox();
+    add(label, {priority:6, pinned:false, ax:bb.x+bb.width/2, ay:bb.y+bb.height/2, w:bb.width, h:bb.height, forced:() => false});
+  });
+}
+let lastDeclutterK = null;
+function declutterLabels(){
+  lastDeclutterK = view.k;
+  labelDefs.forEach(d => d.el.classList.remove("label-collapsed"));
+  const lvl = svg.dataset.level;
+  if(lvl === "county") return;
+  const k = view.k;
+  /* +1.8 covers half the widest paint-order stroke among these label
+     classes (up to stroke-width:3.4) — getBBox() reports glyph geometry
+     only, not the stroke drawn around it, so without this a thick-stroked
+     label's true visual edge can clear a neighbor's box while still
+     visibly overlapping it. */
+  const STROKE_PAD = 1.8;
+  const boxes = labelDefs.map(d => {
+    const cx = d.pinned ? k*d.ax + d.dx : k*d.ax;
+    const cy = d.pinned ? k*d.ay + d.dy : k*d.ay;
+    const pad = d.pinned ? STROKE_PAD : STROKE_PAD*k;
+    const w = d.pinned ? d.w : d.w*k, h = d.pinned ? d.h : d.h*k;
+    return {d, cx, cy, hw:w/2+pad, hh:h/2+pad};
+  });
+  const forced = boxes.filter(b => b.d.forced());
+  const rest = boxes.filter(b => !b.d.forced());
+  forced.sort((a,b) => a.d.priority-b.d.priority);
+  rest.sort((a,b) => a.d.priority-b.d.priority);
+  const accepted = [];
+  const place = b => {
+    const hit = accepted.some(o => Math.abs(o.cx-b.cx) < (o.hw+b.hw) && Math.abs(o.cy-b.cy) < (o.hh+b.hh));
+    if(hit) b.d.el.classList.add("label-collapsed"); else accepted.push(b);
+  };
+  forced.forEach(place);
+  rest.forEach(place);
 }
 
 /* pan / zoom / pinch */
