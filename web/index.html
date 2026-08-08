@@ -1604,21 +1604,45 @@ ENTRIES.forEach(e => {
   e._y = d.cy + Math.sin(ang)*rad;
 });
 SPOTS.forEach(s => { s._x = PX(s.lon); s._y = PY(s.lat); });
-/* Services sharing exact coordinates (same building/campus, e.g. SVC-02/
-   SVC-03 on the Father Joe's Villages site) would otherwise sit at an
-   identical world position at every zoom, so their labels collide forever
-   instead of separating as the view zooms in. Same rad/ang scatter as the
-   ENTRIES layout above, just centered on the shared point instead of a
-   district, and kept small enough to stay on the same block. */
-const byCoord = {};
-SERVICES.forEach(v => { (byCoord[v.lon+","+v.lat] = byCoord[v.lon+","+v.lat] || []).push(v); });
-Object.values(byCoord).forEach(group => {
-  const n = group.length;
-  group.forEach((v,i) => {
-    const rad = n === 1 ? 0 : 3.4;
-    const ang = -Math.PI/2 + (i/n)*Math.PI*2;
-    v._x = PX(v.lon) + Math.cos(ang)*rad;
-    v._y = PY(v.lat) + Math.sin(ang)*rad;
+/* Services on the same campus (e.g. SVC-01/02/03/06 plus the demo kiosks on
+   the Father Joe's Villages site) sit close enough in projected space that
+   their name/badge labels collide no matter how far you zoom in — for
+   SVC-02/SVC-03, which share exact coordinates, that collision is a dead
+   tie every single frame. A pinned label's on-screen box keeps a fixed
+   pixel size while its anchor scales with view.k (see declutterLabels
+   below), so any nonzero world-space separation eventually clears the box
+   at a high enough zoom — except the collision test only needs ONE axis to
+   clear, and these labels are wide/short, so a horizontal-only nudge (e.g.
+   a ring, which for an even cluster size puts two points at identical y)
+   buys nothing. A monotone vertical stagger does: STEP=6 clears the
+   worst-case adjacent pair (opposing .sl/.sb label offsets, ~28px apart)
+   by K_MAX. Clustering is transitive over a short link distance so the
+   whole campus groups together even though not every pair in it is close
+   enough to link directly. Stagger offsets replace each member's raw y
+   (ranked by it, not added on top of it) — adding would let a pair whose
+   raw y already differed have that real separation partly cancelled by an
+   offset pulling the opposite way; ranking guarantees a clean STEP between
+   every adjacent pair regardless of how close their real coordinates are. */
+const SVC_CLUSTER_LINK = 10, SVC_STAGGER_STEP = 6;
+const svcRaw = SERVICES.map(v => ({v, x: PX(v.lon), y: PY(v.lat)}));
+const svcSeen = new Set();
+svcRaw.forEach(item => {
+  if(svcSeen.has(item)) return;
+  const cluster = [item]; svcSeen.add(item);
+  for(let i = 0; i < cluster.length; i++){
+    svcRaw.forEach(other => {
+      if(svcSeen.has(other)) return;
+      if(Math.hypot(cluster[i].x - other.x, cluster[i].y - other.y) < SVC_CLUSTER_LINK){
+        svcSeen.add(other); cluster.push(other);
+      }
+    });
+  }
+  const n = cluster.length;
+  cluster.sort((a,b) => a.y - b.y);
+  const centroidY = cluster.reduce((sum,item) => sum + item.y, 0) / n;
+  cluster.forEach((item, i) => {
+    item.v._x = item.x;
+    item.v._y = n === 1 ? item.y : centroidY + (i - (n - 1) / 2) * SVC_STAGGER_STEP;
   });
 });
 
