@@ -42,6 +42,14 @@ or harmful.
 This Code of Conduct applies within all community spaces, and also applies when
 an individual is officially representing the community in public spaces.
 
+## On Record-specific safety
+
+Please also read the project’s [Community Standards](COMMUNITY-STANDARDS.md). They add safeguards for
+people living outdoors and for anyone whose story may appear in a record: never publish a precise
+location, recovery credential, health detail, immigration information, private screenshot, or identifying
+story without informed consent. Spam, doxxing, poverty tourism, coercive offers, and using a person’s
+experience to win an argument are harmful even when phrased politely.
+
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be

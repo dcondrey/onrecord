@@ -333,6 +333,11 @@ rights information for readers who prefer a handbook. Before publishing a page t
 starting a discussion, remove any real client story, recovery material, precise location, or protected
 provider information from the draft.
 
+All project spaces follow the [Community Standards](./COMMUNITY-STANDARDS.md). The shorter
+[participation guide](./docs/participation-guidelines.md) is written for website and Discussion
+participants. The static demo does not currently accept public posts; these rules govern GitHub spaces
+now and any future interactive deployment.
+
 Discussion seeds are intentionally not promises or policy. A maintainer should post them one at a time,
 identify the decision needed, invite people with lived experience first, summarize disagreement without
 identifying participants, and record an owner and review date for any accepted action. Close a thread with
