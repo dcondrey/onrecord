@@ -208,6 +208,103 @@ so signing and verification still work.
 
 To confirm it yourself: open DevTools ▸ Network and reload. Only the HTML document should appear.
 
+## Purpose
+
+On Record exists to test a narrow question: can a person who does not have a reliable device, email,
+address, username, or password leave a consented request and return to it later—while the community can
+see whether a response was recorded without seeing the person’s identity?
+
+The project is not trying to make poverty more visible as spectacle. It is trying to make a promise,
+an offer, and a response legible to the people involved. The person’s agency, safety, and ability to
+withdraw come before the map, the metrics, or the cryptography.
+
+## Aspiration
+
+The long-term aspiration is a governed, interoperable service layer that helps people living outdoors
+move through document replacement, transportation, hygiene, mutual aid, and provider follow-up without
+duplicating HMIS or coordinated-entry systems. It would provide:
+
+- an accessible paper-and-kiosk recovery path;
+- structured, moderated offers instead of public comment threads;
+- provider workflows with individual identity, least privilege, and auditability;
+- response visibility with context instead of punitive rankings;
+- a public layer that contains only consented, de-identified information; and
+- portable, independently verifiable provenance for records and real assets.
+
+That aspiration is conditional. If a feature increases surveillance, stigma, exposure, or administrative
+burden for people with the least power, the feature should be narrowed or removed.
+
+## What this is—and is not
+
+| This project is | This project is not |
+|---|---|
+| A prototype public communication layer | An HMIS or coordinated-entry replacement |
+| A consented, advocate-mediated request ledger | A directory of people or encampment locations |
+| A browser-verifiable integrity demonstration | Proof that a claim, provider, or outcome is true |
+| A place for structured mutual-aid offers | A public comment section or live shelter inventory |
+| A foundation for a governed pilot | A production system for real protected data |
+
+Read [limitations](./docs/limitations.md) before using or adapting anything here.
+
+## Audience guides
+
+These guides are intentionally separate from the technical protocol:
+
+- [For the public](./docs/for-the-public.md) — acknowledges frustration while reducing stigma and
+  promoting empathy, boundaries, and practical help.
+- [For people living outdoors](./docs/for-people-living-outdoors.md) — privacy, agency, recovery cards,
+  provider accountability, and asking for help without surrendering dignity.
+- [Living Outdoors with Respect](./docs/living-outdoors-with-respect.md) — practical guidance on safer
+  camping choices, sanitation, waste, sharps, hygiene, noise, pets, and finding services.
+- [Know Your Rights](./docs/know-your-rights.md) — law-enforcement encounters, encampment sweeps,
+  citations, property, discrimination, and documenting a possible violation. It is educational, not
+  legal advice, and must be reviewed as local law changes.
+
+The `wiki/` directory contains wiki-ready summaries. The `docs/` versions are canonical and reviewable
+in pull requests.
+
+## Roadmap to a real deployment
+
+1. **Prototype:** synthetic data, static viewer, signed fixtures, and explicit limitations.
+2. **Governed pilot:** lived-experience advisory group, one narrow use case, paper/kiosk usability,
+   privacy review, moderation policy, and no real HMIS imports.
+3. **Private service layer:** encrypted API/database, individual workforce identity, MFA, RBAC/ABAC,
+   moderation queues, durable append-only audits, key custody, incident response, and accessibility
+   testing.
+4. **Controlled interoperability:** data-sharing agreements, current HUD standards mapping, separate
+   VAWA/FVPSA-sensitive workflows, and authorized freshness/provenance for any operational feed.
+5. **Measured expansion:** mutual aid and verified responses only after safety review, with public
+   aggregate outcomes and a stop rule for harmful features.
+
+The detailed gate criteria are in [docs/roadmap.md](./docs/roadmap.md), [docs/hmis-alignment.md](./docs/hmis-alignment.md),
+and [docs/security-and-provider-policy.md](./docs/security-and-provider-policy.md).
+
+## Discussions and the wiki
+
+The project is intended to be shaped by people with lived experience, advocates, providers, privacy
+professionals, accessibility practitioners, and maintainers. Discussion seeds are in
+[docs/discussions](./docs/discussions/README.md). They cover the first pilot, recovery cards, public/
+private boundaries, moderation, provider participation, field accessibility, and HMIS interoperability.
+
+The [wiki mirror](./wiki/Home.md) organizes architecture, limitations, roadmap, community guides, and
+rights information for readers who prefer a handbook. Before publishing a page to a live wiki or
+starting a discussion, remove any real client story, recovery material, precise location, or protected
+provider information from the draft.
+
+## Contributing responsibly
+
+Please open an issue or discussion before adding a new data field, public metric, provider integration,
+identity workflow, or moderation policy. Explain:
+
+1. who benefits and who could be harmed;
+2. what is collected, where it is stored, who can see it, and when it is deleted;
+3. how a person can decline, correct, withdraw, or appeal;
+4. what happens when the system is wrong, unavailable, compromised, or abused; and
+5. how the change will be tested with people using low-cost devices and assistive technology.
+
+Never commit real client data, names, dates of birth, ZIP codes, recovery cards, provider credentials,
+private keys, or screenshots containing protected information.
+
 ## Ethics, and the data in this repo
 
 This project is about people who cannot correct the record about themselves, which sets the rules:
