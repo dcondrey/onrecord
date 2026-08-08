@@ -106,6 +106,17 @@ Key order in `src/schema.ts` is load-bearing. `canonicalize()` serializes fields
 order, so reordering a field there invalidates every signature ever produced. Full format,
 manifest structure, and threat model: **[docs/protocol.md](./docs/protocol.md)**.
 
+## Privacy and provider security
+
+The accountless recovery design does not remove privacy obligations. A production deployment must
+show the person a plain-language [privacy notice](./docs/privacy-notice.md) before intake, minimize
+what is collected, and explain use, disclosure, retention, correction, withdrawal, and complaints.
+Provider access must be individual, role-based, least-privilege, MFA-protected, approved after
+confidentiality training/agreement, encrypted, and recorded in append-only audit logs. The required
+[provider security baseline](./docs/security-and-provider-policy.md) is the implementation gate for
+connecting this project to an HMIS or real service system. The static viewer’s provider cards are
+deliberately demo-only and are not compliant authentication.
+
 ## The AI step, and its limits
 
 `on-record add` sends the advocate's raw note to Claude with a system prompt (`src/transform.ts`)
