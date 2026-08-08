@@ -9,6 +9,8 @@
   citations, property, public services, discrimination, and documenting a complaint.
 - [Private Property Camping Permission](../docs/private-property-camping-permission.md): a plain-language
   form for voluntary, time-limited permission on private property.
+- [Respectful Neighbor tent placard](../docs/respectful-neighbor-tent-placard.md): a voluntary, visible
+  cleanliness, access, quiet, safety, and communication commitment.
 - [Emergency resource directory](../docs/san-diego-emergency-resource-directory.md): verify-before-travel
   food, hygiene, medical, crisis, day-center, and document resources.
 - [Emergency health card](../docs/emergency-health-card.md): private paper-only health information card.
