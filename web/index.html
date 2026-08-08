@@ -314,18 +314,18 @@ svg.map.dragging{cursor:grabbing}
 .svc.shelter .ic{stroke:var(--amber)}
 .svc.clinic .ic{stroke:var(--teal)}
 .svc.selected .plate{stroke-width:2.6}
-.svc .sl{font-size:7.5px;fill:var(--ink-2);text-anchor:middle;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
-.svc .sb{font-family:var(--mono);font-size:7px;text-anchor:middle;paint-order:stroke;stroke:var(--land);stroke-width:2.8;pointer-events:none;opacity:0;transition:opacity .3s}
+.svc .sl{font-size:9.5px;fill:var(--ink-2);text-anchor:middle;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
+.svc .sb{font-family:var(--mono);font-size:9px;text-anchor:middle;paint-order:stroke;stroke:var(--land);stroke-width:2.8;pointer-events:none;opacity:0;transition:opacity .3s}
 .map[data-level="detail"] .svc .sl,.map[data-level="detail"] .svc .sb{opacity:1}
 .arterial{fill:none;stroke:var(--street);stroke-width:.9;opacity:.55;stroke-linecap:round;transition:opacity .35s,stroke-width .35s}
 .map:not([data-level="county"]) .arterial{opacity:.95;stroke-width:1.15}
-.stlabel{fill:var(--muted);font-size:8px;letter-spacing:.05em;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round}
+.stlabel{fill:var(--muted);font-size:11px;letter-spacing:.05em;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:2.8;stroke-linejoin:round}
 .map:not([data-level="county"]) .stlabel{opacity:.95}
 .shield rect{fill:var(--panel-solid);stroke:var(--land-line);stroke-width:1}
 .shield text{fill:var(--muted);font-family:var(--mono);font-size:8px;font-weight:700;text-anchor:middle;dominant-baseline:central}
 .fwy-cap{fill:none;stroke:var(--land-hi);stroke-width:4.4;stroke-linecap:round;opacity:.5}
 .border-line{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:7 5;opacity:.75}
-.geo-label{fill:var(--muted);font-size:10.5px;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:3;stroke-linejoin:round}
+.geo-label{fill:var(--muted);font-size:13px;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:3;stroke-linejoin:round}
 .map:not([data-level="county"]) .geo-label{opacity:1}
 .water-label{fill:var(--teal);opacity:.62;letter-spacing:.26em;text-anchor:middle;pointer-events:none;user-select:none;font-size:10.5px}
 .water-label.big{font-size:15px}
@@ -339,7 +339,7 @@ svg.map.dragging{cursor:grabbing}
 .district.muted{opacity:.4;transition:opacity .5s}
 /* Neighborhood names are the primary way into the map, so they get a halo (they sat directly on
    the land fill before) and enough size to read at a glance. Tracking eases off as size goes up. */
-.district .dlabel{fill:var(--ink-2);font-size:10.5px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:3.4;stroke-linejoin:round}
+.district .dlabel{fill:var(--ink-2);font-size:13px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;text-anchor:middle;pointer-events:none;user-select:none;opacity:0;transition:opacity .35s;paint-order:stroke;stroke:var(--land);stroke-width:3.4;stroke-linejoin:round}
 .district.has .dlabel{fill:var(--amber);opacity:1}
 .map:not([data-level="county"]) .district .dlabel{opacity:1}
 .district.focused .dlabel{fill:var(--amber)}
@@ -371,7 +371,7 @@ svg.map.dragging{cursor:grabbing}
 .pin .ring{fill:none;stroke:var(--amber);stroke-width:1.5;opacity:0;transition:opacity .25s}
 .pin:hover .core{fill:#fff}
 .pin.selected .ring,.pin:focus-visible .ring{opacity:1}
-.pin .plabel{font-size:10.5px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
+.pin .plabel{font-size:13px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .pin .plabel{opacity:1}
 .pin.broken .core{fill:var(--broken)}
 .pin.broken .halo{fill:url(#glowbad)}
@@ -390,11 +390,11 @@ svg.map.dragging{cursor:grabbing}
 .spot{cursor:pointer;transition:opacity .35s}
 .spot .plate{fill:var(--panel-solid);fill:color-mix(in srgb,var(--teal) 22%,var(--panel-solid));stroke:var(--teal);stroke-width:1.4}
 .spot .cnt{fill:var(--teal);font-family:var(--mono);font-size:11px;font-weight:700;text-anchor:middle;dominant-baseline:central;pointer-events:none}
-.spot .scap{font-size:7px;fill:var(--teal);opacity:.85;text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:2.6;pointer-events:none;opacity:0;transition:opacity .3s}
+.spot .scap{font-size:9px;fill:var(--teal);opacity:.85;text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:2.6;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .spot .scap{opacity:.9}
 .spot:hover .plate{fill:var(--teal-dim)}
 .spot.selected .plate{stroke-width:2.4}
-.spot .slabel{font-size:9.5px;fill:var(--teal);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3;pointer-events:none;opacity:0;transition:opacity .3s}
+.spot .slabel{font-size:11px;fill:var(--teal);text-anchor:middle;paint-order:stroke;stroke:var(--bg);stroke-width:3;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .spot .slabel{opacity:1}
 .layer-off{opacity:0 !important;pointer-events:none}
 
