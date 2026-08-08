@@ -953,7 +953,8 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
 <div class="modal" id="providermodal" hidden role="dialog" aria-modal="true" aria-labelledby="provtitle">
   <div class="box">
     <h2 id="provtitle">Provider tools</h2>
-    <p>Only the sample sites below can sign in here — a staff card is issued per site, not per person, so it does not need reissuing every time someone leaves. The rest of the map's sites are real organizations and are not part of this demo login; nothing published through this modal routes anyone in real life.</p>
+    <div class="integrity" style="margin:10px 0"><b>Demo security notice.</b> Production access requires an individual named account, role-based least privilege, MFA, confidentiality agreement, privacy training, encryption, and append-only audit logs. This static demo uses sample site cards only and is not an HMIS.</div>
+    <p>Only the sample sites below can sign in here. Nothing published through this modal routes anyone in real life. See <a href="../docs/privacy-notice.md">the privacy notice</a> and <a href="../docs/security-and-provider-policy.md">provider security baseline</a> before adapting this demo.</p>
     <div id="provstage"></div>
     <button class="btn btn-restore" id="provclose" type="button" style="margin-top:16px">Close</button>
   </div>
@@ -1603,7 +1604,23 @@ ENTRIES.forEach(e => {
   e._y = d.cy + Math.sin(ang)*rad;
 });
 SPOTS.forEach(s => { s._x = PX(s.lon); s._y = PY(s.lat); });
-SERVICES.forEach(v => { v._x = PX(v.lon); v._y = PY(v.lat); });
+/* Services sharing exact coordinates (same building/campus, e.g. SVC-02/
+   SVC-03 on the Father Joe's Villages site) would otherwise sit at an
+   identical world position at every zoom, so their labels collide forever
+   instead of separating as the view zooms in. Same rad/ang scatter as the
+   ENTRIES layout above, just centered on the shared point instead of a
+   district, and kept small enough to stay on the same block. */
+const byCoord = {};
+SERVICES.forEach(v => { (byCoord[v.lon+","+v.lat] = byCoord[v.lon+","+v.lat] || []).push(v); });
+Object.values(byCoord).forEach(group => {
+  const n = group.length;
+  group.forEach((v,i) => {
+    const rad = n === 1 ? 0 : 3.4;
+    const ang = -Math.PI/2 + (i/n)*Math.PI*2;
+    v._x = PX(v.lon) + Math.cos(ang)*rad;
+    v._y = PY(v.lat) + Math.sin(ang)*rad;
+  });
+});
 
 /* =========================================================
    7. CAMERA
@@ -3166,14 +3183,17 @@ function wireChat(){
    info editing, and filing (never resolving) a claim on an open ask.
    ========================================================= */
 let providerSite = null;
+const AUDIT_LOG = [];
+function auditEvent(action, detail){ AUDIT_LOG.push({ts:new Date().toISOString(), action, detail:detail||null}); }
 
 function renderProvider(){
   const host = document.getElementById("provstage");
   if(!providerSite){
-    host.innerHTML = '<div class="claimrow"><div class="fld"><label for="pvphrase">Staff card &#8212; three words</label>'
+    host.innerHTML = '<div class="claimrow"><div class="fld"><label for="pvphrase">Demo staff card &#8212; three words</label>'
       + '<input id="pvphrase" placeholder="word word word" autocomplete="off" spellcheck="false"></div>'
       + '<div class="fld"><label for="pvpin">Four digits</label>'
       + '<input id="pvpin" type="text" inputmode="numeric" maxlength="6" placeholder="4417" autocomplete="off"></div>'
+      + '<label class="disclaim" style="display:block;margin-top:10px"><input id="pvack" type="checkbox"> I understand this is a demo and, in production, access requires an individual account, confidentiality agreement, training, and role approval.</label>'
       + '<button class="btn btn-verify" id="pvgo" type="button">Unlock</button></div>'
       + '<p class="disclaim" style="margin-top:12px">One card per site, not per person &#8212; it does not need reissuing when staff turn over. Try any site&#8217;s card below.</p>'
       + '<p class="disclaim" style="margin-top:8px">Only the sample sites below are signable. Every other site on the map is real, sourced, and not part of this demo login &#8212; see its source link on its card.</p>'
@@ -3223,6 +3243,7 @@ function renderProvider(){
     const n = Number(document.getElementById("pvbeds").value);
     if(!Number.isFinite(n) || n < 0 || n > v.beds.total) return;
     v.beds.available = n; v.beds.frozenUntil = Date.now() + 120000;
+    auditEvent("provider.publish_bed_count", {siteId:v.id, role:"site-operator"});
     await sealBeds(v);
     updateBedChip(); refreshMarkers(); renderArea(); renderDash();
     renderProvider();
@@ -3231,6 +3252,7 @@ function renderProvider(){
   document.getElementById("pvsave").onclick = () => {
     v.hours = document.getElementById("pvhours").value.trim() || v.hours;
     v.note = document.getElementById("pvnote").value.trim() || v.note;
+    auditEvent("provider.update_site_info", {siteId:v.id, role:"site-operator"});
     buildMap(); renderArea(); renderProvider();
     say(v.name + " updated its site information.");
   };
@@ -3241,17 +3263,19 @@ function renderProvider(){
     const noteEl = document.getElementById("pvnote-"+id);
     e.status = "claimed";
     e.providerClaim = {siteId: v.id, siteName: v.name, note: noteEl ? noteEl.value.trim() : "", ts: new Date().toISOString()};
+    auditEvent("provider.file_claim", {siteId:v.id, recordId:e.id, role:"provider-responder"});
     await seal(e);
     refreshMarkers(); renderList(); renderDash(); renderStory();
     renderProvider();
     say(v.name + " filed a claim on record " + id + ".");
   });
-  document.getElementById("pvsignout").onclick = () => { providerSite = null; renderProvider(); };
+  document.getElementById("pvsignout").onclick = () => { auditEvent("provider.logout", {siteId:v.id}); providerSite = null; renderProvider(); };
 }
 async function openProviderByCode(){
   const phrase = document.getElementById("pvphrase").value;
   const pin = document.getElementById("pvpin").value;
   if(!phrase.trim() || !pin.trim() || !KEYS) return;
+  if(!document.getElementById("pvack")?.checked){ document.getElementById("provstage").insertAdjacentHTML("beforeend", '<div class="claimerr">Acknowledge the provider privacy and confidentiality requirements before signing in.</div>'); return; }
   const key = await deriveAuth(phrase, pin);
   let found = null;
   for(const v of SERVICES){
@@ -3264,6 +3288,7 @@ async function openProviderByCode(){
     return;
   }
   providerSite = found;
+  auditEvent("provider.login", {siteId:found.id, role:"site-operator", demo:true});
   renderProvider();
   say(found.name + " signed in with its staff card.");
 }
