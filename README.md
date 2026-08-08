@@ -256,6 +256,17 @@ These guides are intentionally separate from the technical protocol:
   provider accountability, and asking for help without surrendering dignity.
 - [Living Outdoors with Respect](./docs/living-outdoors-with-respect.md) — practical guidance on safer
   camping choices, sanitation, waste, sharps, hygiene, noise, pets, and finding services.
+- [Private Property Camping Permission](./docs/private-property-camping-permission.md) — a printable
+  agreement a person can take to a business or property representative. A [print-ready HTML form](./web/forms/camping-permission.html)
+  is also available.
+- [San Diego emergency resource directory](./docs/san-diego-emergency-resource-directory.md) — a
+  verify-before-travel pocket guide anchored to 2-1-1 and official provider pages.
+- [Emergency health card](./docs/emergency-health-card.md) — a private paper-only card; never upload it
+  to the public system. A [print-ready card](./web/forms/emergency-health-card.html) is available.
+- [Mutual-aid peer mediation agreement](./docs/mutual-aid-peer-mediation-agreement.md) — voluntary
+  shared ground rules and conflict-resolution framework.
+- [Document recovery checklist](./docs/document-recovery-checklist.md) — birth certificate, California
+  ID, Social Security card, DD-214, fee-waiver, and follow-up tracking.
 - [Know Your Rights](./docs/know-your-rights.md) — law-enforcement encounters, encampment sweeps,
   citations, property, discrimination, and documenting a possible violation. It is educational, not
   legal advice, and must be reviewed as local law changes.
