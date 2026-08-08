@@ -1019,13 +1019,10 @@ const FWY = {
   "94":[[-117.160,32.712],[-117.13,32.715],[-117.09,32.725],[-117.04,32.738],[-116.98,32.745],[-116.90,32.750]],
   "15":[[-117.10,32.87],[-117.10,32.82],[-117.105,32.78],[-117.11,32.745],[-117.115,32.720]]
 };
-const GEO_LABELS = [["La Jolla",-117.258,32.845],["Pacific Beach",-117.240,32.800],["Clairemont",-117.194,32.823],
-["Kearny Mesa",-117.130,32.823],["Mission Valley",-117.165,32.775],["Old Town",-117.196,32.755],
-["Point Loma",-117.242,32.712],["North Park",-117.122,32.747],["Golden Hill",-117.132,32.718],
-["Barrio Logan",-117.142,32.690],["National City",-117.098,32.674],["Lemon Grove",-117.032,32.737],
-["Spring Valley",-116.985,32.739],["Santee",-116.975,32.843],["Otay Mesa",-116.960,32.570],
-["San Ysidro",-117.040,32.553],["Imperial Beach",-117.115,32.577],["Tijuana",-116.980,32.522],
-["Coronado",-117.181,32.690],["Mira Mesa",-117.140,32.876],
+/* Only informal names with no DISTRICTS polygon of their own live here — every
+   entry that duplicated a district's dlabel was removed (real CPA data gave
+   several of these their own polygon in this pass). */
+const GEO_LABELS = [["Tijuana",-116.980,32.522],["Mira Mesa",-117.140,32.876],
 ["East Village",-117.157,32.712],["Hillcrest",-117.165,32.753],["Little Italy",-117.174,32.725],["South Park",-117.128,32.718]];
 
 /* =========================================================
