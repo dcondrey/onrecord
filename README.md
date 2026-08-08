@@ -346,6 +346,9 @@ All project spaces follow the [Community Standards](./COMMUNITY-STANDARDS.md). T
 participants. The static demo does not currently accept public posts; these rules govern GitHub spaces
 now and any future interactive deployment.
 
+Discussion triage is documented in [moderation automation](./docs/moderation-automation.md). The workflow
+flags review signals but does not auto-delete, auto-ban, or send discussion content to a third-party AI.
+
 Discussion seeds are intentionally not promises or policy. A maintainer should post them one at a time,
 identify the decision needed, invite people with lived experience first, summarize disagreement without
 identifying participants, and record an owner and review date for any accepted action. Close a thread with

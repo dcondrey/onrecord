@@ -1,0 +1,72 @@
+name: Discussion moderation triage
+
+on:
+  discussion:
+    types: [created, edited]
+  discussion_comment:
+    types: [created, edited]
+
+permissions:
+  discussions: write
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Triage content for human review
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const payload = context.payload;
+            const item = payload.discussion || payload.comment;
+            const discussion = payload.discussion || payload.comment?.discussion;
+            if (!item || !discussion) core.setFailed('Discussion payload was not available');
+
+            const text = [item.title, item.body].filter(Boolean).join('\n').toLowerCase();
+            const signals = [];
+            const urls = (text.match(/https?:\/\/|www\./g) || []).length;
+            if (urls >= 4) signals.push('possible-spam');
+            if (/(free money|cashapp|crypto|wire transfer|send payment|claim your prize)/i.test(text)) {
+              signals.push('possible-scam');
+            }
+            if (/(kill you|hurt you|burn it down|come to your home|i know where you live)/i.test(text)) {
+              signals.push('possible-threat');
+            }
+            if (/(doxx|doxing|full address|social security number|ssn|date of birth|recovery code|exact location|where they sleep)/i.test(text)) {
+              signals.push('possible-privacy-exposure');
+            }
+            if (/(you people|go back to|should be removed|not a real person|lazy|vermin|animals)/i.test(text)) {
+              signals.push('possible-harassment-or-dehumanization');
+            }
+            if (/(.)\1{9,}/.test(text) || text.trim().length < 3) signals.push('low-quality-or-flood');
+            if (!signals.length) {
+              core.info('No automated moderation signal detected. No action taken.');
+              return;
+            }
+
+            const labels = [
+              { name: 'moderation:review', color: 'b60205', description: 'Needs human moderation review' },
+              ...signals.map(signal => ({
+                name: `moderation:${signal.replaceAll('_', '-')}`,
+                color: signal.includes('threat') || signal.includes('privacy') ? '8b0000' : 'fbca04',
+                description: `Automated signal: ${signal}`
+              }))
+            ];
+            const labelIds = [];
+            for (const label of labels) {
+              let existing;
+              try {
+                existing = await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label.name });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                existing = await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, ...label });
+              }
+              labelIds.push(existing.data.node_id);
+            }
+
+            const mutation = `mutation($id:ID!,$labels:[ID!]!){addLabelsToLabelable(input:{labelableId:$id,labelIds:$labels}){labelable{... on Discussion { number title }}}}`;
+            await github.graphql(mutation, { id: discussion.node_id, labels: labelIds });
+            core.warning(`Flagged discussion #${discussion.number} for human review: ${signals.join(', ')}`);

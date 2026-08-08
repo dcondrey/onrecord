@@ -42,5 +42,9 @@ Threats, doxxing, hateful abuse, scams, and privacy exposure may be acted on imm
 issues normally follow explain → correction → restriction. Appeals happen privately and must not repeat
 harmful material. Immediate danger belongs with emergency services, not a comment thread.
 
+The repository also uses conservative automated triage for possible spam, scams, threats, privacy
+exposure, and harassment. Automation only adds review labels; it does not delete, ban, or decide that a
+person is abusive. A human must review context, language, and lived-experience reports.
+
 The project will not confuse visibility with help. People must be able to say no, correct the record,
 withdraw, and return safely. Winning an argument is never worth making someone less safe asking for help.

@@ -34,4 +34,6 @@
 **Participation**
 
 - [Discussion prompts](Discussion-Prompts)
+- [Community standards](Community-Standards)
+- [Moderation automation](Moderation-Automation)
 - [Contributing safely](Contributing-Safely)
