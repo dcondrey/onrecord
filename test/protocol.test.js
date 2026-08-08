@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { encodeCanonical, decode } from '../dist/cbor.js';
 import { signCoseSign1, verifyCoseSign1 } from '../dist/cose.js';
-import { recoveryIdentityTag } from '../dist/recovery.js';
+import { dobIsAmbiguous, normalizeDob, recoveryIdentityTag } from '../dist/recovery.js';
 import { webcrypto } from 'node:crypto';
 
 const hex = (bytes) => Buffer.from(bytes).toString('hex');
@@ -29,4 +29,13 @@ test('identity recovery follows the needle-exchange fields without storing them'
   assert.equal(tag.length, 64);
   assert.notEqual(tag, await recoveryIdentityTag(identity, '4418', 'or_test'));
   assert.notEqual(tag, await recoveryIdentityTag({ ...identity, postalCode: '92102' }, '4417', 'or_test'));
+});
+
+test('DOB intake accepts human formats and flags ambiguity', () => {
+  assert.equal(normalizeDob('March 5th, 1984'), '1984-03-05');
+  assert.equal(normalizeDob('05-03-84'), '1984-05-03');
+  assert.equal(normalizeDob('5 March nineteen eighty four'), '1984-03-05');
+  assert.equal(normalizeDob("03/5/'84"), '1984-03-05');
+  assert.equal(dobIsAmbiguous('01/02/1980'), true);
+  assert.equal(dobIsAmbiguous('13/02/1980'), false);
 });

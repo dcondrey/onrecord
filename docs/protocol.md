@@ -54,7 +54,9 @@ a four-digit PIN. Those values
 are normalized, stretched with PBKDF2-SHA-256, and keyed with HMAC-SHA-256 over `author:<entry-id>`.
 Only the resulting verifier tag is stored; the identity fields and PIN are never stored, transmitted,
 or recoverable from the tag. `claim-card/v1` remains available for a random four-or-more-word phrase
-plus PIN when using PII-derived recovery is inappropriate.
+plus PIN when using PII-derived recovery is inappropriate. Numeric dates whose month and day are
+both possible values (for example `01/02/1980`) require explicit operator confirmation before they
+are normalized, preventing a friendly parser from silently choosing the wrong date.
 
 > [!WARNING]
 > **Key order in `schema.ts` is load-bearing.** Reordering, renaming, or inserting a field changes

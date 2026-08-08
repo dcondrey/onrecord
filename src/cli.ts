@@ -41,7 +41,7 @@ import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
 import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
-import { recoveryIdentityTag, recoveryTag } from './recovery.js';
+import { dobIsAmbiguous, normalizeDob, recoveryIdentityTag, recoveryTag } from './recovery.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -198,6 +198,7 @@ async function cmdAdd(args: Args): Promise<void> {
   const orgClaimSource = str(args, 'source');
   const recoveryPhrase = str(args, 'recovery-phrase');
   const recoveryPin = str(args, 'recovery-pin');
+  const confirmedDob = str(args, 'confirm-dob');
   const identity = {
     first3: str(args, 'first3'), last3: str(args, 'last3'),
     dateOfBirth: str(args, 'dob'), postalCode: str(args, 'zip'),
@@ -207,6 +208,11 @@ async function cmdAdd(args: Args): Promise<void> {
   if (hasIdentity && recoveryPhrase) die('choose either identity recovery or --recovery-phrase, not both');
   if ((recoveryPhrase && !recoveryPin) || (!recoveryPhrase && !hasIdentity && recoveryPin)) die('--recovery-phrase or the four identity fields must be supplied with --recovery-pin');
   if (hasIdentity && !recoveryPin) die('identity recovery also requires --recovery-pin');
+  if (hasIdentity && identity.dateOfBirth && dobIsAmbiguous(identity.dateOfBirth)) {
+    if (!confirmedDob || normalizeDob(confirmedDob) !== normalizeDob(identity.dateOfBirth)) {
+      die(`DOB "${identity.dateOfBirth}" is ambiguous. Confirm the intended ISO date with --confirm-dob YYYY-MM-DD.`);
+    }
+  }
 
   const ask: UnsignedEntry['ask'] = { category, summary };
   if (amountUsd !== undefined) ask.amountUsd = amountUsd;

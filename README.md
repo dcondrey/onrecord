@@ -124,8 +124,8 @@ hiding behind it.
 on-record add    [--file <path>] --zone <zone> --category <cat> --summary <text>
                  [--amount <usd>] --advocate <id> --consent-method <text>
                  [--consent-at <iso>] [--status <status>] [--id <id>]
-                 [--first3 <3 letters> --last3 <3 letters> --dob <YYYY-MM-DD> --zip <5 digits>
-                  --recovery-pin <4 digits>]
+                 [--first3 <3 letters> --last3 <3 letters> --dob <flexible date>
+                  --confirm-dob <YYYY-MM-DD> --zip <5 digits> --recovery-pin <4 digits>]
                  [--recovery-phrase "four or more words" --recovery-pin <4 digits>]
                  [--org-claim <text>] [--source <text>] [--json]
                  (raw story is read from stdin when --file is omitted)
