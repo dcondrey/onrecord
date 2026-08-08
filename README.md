@@ -351,6 +351,10 @@ identify the decision needed, invite people with lived experience first, summari
 identifying participants, and record an owner and review date for any accepted action. Close a thread with
 what changed, what did not change, and why.
 
+After configuring the categories described in [the category plan](./docs/discussions/categories.md), a
+maintainer can publish the prepared topics with `bash scripts/publish-discussions.sh` from an authenticated
+local GitHub CLI session.
+
 ## Contributing responsibly
 
 Please open an issue or discussion before adding a new data field, public metric, provider integration,

@@ -45,3 +45,12 @@ After authenticating with a token that can administer Discussions:
 3. Publish each seed once, preserving its title and body.
 4. Pin the category guidance and add the safety reminder to the repository welcome text.
 5. Record resulting URLs in a maintainer changelog; never put private participant information there.
+
+The repository includes `scripts/publish-discussions.sh`. It uses the authenticated local `gh`
+credential, verifies category names, skips duplicate titles, and publishes the seven prepared seeds. It
+never prints or stores the token. Run it from the repository root:
+
+```sh
+gh auth status
+bash scripts/publish-discussions.sh
+```
