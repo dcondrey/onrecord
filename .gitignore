@@ -22,3 +22,6 @@ keys/
 # Logs
 *.log
 npm-debug.log*
+
+# Cached GIS source data for scripts/sync-geo.mjs (large, refetchable)
+.gis-cache/

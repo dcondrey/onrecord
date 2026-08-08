@@ -34,6 +34,7 @@
     "test": "npm run build && node --test test/protocol.test.js",
     "c2pa:dev-cert": "node scripts/generate-c2pa-dev-cert.mjs",
     "web:sync": "npm run build && npm run seed -- --force && node scripts/sync-web-data.mjs",
+    "web:geo": "node scripts/sync-geo.mjs",
     "typecheck": "tsc --noEmit",
     "on-record": "node dist/cli.js",
     "seed": "node dist/cli.js seed",
@@ -49,6 +50,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.1",
+    "topojson-client": "^3.1.0",
+    "topojson-server": "^3.0.1",
+    "topojson-simplify": "^3.0.3",
     "typescript": "^5.7.0"
   },
   "allowScripts": {
