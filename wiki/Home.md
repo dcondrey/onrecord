@@ -36,6 +36,7 @@ or suicide crisis, and 2-1-1 San Diego for current local service referrals.
 ### About the site
 
 - [About On Record](About-On-Record)
+- [Why WritersLogic](Why-WritersLogic)
 - [Limitations](Limitations)
 - [Aspiration and roadmap](Aspiration-and-Roadmap)
 - [Architecture](Architecture)
@@ -45,6 +46,7 @@ or suicide crisis, and 2-1-1 San Diego for current local service referrals.
 - [For the general public](For-the-General-Public)
 - [For people living outdoors](For-People-Living-Outdoors)
 - [For service providers and government](For-Providers-and-Government)
+- [Helping without harm](Helping-Without-Harm)
 
 ### Commitments and practical tools
 

@@ -247,6 +247,14 @@ duplicating HMIS or coordinated-entry systems. It would provide:
 That aspiration is conditional. If a feature increases surveillance, stigma, exposure, or administrative
 burden for people with the least power, the feature should be narrowed or removed.
 
+## Why WritersLogic
+
+On Record is hosted under WritersLogic because its founder and CEO, David Condrey, lived without stable
+housing for several years and still has close friends who are homeless. That lived experience explains
+the project’s origin; it does not make him a spokesperson for everyone who is homeless. Read the full
+[Why WritersLogic](./WHY-WRITERSLOGIC.md) statement and [Helping without harm](./docs/helping-without-harm.md)
+guide.
+
 ## A decision rule for new features
 
 Every proposed field, metric, integration, and public view should answer five questions before code is

@@ -4,6 +4,7 @@
 
 - [Home](Home)
 - [About On Record](About-On-Record)
+- [Why WritersLogic](Why-WritersLogic)
 - [Limitations](Limitations)
 - [Aspiration and roadmap](Aspiration-and-Roadmap)
 - [Architecture](Architecture)
@@ -13,6 +14,7 @@
 - [General public](For-the-General-Public)
 - [People living outdoors](For-People-Living-Outdoors)
 - [Providers and government](For-Providers-and-Government)
+- [Helping without harm](Helping-Without-Harm)
 
 **Commitments and tools**
 
