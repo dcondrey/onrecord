@@ -9,5 +9,5 @@ The project has three deliberately separated layers:
 3. **Future private service layer:** an encrypted, access-controlled API for real intake, provider
    workflows, moderation, and audit events. It does not exist in the current demo.
 
-See [docs/protocol.md](../docs/protocol.md) for the signed format and [docs/limitations.md](../docs/limitations.md)
+See [docs/protocol.md](https://github.com/writerslogic/onrecord/blob/main/docs/protocol.md) for the signed format and [docs/limitations.md](https://github.com/writerslogic/onrecord/blob/main/docs/limitations.md)
 for what the current system cannot prove.

@@ -1,15 +1,15 @@
 # Community guides
 
-- [For the public](../docs/for-the-public.md): reducing stigma while acknowledging frustration.
-- [For people living outdoors](../docs/for-people-living-outdoors.md): privacy, agency, and returning
+- [For the public](https://github.com/writerslogic/onrecord/blob/main/docs/for-the-public.md): reducing stigma while acknowledging frustration.
+- [For people living outdoors](https://github.com/writerslogic/onrecord/blob/main/docs/for-people-living-outdoors.md): privacy, agency, and returning
   to a request.
-- [Living Outdoors with Respect](../docs/living-outdoors-with-respect.md): practical guidance on
+- [Living Outdoors with Respect](https://github.com/writerslogic/onrecord/blob/main/docs/living-outdoors-with-respect.md): practical guidance on
   choosing a safer place, waste, hygiene, noise, pets, and finding services.
-- [Know Your Rights](../docs/know-your-rights.md): law-enforcement encounters, encampment sweeps,
+- [Know Your Rights](https://github.com/writerslogic/onrecord/blob/main/docs/know-your-rights.md): law-enforcement encounters, encampment sweeps,
   citations, property, public services, discrimination, and documenting a complaint.
-- [Private Property Camping Permission](../docs/private-property-camping-permission.md): a plain-language
+- [Private Property Camping Permission](https://github.com/writerslogic/onrecord/blob/main/docs/private-property-camping-permission.md): a plain-language
   form for voluntary, time-limited permission on private property.
-- [Respectful Neighbor tent placard](../docs/respectful-neighbor-tent-placard.md): a voluntary, visible
+- [Respectful Neighbor tent placard](https://github.com/writerslogic/onrecord/blob/main/docs/respectful-neighbor-tent-placard.md): a voluntary, visible
   cleanliness, access, quiet, safety, and communication commitment.
 - [Respectful Neighbor sticker](../docs/sticker-guide.md): a mass-printable QR sticker linking to the
   shared standard and community guides.
