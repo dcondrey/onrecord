@@ -2739,10 +2739,10 @@ function renderDash(){
   const bt = bedTotals();
 
   host.innerHTML = '<div class="dash">'
-   + '<div class="headline"><div class="eyebrow">Institutional non-response</div>'
+   + '<div class="headline"><div class="eyebrow">Documented response visibility</div>'
    + '<div class="bignum">'+pct+'<small>%</small></div>'
-   + '<p>of the asks on this map were never answered. Not refused with a reason. Not deferred with a date. Answered by nothing at all.</p>'
-   + '<p class="defn">Non-response is defined here as a documented ask with no recorded reply of any kind at the time of intake review. Refusals and deferrals count as answers.</p></div>'
+   + '<p>of the reviewed asks have no recorded response yet. This is a visibility measure, not a provider score or a judgment about understaffed teams.</p>'
+   + '<p class="defn">A response gap means the reviewed record has no recorded reply at this time. Capacity, eligibility, closures, and coordinated-entry rules are context; they are not inferred from this number. Refusals and deferrals count as responses.</p></div>'
    + '<div class="metrics">'
    + '<div class="metric"><div class="v">'+answered+'/'+pool.length+'</div><div class="l">asks answered</div></div>'
    + '<div class="metric"><div class="v">'+money(openMoney)+'</div><div class="l">open ask total</div></div>'
@@ -2780,7 +2780,7 @@ function renderDash(){
    + '<div class="mline"><div class="desc">Cost of the two fixes neighbors agreed on themselves: bins, posted notice, one storage container.</div><div class="amt">under '+money(2000)+'<span class="src">[estimate, unsourced]</span></div></div>'
    + '<div class="mline"><div class="desc">Illustrative placeholder only. A round figure, not attributed to any real entity, agency, or budget — shown to demonstrate the promise-vs-proof mechanic.<span class="alleged">Alleged · unverified</span></div><div class="amt unv">'+money(ALLEGED_SPEND)+'<span class="src">[source needed]</span></div></div>'
    + '<div class="mline"><div class="desc">The same unverified figure expressed in birth certificates. Arithmetic only, inherits the unverified status of its input.<span class="alleged">Alleged · unverified</span></div><div class="amt unv">'+allegedCerts.toLocaleString("en-US")+' certs</div></div>'
-   + '<p class="disclaim">Unverified figures are excluded from all signed data and from every metric above. This is a comparison of public budget priorities, not an allegation of misconduct by any organization, agency, or person.</p></div></div>'
+   + '<p class="disclaim">Unverified figures are excluded from all signed data and from every metric above. This is a service-response and community-support view, not an accountability score, allegation, or ranking of any organization, agency, or person.</p></div></div>'
 
    + '<div class="integrity '+(brokenCount?"bad":"")+'">'
    + (brokenCount ? '&#9888; '+brokenCount+' record failed signature verification and is excluded from every number here. A tampered record cannot quietly move a metric.'

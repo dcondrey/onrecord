@@ -118,6 +118,9 @@ connecting this project to an HMIS or real service system. The static viewer’s
 deliberately demo-only and are not compliant authentication.
 See [HMIS alignment boundary](./docs/hmis-alignment.md) for the public/private split, evolving HUD
 data standards, and VAWA-sensitive provider workflows.
+The product’s intended operating model is documented in [docs/operating-model.md](./docs/operating-model.md):
+support and verified routing before punitive provider scoring, with integration rather than duplicate
+bed-entry workflows.
 
 ## The AI step, and its limits
 
