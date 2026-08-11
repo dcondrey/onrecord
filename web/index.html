@@ -2824,6 +2824,14 @@ async function makeOffer(e, kind, note){
    15. DASHBOARD
    ========================================================= */
 const BIRTH_CERT_USD = 29, ALLEGED_SPEND = 1200000;
+/* Sourced 2026 figures for the promise-vs-proof section. Pulled 2026-08 from each
+   agency's own current fee page — see the inline source links where each is used. */
+const CA_STATE_ID_USD = 40, CA_STATE_ID_WAIVED_USD = 0;
+const MTS_PASS_USD = 72;
+const PHONE_LIFELINE_USD = 28.25;
+const FOOD_HANDLER_USD = 10.95;
+/* HUD CoC CA-601 Housing Inventory Count, RTFH-published, January 2025 point-in-time. */
+const HUD_HIC_ES_BEDS = 3643, HUD_HIC_ES_PROJECTS = 76;
 function renderDash(){
   const host = document.getElementById("panel-dash");
   const live = ENTRIES.filter(e => !e.withdrawn && !e.pendingReview);
@@ -2840,6 +2848,9 @@ function renderDash(){
   const pct = pool.length ? Math.round(unanswered/pool.length*100) : 0;
   const openMoney = pool.filter(e => e.status !== "answered" && e.ask.amountUsd).reduce((s,e)=>s+e.ask.amountUsd,0);
   const docAsks = pool.filter(e => e.ask.category === "id_documents" && e.status !== "answered").length;
+  const transitAsks = pool.filter(e => e.ask.category === "transit" && e.status !== "answered").length;
+  const phoneAsks = pool.filter(e => e.ask.category === "phone" && e.status !== "answered").length;
+  const workDocAsks = pool.filter(e => e.ask.category === "work_docs" && e.status !== "answered").length;
 
   const cats={}, zs={};
   pool.forEach(e => {
@@ -2878,10 +2889,10 @@ function renderDash(){
 
    + '<div class="barsec"><h4>Bed capacity reference · no live inventory</h4>'
    + '<div class="metrics" style="margin-top:0">'
-   + '<div class="metric"><div class="v">'+bt.total+'</div><div class="l">published capacity reference</div></div>'
-   + '<div class="metric"><div class="v">'+bt.total+'</div><div class="l">beds in the directory</div></div>'
+   + '<div class="metric"><div class="v">'+bt.total+'</div><div class="l">beds in this directory</div></div>'
+   + '<div class="metric"><div class="v">'+HUD_HIC_ES_BEDS+'</div><div class="l">emergency shelter beds countywide<span class="src">[source]</span></div></div>'
    + '<div class="metric"><div class="v" style="color:var(--muted)">—</div><div class="l">live availability</div></div></div>'
-   + '<p class="disclaim" style="margin-top:9px">This map has no public minute-by-minute bed feed. The demo’s signed counts are test fixtures for provenance UI only; they are not current and must not be used for placement.</p></div>'
+   + '<p class="disclaim" style="margin-top:9px">This directory covers about '+Math.round(bt.total/HUD_HIC_ES_BEDS*100)+'% of the '+HUD_HIC_ES_BEDS+' emergency shelter beds HUD’s CoC CA-601 Housing Inventory Count lists countywide (RTFH-published, January 2025 point-in-time), across '+HUD_HIC_ES_PROJECTS+' funded projects. Neither figure is a live minute-by-minute feed. The demo’s signed counts are test fixtures for provenance UI only; they are not current and must not be used for placement.</p></div>'
 
    + '<div class="barsec"><h4>Where the two sides did answer each other</h4>'
    + '<div class="metrics" style="margin-top:0">'
@@ -2897,6 +2908,10 @@ function renderDash(){
 
    + '<div class="money"><div class="mh"><div class="eyebrow">Promise vs proof</div></div><div class="mb">'
    + '<div class="mline"><div class="desc">Cost of one certified California birth certificate, the document behind '+docAsks+' open asks on this map.</div><div class="amt">'+money(BIRTH_CERT_USD)+'<span class="src">[source]</span></div></div>'
+   + '<div class="mline"><div class="desc">A California state ID card — fee-waived entirely for anyone meeting the federal definition of homeless, with paperwork from a qualifying agency.</div><div class="amt">'+money(CA_STATE_ID_USD)+' → '+money(CA_STATE_ID_WAIVED_USD)+'<a class="src" href="https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/licensing-fees/" target="_blank" rel="noopener noreferrer">source</a></div></div>'
+   + '<div class="mline"><div class="desc">One month of MTS regional transit pass, the fare behind '+transitAsks+' open transit asks on this map. Rising to '+money(85)+' in October 2026.</div><div class="amt">'+money(MTS_PASS_USD)+'<a class="src" href="https://www.sdmts.com/fares/fare-chart" target="_blank" rel="noopener noreferrer">source</a></div></div>'
+   + '<div class="mline"><div class="desc">Combined Federal + California LifeLine phone subsidy, enough to reach '+money(0)+' out-of-pocket on a qualifying low-cost plan — the callback line behind '+phoneAsks+' open phone asks on this map.</div><div class="amt">'+money(PHONE_LIFELINE_USD)+'/mo<a class="src" href="https://www.cpuc.ca.gov/news-and-updates/all-news/california-lifeline-vs-federal-lifeline" target="_blank" rel="noopener noreferrer">source</a></div></div>'
+   + '<div class="mline"><div class="desc">A San Diego County food handler card, required within 10 days of most entry-level food-service jobs — behind '+workDocAsks+' open work-document asks on this map.</div><div class="amt">'+money(FOOD_HANDLER_USD)+'<a class="src" href="https://foodserviceprep.com/Courses/SanDiegoFoodHandler" target="_blank" rel="noopener noreferrer">source</a></div></div>'
    + '<div class="mline"><div class="desc">Total cost to close every open ask shown here, at face value, today.</div><div class="amt">'+money(openMoney)+'<span class="src">[derived from signed records]</span></div></div>'
    + '<div class="mline"><div class="desc">Cost of the two fixes neighbors agreed on themselves: bins, posted notice, one storage container.</div><div class="amt">under '+money(2000)+'<span class="src">[estimate, unsourced]</span></div></div>'
    + '<div class="mline"><div class="desc">Illustrative placeholder only. A round figure, not attributed to any real entity, agency, or budget — shown to demonstrate the promise-vs-proof mechanic.<span class="alleged">Alleged · unverified</span></div><div class="amt unv">'+money(ALLEGED_SPEND)+'<span class="src">[source needed]</span></div></div>'
