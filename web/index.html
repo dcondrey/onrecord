@@ -1728,9 +1728,9 @@ function findPreciseLocation(value, path){
     for(let i=0;i<value.length;i++){ const hit = findPreciseLocation(value[i], path+"["+i+"]"); if(hit) return hit; }
     return null;
   }
-  for(const k in value){
+  for(const [k, v] of Object.entries(value)){
     if(FORBIDDEN_LOCATION_KEYS.has(k.toLowerCase())) return path+"."+k;
-    const hit = findPreciseLocation(value[k], path+"."+k);
+    const hit = findPreciseLocation(v, path+"."+k);
     if(hit) return hit;
   }
   return null;
@@ -1738,7 +1738,15 @@ function findPreciseLocation(value, path){
 async function verifyEntry(e){
   const locationLeak = findPreciseLocation(e, "$");
   const r = e.provenance?.protocolVersion==="2.0" ? await verifyV2(e) : await verifyEntryV1(e);
-  return locationLeak ? Object.assign({}, r, {ok:false, locationLeak}) : r;
+  if(!locationLeak) return r;
+  /* e.prov.ok, not this function's return value, is what markers/list/dashboard
+     actually read (see refreshMarkers/renderList/renderDash) — verifyV2 never
+     touches it and seal() only set it once at boot, before any leak existed. */
+  e.prov = e.prov || {};
+  e.prov.ok = false;
+  e.prov.tampered = true;
+  e.prov.tamperNote = "precise location found: " + locationLeak;
+  return Object.assign({}, r, {ok:false, locationLeak});
 }
 async function verifyEntryV1(e){
   const bytes = ENC.encode(canonEntry(e));
