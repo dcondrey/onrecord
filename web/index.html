@@ -1503,6 +1503,28 @@ const DOWNTOWN_DETAIL = {
   statusCounts: {closed: 39856, referred: 1892}
 };
 
+/* Downtown San Diego Partnership's own monthly street count, digitized and hosted by
+   UC San Diego's Homelessness Hub (H-Hub): Downtown_Partnership_January_2014_June_2025
+   _Points_WFL1, part of the "San Diego County Homeless Emergency Bed Dashboard" org
+   (arcgis.com item cea97c1d7ff94a5081c1ef5de78e32d2). The source layer is point-level —
+   one row per street corner with a headcount and exact lat/lon, which this app's own
+   schema treats as a hard violation (assertNoPreciseLocation in src/schema.ts). Every
+   number below came from a server-side SUM(COUNT_) GROUP BY month statistics query —
+   no coordinate, and no row finer than a monthly neighborhood total, was ever fetched. */
+const DOWNTOWN_UNSHELTERED = {
+  sourceNote: 'Downtown San Diego Partnership monthly street count, digitized by UC San Diego\'s Homelessness Hub (H-Hub). Individual + structure + vehicle counts, summed server-side across Downtown\'s core neighborhoods (City Center, Columbia, Cortez, East Village, East Village South, Gaslamp, Marina) — no point-level location was fetched. DSDP\'s own methodology does not deduplicate repeat months: the same person counted in consecutive months is counted again each time, so this is a monthly headcount-event series, not a running unique-individual total.',
+  counts: {"2014-01":430,"2014-02":536,"2014-03":633,"2014-04":582,"2014-05":597,"2014-06":652,"2014-07":689,"2014-10":654,"2014-11":515,"2014-12":544,"2015-01":678,"2015-02":712,"2015-03":732,"2015-04":693,"2015-05":625,"2015-07":794,"2015-08":679,"2015-09":569,"2015-10":658,"2015-11":764,"2015-12":886,"2016-01":668,"2016-02":810,"2016-03":831,"2016-04":819,"2016-05":1150,"2016-06":1165,"2016-07":1141,"2016-08":1386,"2016-09":1137,"2016-10":1124,"2016-11":1168,"2016-12":1410,"2017-01":875,"2017-02":1023,"2017-03":1099,"2017-04":741,"2017-05":769,"2017-06":971,"2017-07":924,"2017-08":1110,"2017-09":1101,"2017-10":953,"2017-11":807,"2017-12":858,"2018-01":711,"2018-02":752,"2018-03":510,"2018-04":419,"2018-05":488,"2018-06":433,"2018-07":829,"2018-08":909,"2018-09":697,"2018-10":678,"2018-12":714,"2019-01":739,"2019-02":699,"2019-03":654,"2019-04":676,"2019-05":757,"2019-06":715,"2019-07":856,"2019-08":702,"2019-09":856,"2019-10":792,"2019-11":629,"2020-01":660,"2020-02":664,"2020-03":468,"2020-04":515,"2020-05":381,"2020-06":639,"2020-07":615,"2020-08":487,"2020-09":642,"2020-10":593,"2020-11":599,"2020-12":524,"2021-01":613,"2021-02":522,"2021-03":577,"2021-04":537,"2021-05":620,"2021-06":727,"2021-07":701,"2021-08":630,"2021-09":605,"2021-10":683,"2021-11":764,"2021-12":839,"2022-01":918,"2022-02":962,"2022-03":769,"2022-04":928,"2022-05":895,"2022-06":968,"2022-07":784,"2022-08":1029,"2022-09":1023,"2022-10":1013,"2022-11":955,"2022-12":1004,"2023-01":790,"2023-02":826,"2023-03":797,"2023-04":878,"2023-05":975,"2023-06":705,"2023-07":912,"2023-08":927,"2023-09":970,"2023-10":973,"2023-11":842,"2023-12":658,"2024-01":778,"2024-02":807,"2024-03":673,"2024-04":652,"2024-05":692,"2024-06":721,"2024-07":718,"2024-08":696,"2024-09":632,"2024-10":680,"2024-11":641,"2024-12":686,"2025-01":665,"2025-02":649,"2025-03":604,"2025-04":645,"2025-05":624,"2025-06":588,"2025-09":612,"2025-12":771}
+};
+
+/* RTFH Housing Inventory Count pivot table, City of San Diego rows only, via H-Hub
+   (HIC_ES_2014_2024_PivotTable). This is a CITY-of-San-Diego total, not the same
+   geography as HUD_HIC_ES_BEDS below (that figure is COUNTY-wide) — the two are
+   related but must not be read as the same series at different points in time. */
+const SD_CITY_SHELTER_BEDS_BY_YEAR = {
+  sourceNote: 'RTFH Housing Inventory Count, City of San Diego only, via UC San Diego\'s Homelessness Hub. Facility-based + inclement-weather + hotel/motel-voucher beds summed into one yearly total.',
+  totalBeds: {"2014":612,"2015":904,"2016":1006,"2017":1293,"2018":1603,"2019":1639,"2020":1948,"2021":3239,"2022":2529,"2023":2632,"2024":2618,"2025":2164,"2026":2040}
+};
+
 /** Ordinary least squares over an evenly-spaced series; x = 0..n-1. */
 function linreg(ys){
   const n = ys.length;
@@ -2723,6 +2745,19 @@ function downtownDetailHTML(){
   const total = d.statusCounts.closed + d.statusCounts.referred;
   const closedPct = Math.round(d.statusCounts.closed/total*100);
 
+  const u = DOWNTOWN_UNSHELTERED;
+  const uMonths = Object.keys(u.counts).sort();
+  const uVals = uMonths.map(m => u.counts[m]);
+  const uLast3 = uVals.slice(-3);
+  const uAvgLast3 = uLast3.reduce((a,b)=>a+b,0)/uLast3.length;
+  // Same 3 calendar months one year earlier, by key — not the prior 3 rows, since a gap
+  // in the source would otherwise silently compare across an uneven span.
+  const priorYearKeys = uMonths.slice(-3).map(m => (Number(m.slice(0,4))-1)+m.slice(4));
+  const priorYearVals = priorYearKeys.filter(m => u.counts[m] !== undefined).map(m => u.counts[m]);
+  const uYoyPct = priorYearVals.length === 3
+    ? Math.round((uAvgLast3 - priorYearVals.reduce((a,b)=>a+b,0)/3) / (priorYearVals.reduce((a,b)=>a+b,0)/3) * 100)
+    : null;
+
   return '<div class="eyebrow" style="margin-top:18px">Downtown, block by block</div>'
     + '<p class="defn">The hackathon’s Downtown Homelessness track asked for finer grain than a citywide view gives. Below: which corridors are getting more or fewer reports than in 2024, how long a report here typically stays open, and what happens to it.</p>'
     + '<div class="barsec"><h4>Most-reported corridors · Jan 2024–Jul 2026 · pace vs 2024</h4>' + corridorRows
@@ -2734,11 +2769,31 @@ function downtownDetailHTML(){
     + '<div class="metric"><div class="v">'+closedPct+'%</div><div class="l">closed to resolution ('+d.statusCounts.referred.toLocaleString()+' referred elsewhere)</div></div>'
     + '</div>'
     + '<p class="disclaim" style="margin-top:9px">Median, not mean, because the distribution is right-skewed by a long tail of slow cases — the mean over the same last quarter runs '+meanAvgLast3.toFixed(1)+' days, noticeably higher than the '+medAvgLast3.toFixed(0)+'-day median most reports actually see.</p></div>'
+    + '<div class="barsec" style="margin-top:12px"><h4>Unsheltered street count, Downtown core · monthly, 2014–2025</h4>'
+    + svgSparkline(uMonths, uVals, {ariaLabel:"Downtown San Diego Partnership monthly unsheltered street count, 2014 to 2025"})
+    + '<div class="metrics" style="margin-top:6px">'
+    + '<div class="metric"><div class="v">'+Math.round(uAvgLast3)+'</div><div class="l">avg monthly count, last quarter on record</div></div>'
+    + (uYoyPct===null ? '' : '<div class="metric"><div class="v" style="color:'+(uYoyPct>=0?"var(--broken)":"var(--ok)")+'">'+(uYoyPct>=0?"+":"")+uYoyPct+'%</div><div class="l">vs the same months a year earlier</div></div>')
+    + '</div>'
+    + '<p class="disclaim" style="margin-top:9px">This is a separate, independent count from the 311 encampment reports above — DSDP staff and volunteers walking the same blocks, not residents filing reports — so agreement or disagreement between the two is itself informative. Counts are not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as street presence per month, not a running total of unique people.</p>'
+    + '<p class="footnote">'+esc(u.sourceNote)+'</p></div>'
     + '<p class="disclaim">Downtown’s only listed shelter with a named cross-street, Alpha Project Bridge Shelter, sits at 16th &amp; Newton — on 16th St, this map’s #2 corridor by report volume and the corridor with the steepest 2026 increase. Proximity to a shelter is a known confound for where encampment activity gets reported, not evidence either way of cause.</p>'
     + '<p class="footnote">'+esc(d.sourceNote)+'</p>';
 }
+function shelterBedHistoryHTML(){
+  const b = SD_CITY_SHELTER_BEDS_BY_YEAR;
+  const years = Object.keys(b.totalBeds).sort();
+  const vals = years.map(y => b.totalBeds[y]);
+  const peakIdx = vals.indexOf(Math.max.apply(null, vals));
+  const latest = vals[vals.length-1], first = vals[0];
+  return '<div style="margin-top:12px"><div class="eyebrow">City of San Diego emergency shelter beds, 2014–'+years[years.length-1]+'</div>'
+    + svgSparkline(years, vals, {ariaLabel:"City of San Diego total emergency shelter beds by year, 2014 to "+years[years.length-1], tickLabel: y=>y})
+    + '<p class="disclaim" style="margin-top:6px">'+latest.toLocaleString()+' beds in '+years[years.length-1]+', up from '+first.toLocaleString()+' in '+years[0]+' but down from a pandemic-era peak of '+vals[peakIdx].toLocaleString()+' in '+years[peakIdx]+' (hotel/motel vouchers made up most of that peak). City total, not the countywide figure above — the two are related but not the same geography or the same vintage.</p>'
+    + '<p class="footnote">'+esc(b.sourceNote)+'</p></div>';
+}
 function svgSparkline(months, vals, opts){
   opts = opts || {};
+  const label = opts.tickLabel || monthLabel;
   const x0=6, x1=294, y0=8, y1=60;
   const n = vals.length;
   const xStep = n > 1 ? (x1-x0)/(n-1) : 0;
@@ -2748,7 +2803,7 @@ function svgSparkline(months, vals, opts){
   const pts = vals.map((v,i) => xAt(i).toFixed(1)+","+yAt(v).toFixed(1)).join(" ");
   const tickIdx = [0, Math.floor((n-1)/2), n-1];
   const tickEls = tickIdx.map(i =>
-    '<text class="trend-tick" x="'+xAt(i).toFixed(1)+'" y="'+(y1+10)+'" text-anchor="middle" style="font-size:6.5px;fill:var(--muted)">'+monthLabel(months[i])+'</text>'
+    '<text class="trend-tick" x="'+xAt(i).toFixed(1)+'" y="'+(y1+10)+'" text-anchor="middle" style="font-size:6.5px;fill:var(--muted)">'+label(months[i])+'</text>'
   ).join("");
   return '<svg viewBox="0 0 300 76" style="width:100%;height:auto;display:block" role="img" aria-label="'+esc(opts.ariaLabel||"trend")+'">'
     + '<polyline points="'+pts+'" style="fill:none;stroke:#e0563f;stroke-width:1.6"/>'
@@ -3046,7 +3101,9 @@ function renderDash(){
    + '<div class="metric"><div class="v">'+bt.total+'</div><div class="l">beds in this directory</div></div>'
    + '<div class="metric"><div class="v">'+HUD_HIC_ES_BEDS+'</div><div class="l">emergency shelter beds countywide<span class="src">[source]</span></div></div>'
    + '<div class="metric"><div class="v" style="color:var(--muted)">—</div><div class="l">live availability</div></div></div>'
-   + '<p class="disclaim" style="margin-top:9px">This directory covers about '+Math.round(bt.total/HUD_HIC_ES_BEDS*100)+'% of the '+HUD_HIC_ES_BEDS+' emergency shelter beds HUD’s CoC CA-601 Housing Inventory Count lists countywide (RTFH-published, January 2025 point-in-time), across '+HUD_HIC_ES_PROJECTS+' funded projects. Neither figure is a live minute-by-minute feed. The demo’s signed counts are test fixtures for provenance UI only; they are not current and must not be used for placement.</p></div>'
+   + '<p class="disclaim" style="margin-top:9px">This directory covers about '+Math.round(bt.total/HUD_HIC_ES_BEDS*100)+'% of the '+HUD_HIC_ES_BEDS+' emergency shelter beds HUD’s CoC CA-601 Housing Inventory Count lists countywide (RTFH-published, January 2025 point-in-time), across '+HUD_HIC_ES_PROJECTS+' funded projects. Neither figure is a live minute-by-minute feed. The demo’s signed counts are test fixtures for provenance UI only; they are not current and must not be used for placement.</p>'
+   + shelterBedHistoryHTML()
+   + '</div>'
 
    + '<div class="barsec"><h4>Where the two sides did answer each other</h4>'
    + '<div class="metrics" style="margin-top:0">'
