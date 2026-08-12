@@ -1974,13 +1974,13 @@ function buildMap(){
   for(const k in DISTRICTS){
     if(!(byZone[k] && byZone[k].length)) continue;
     const d = DISTRICTS[k];
-    s += '<g class="cluster" id="cl-'+k+'" data-zone="'+k+'" data-cs="1" data-px="'+d.cx.toFixed(1)+'" data-py="'+d.cy.toFixed(1)+'" transform="translate('+d.cx.toFixed(1)+','+d.cy.toFixed(1)+')" role="button" aria-label="'+d.label+' cluster">'
+    s += '<g class="cluster" id="cl-'+k+'" data-zone="'+k+'" data-cs="1" data-px="'+d.cx.toFixed(1)+'" data-py="'+d.cy.toFixed(1)+'" transform="translate('+d.cx.toFixed(1)+','+d.cy.toFixed(1)+')" role="button" tabindex="0" aria-label="'+d.label+' cluster">'
        + '<circle class="ripple" cx="0" cy="0" r="16"/><circle class="halo" cx="0" cy="0" r="38"/>'
        + '<circle class="disc" cx="0" cy="0" r="16"/><text class="num" x="0" y="0">0</text></g>';
   }
 
   ENTRIES.forEach(e => {
-    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status)+'">'
+    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status)+'">'
        + '<circle class="ripple" cx="0" cy="0" r="9"/><circle class="halo" cx="0" cy="0" r="26"/>'
        + '<circle class="ring" cx="0" cy="0" r="14"/><circle class="core" cx="0" cy="0" r="6.5"/>'
        + '<circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>'
@@ -1988,7 +1988,7 @@ function buildMap(){
   });
 
   SPOTS.forEach(sp => {
-    s += '<g class="spot" id="sp-'+sp.id+'" data-id="'+sp.id+'" data-cs="1" data-px="'+sp._x.toFixed(1)+'" data-py="'+sp._y.toFixed(1)+'" transform="translate('+sp._x.toFixed(1)+','+sp._y.toFixed(1)+')" role="button" aria-label="Friction point, '+sp.place+'">'
+    s += '<g class="spot" id="sp-'+sp.id+'" data-id="'+sp.id+'" data-cs="1" data-px="'+sp._x.toFixed(1)+'" data-py="'+sp._y.toFixed(1)+'" transform="translate('+sp._x.toFixed(1)+','+sp._y.toFixed(1)+')" role="button" tabindex="0" aria-label="Friction point, '+sp.place+'">'
        + '<path class="plate" d="M -13 -11 h 26 a 3 3 0 0 1 3 3 v 12 a 3 3 0 0 1 -3 3 h -9 l -4 5 l -2 -5 h -11 a 3 3 0 0 1 -3 -3 v -12 a 3 3 0 0 1 3 -3 z"/>'
        + '<text class="cnt" x="0" y="-2">'+sp.thread.length+'</text>'
        + '<text class="slabel" x="0" y="-17">'+esc(sp.place)+'</text>'
@@ -2014,7 +2014,7 @@ function buildMap(){
 
   /* service sites */
   SERVICES.forEach(v => {
-    s += '<g class="svc '+v.kind+'" id="sv-'+v.id+'" data-id="'+v.id+'" data-cs="1" data-px="'+v._x.toFixed(1)+'" data-py="'+v._y.toFixed(1)+'" transform="translate('+v._x.toFixed(1)+','+v._y.toFixed(1)+')" role="button" aria-label="'+esc(v.name)+', '+KIND_LABEL[v.kind]+'">'
+    s += '<g class="svc '+v.kind+'" id="sv-'+v.id+'" data-id="'+v.id+'" data-cs="1" data-px="'+v._x.toFixed(1)+'" data-py="'+v._y.toFixed(1)+'" transform="translate('+v._x.toFixed(1)+','+v._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+esc(v.name)+', '+KIND_LABEL[v.kind]+'">'
        + '<rect class="plate" x="-8" y="-8" width="16" height="16" rx="4"/>'
        + svcGlyph(v.kind)
        + '<text class="sl" x="0" y="-11">'+esc(v.name)+'</text>'
@@ -2027,11 +2027,27 @@ function buildMap(){
   document.getElementById("mapholder").insertAdjacentHTML("afterbegin", s);
   svg = document.getElementById("svg"); camera = document.getElementById("camera");
 
+  /* .cluster/.pin/.spot/.svc carry role="button" + tabindex, so they must answer
+     Enter/Space like a real button — onKey wires that without duplicating each
+     handler. .district has no role/tabindex; it's a map region, not a control. */
+  const onKey = fn => ev => { if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); fn(ev); } };
   svg.querySelectorAll(".district").forEach(g => g.addEventListener("click", () => { if(!dragMoved) focusZone(g.dataset.zone); }));
-  svg.querySelectorAll(".cluster").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) focusZone(g.dataset.zone); }));
-  svg.querySelectorAll(".pin").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) select(g.dataset.id); }));
-  svg.querySelectorAll(".spot").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) openSpot(g.dataset.id); }));
-  svg.querySelectorAll(".svc").forEach(g => g.addEventListener("click", ev => { ev.stopPropagation(); if(!dragMoved) openService(g.dataset.id); }));
+  svg.querySelectorAll(".cluster").forEach(g => {
+    const fn = ev => { ev.stopPropagation(); if(!dragMoved) focusZone(g.dataset.zone); };
+    g.addEventListener("click", fn); g.addEventListener("keydown", onKey(fn));
+  });
+  svg.querySelectorAll(".pin").forEach(g => {
+    const fn = ev => { ev.stopPropagation(); if(!dragMoved) select(g.dataset.id); };
+    g.addEventListener("click", fn); g.addEventListener("keydown", onKey(fn));
+  });
+  svg.querySelectorAll(".spot").forEach(g => {
+    const fn = ev => { ev.stopPropagation(); if(!dragMoved) openSpot(g.dataset.id); };
+    g.addEventListener("click", fn); g.addEventListener("keydown", onKey(fn));
+  });
+  svg.querySelectorAll(".svc").forEach(g => {
+    const fn = ev => { ev.stopPropagation(); if(!dragMoved) openService(g.dataset.id); };
+    g.addEventListener("click", fn); g.addEventListener("keydown", onKey(fn));
+  });
 
   collectLabelDefs();
   wirePanZoom(); applyView(); refreshMarkers();
