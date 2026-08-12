@@ -1703,11 +1703,20 @@ async function sha(bytes){ return hex(await crypto.subtle.digest("SHA-256", byte
 async function signBytes(bytes){ return new Uint8Array(await crypto.subtle.sign({name:"ECDSA",hash:"SHA-256"}, KEYS.privateKey, bytes)); }
 async function seal(e){
   if(e.provenance?.protocolVersion==="2.0"){
-    const r=await verifyV2(e);e.prov={sealedHash:e.provenance.contentHash,sig:b64bytes(cborRead(b64bytes(e.provenance.coseSign1))[3]),byteLen:r.byteLen,sealedAt:e.provenance.signedAtISO,ok:r.ok,tampered:!r.ok,tamperNote:r.ok?null:"COSE/CBOR verification failed"};return;
+    const r=await verifyV2(e);e.prov={sealedHash:e.provenance.contentHash,sig:b64bytes(cborRead(b64bytes(e.provenance.coseSign1))[3]),byteLen:r.byteLen,sealedAt:e.provenance.signedAtISO,ok:r.ok,tampered:!r.ok,tamperNote:r.ok?null:"COSE/CBOR verification failed"};
+  }else{
+    const bytes = ENC.encode(canonEntry(e));
+    e.prov = {sealedHash: await sha(bytes), sig: await signBytes(bytes), byteLen: bytes.length,
+      sealedAt: new Date().toISOString(), ok:true, tampered:false, tamperNote:null};
   }
-  const bytes = ENC.encode(canonEntry(e));
-  e.prov = {sealedHash: await sha(bytes), sig: await signBytes(bytes), byteLen: bytes.length,
-    sealedAt: new Date().toISOString(), ok:true, tampered:false, tamperNote:null};
+  /* markers/dashboard read e.prov.ok starting at the boot-time renderDash() call below,
+     not just when a user later opens this entry's Accountability tab — the leak scan has
+     to run here too, or a leaked entry shows verified everywhere until someone happens to
+     click into it specifically. See verifyEntry() for the same scan run again on demand. */
+  const locationLeak = findPreciseLocation(e, "$");
+  if(locationLeak){
+    e.prov.ok = false; e.prov.tampered = true; e.prov.tamperNote = "precise location found: " + locationLeak;
+  }
 }
 async function sealMsg(spotId, m, seq){
   const bytes = ENC.encode(canonMsg(spotId, m, seq));
