@@ -86,7 +86,7 @@
       "@type": "Dataset",
       "@id": "https://writerslogic.github.io/onrecord/#dataset",
       "name": "On Record — composite request ledger, San Diego County",
-      "description": "Composite, advocate-mediated, consent-verified request records. Every entry is a composite built from advocate intake notes across multiple people; no entry describes a real, identifiable individual. Locations are neighborhood centroids only — no precise location exists anywhere in the data. Service-site identity, address, hours, and published capacity are sourced (see each site's source link). This is not a live bed-availability feed and must not be used for routing.",
+      "description": "Composite, advocate-mediated, consent-verified request records. Every entry is a composite built from advocate intake notes across multiple people; no entry describes a real, identifiable individual, and no precise location exists in any request record — locations are neighborhood centroids only. Service and shelter sites are a separate, unsigned layer plotted at each site's real public street address (see each site's source link), since these are institutions, not people. This is not a live bed-availability feed and must not be used for routing.",
       "creator": { "@id": "https://writerslogic.github.io/onrecord/#project" },
       "license": "https://github.com/writerslogic/onrecord/blob/main/LICENSE",
       "isAccessibleForFree": true,
@@ -126,7 +126,7 @@
           "name": "Are these real people?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual, and no precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only."
+            "text": "No. Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual, and no precise location exists in any request record — pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only. Service and shelter sites are shown separately, at their real public street address, since those are institutions rather than people."
           }
         },
         {
@@ -977,7 +977,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
     <h2 id="modaltitle">How this works</h2>
     <h3>The stories and their boundary</h3>
     <p><b>Public:</b> this map contains composite/de-identified asks, exchanges, service-directory facts, and neighborhood-level metrics. <b>Private:</b> intake notes, recovery inputs, provider credentials, protected client details, and audit records belong behind an authorized provider system and are never part of this public artifact. Do not enter names, dates of birth, ZIP codes, health information, victim-service information, or other protected data here.</p>
-    <p>Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual. No precise location exists anywhere in the data. Pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only.</p>
+    <p>Every account is a composite, built from advocate intake notes across multiple people. No entry describes a real, identifiable individual, and no precise location exists in any request record — pins snap to a neighborhood centroid, and offsets inside a neighborhood are for legibility only. Service and shelter sites are a separate, unsigned layer plotted at their real public street address, since those are institutions rather than people.</p>
     <h3>The proof</h3>
     <p>On load this page generates an ECDSA P-256 keypair in your browser with WebCrypto. Every record and every message is canonicalized to a fixed field order, hashed with SHA-256, and signed. Verify re-canonicalizes the live record and re-checks the signature, so an edit made after sealing cannot pass. Nothing leaves your device: no network requests, no fonts, no map tiles, no analytics.</p>
     <h3>Common ground</h3>
