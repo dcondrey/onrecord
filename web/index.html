@@ -1522,7 +1522,8 @@ const DOWNTOWN_UNSHELTERED = {
    related but must not be read as the same series at different points in time. */
 const SD_CITY_SHELTER_BEDS_BY_YEAR = {
   sourceNote: 'RTFH Housing Inventory Count, City of San Diego only, via UC San Diego\'s Homelessness Hub. Facility-based + inclement-weather + hotel/motel-voucher beds summed into one yearly total.',
-  totalBeds: {"2014":612,"2015":904,"2016":1006,"2017":1293,"2018":1603,"2019":1639,"2020":1948,"2021":3239,"2022":2529,"2023":2632,"2024":2618,"2025":2164,"2026":2040}
+  totalBeds: {"2014":612,"2015":904,"2016":1006,"2017":1293,"2018":1603,"2019":1639,"2020":1948,"2021":3239,"2022":2529,"2023":2632,"2024":2618,"2025":2164,"2026":2040},
+  facilityBeds: {"2014":170,"2015":478,"2016":959,"2017":1002,"2018":1558,"2019":1592,"2020":1833,"2021":2790,"2022":2346,"2023":2418,"2024":2407,"2025":2051,"2026":1927}
 };
 
 /** Ordinary least squares over an evenly-spaced series; x = 0..n-1. */
@@ -2780,10 +2781,10 @@ function downtownDetailHTML(){
     + '<div class="barsec" style="margin-top:12px"><h4>Unsheltered street count, Downtown core · monthly, 2014–2025</h4>'
     + svgSparkline(uMonths, uVals, {ariaLabel:"Downtown San Diego Partnership monthly unsheltered street count, 2014 to 2025"})
     + '<div class="metrics" style="margin-top:6px">'
-    + '<div class="metric"><div class="v">'+Math.round(uAvgLast3)+'</div><div class="l">avg monthly count, last quarter on record</div></div>'
-    + (uYoyPct===null ? '' : '<div class="metric"><div class="v" style="color:'+(uYoyPct>=0?"var(--broken)":"var(--ok)")+'">'+(uYoyPct>=0?"+":"")+uYoyPct+'%</div><div class="l">vs the same months a year earlier</div></div>')
+    + '<div class="metric"><div class="v">'+Math.round(uAvgLast3)+'</div><div class="l">avg count, last 3 surveys on record ('+uMonths.slice(-3).map(monthLabel).join(", ")+')</div></div>'
+    + (uYoyPct===null ? '' : '<div class="metric"><div class="v" style="color:'+(uYoyPct>=0?"var(--broken)":"var(--ok)")+'">'+(uYoyPct>=0?"+":"")+uYoyPct+'%</div><div class="l">vs those same 3 months, one year earlier</div></div>')
     + '</div>'
-    + '<p class="disclaim" style="margin-top:9px">This is a separate, independent count from the 311 encampment reports above — DSDP staff and volunteers doing a street count, not residents filing reports — so agreement or disagreement between the two is itself informative. The footprints are close but not identical: DSDP surveys its own seven core Downtown neighborhoods, which do not include Little Italy, while the City’s DOWNTOWN community-plan area used for the 311 corridor list above does — Little Italy streets (State St, Cedar St, India St, Kettner Blvd, among others) show real report volume in the raw 311 data. Counts are also not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as street presence per month, not a running total of unique people. Nine months in this window have no recorded count (no count was run) and are skipped rather than shown as zero — the line above draws straight across each gap, so it should not be read as continuous month-to-month coverage.</p>'
+    + '<p class="disclaim" style="margin-top:9px">This is a separate, independent count from the 311 encampment reports above — DSDP staff and volunteers doing a street count, not residents filing reports — so agreement or disagreement between the two is itself informative. The footprints are close but not identical: DSDP surveys its own seven core Downtown neighborhoods, which do not include Little Italy, while the City’s DOWNTOWN community-plan area used for the 311 corridor list above does — Little Italy streets (State St, Cedar St, India St, Kettner Blvd, among others) show real report volume in the raw 311 data. The two charts’ time windows only partly overlap, too: the corridor list above covers Jan 2024–Jul 2026, this one runs 2014–2025, so the shared comparison window is really just 2024–2025. Counts are also not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as street presence per month, not a running total of unique people. Nine months in this window have no recorded count (no count was run) and are skipped rather than shown as zero — the line above draws straight across each gap, so it should not be read as continuous month-to-month coverage.</p>'
     + '<p class="footnote">'+esc(u.sourceNote)+'</p></div>'
     + '<p class="disclaim">Downtown’s only listed shelter with a named cross-street, Alpha Project Bridge Shelter, sits at 16th &amp; Newton — on 16th St, this map’s #2 corridor by report volume and the corridor with the steepest 2026 increase. Proximity to a shelter is a known confound for where encampment activity gets reported, not evidence either way of cause.</p>'
     + '<p class="footnote">'+esc(d.sourceNote)+'</p>';
@@ -2794,9 +2795,11 @@ function shelterBedHistoryHTML(){
   const vals = years.map(y => b.totalBeds[y]);
   const peakIdx = vals.indexOf(Math.max.apply(null, vals));
   const latest = vals[vals.length-1], first = vals[0];
+  const peakYear = years[peakIdx], facilityAtPeak = b.facilityBeds[peakYear];
+  const facilityPeakPct = Math.round(facilityAtPeak/vals[peakIdx]*100);
   return '<div style="margin-top:12px"><div class="eyebrow">City of San Diego emergency shelter beds, 2014–'+years[years.length-1]+'</div>'
     + svgSparkline(years, vals, {ariaLabel:"City of San Diego total emergency shelter beds by year, 2014 to "+years[years.length-1], tickLabel: y=>y})
-    + '<p class="disclaim" style="margin-top:6px">'+latest.toLocaleString()+' beds in '+years[years.length-1]+', up from '+first.toLocaleString()+' in '+years[0]+' but down from a pandemic-era peak of '+vals[peakIdx].toLocaleString()+' in '+years[peakIdx]+' (hotel/motel vouchers made up most of that peak). City total, not the countywide figure above — the two are related but not the same geography or the same vintage.</p>'
+    + '<p class="disclaim" style="margin-top:6px">'+latest.toLocaleString()+' beds in '+years[years.length-1]+', up from '+first.toLocaleString()+' in '+years[0]+' but down from a peak of '+vals[peakIdx].toLocaleString()+' in '+peakYear+' — '+facilityPeakPct+'% of that peak was facility-based capacity, not hotel/motel vouchers, which were a small share throughout this series. City total, not the countywide figure above — the two are related but not the same geography or the same vintage.</p>'
     + '<p class="footnote">'+esc(b.sourceNote)+'</p></div>';
 }
 function svgSparkline(months, vals, opts){
