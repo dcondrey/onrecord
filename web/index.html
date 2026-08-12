@@ -1717,8 +1717,30 @@ async function deriveAuth(phrase, pin){
 async function authorTag(key, id){ return hex(await crypto.subtle.sign("HMAC", key, ENC.encode("author:"+id))); }
 async function authorSign(key, payload){ return hex(await crypto.subtle.sign("HMAC", key, ENC.encode(payload))); }
 
+/* Mirrors schema.ts's FORBIDDEN_KEYS/assertNoPreciseLocation — hash/signature
+   verification below only ever reads known whitelisted fields, so a smuggled
+   lat/lng anywhere in the entry would otherwise verify clean in the browser
+   even though the Node CLI's `on-record verify` now rejects it. */
+const FORBIDDEN_LOCATION_KEYS = new Set(["lat","lng","lon","latitude","longitude","coords","coordinates","geo","address","gps"]);
+function findPreciseLocation(value, path){
+  if(value === null || typeof value !== "object") return null;
+  if(Array.isArray(value)){
+    for(let i=0;i<value.length;i++){ const hit = findPreciseLocation(value[i], path+"["+i+"]"); if(hit) return hit; }
+    return null;
+  }
+  for(const k in value){
+    if(FORBIDDEN_LOCATION_KEYS.has(k.toLowerCase())) return path+"."+k;
+    const hit = findPreciseLocation(value[k], path+"."+k);
+    if(hit) return hit;
+  }
+  return null;
+}
 async function verifyEntry(e){
-  if(e.provenance?.protocolVersion==="2.0")return verifyV2(e);
+  const locationLeak = findPreciseLocation(e, "$");
+  const r = e.provenance?.protocolVersion==="2.0" ? await verifyV2(e) : await verifyEntryV1(e);
+  return locationLeak ? Object.assign({}, r, {ok:false, locationLeak}) : r;
+}
+async function verifyEntryV1(e){
   const bytes = ENC.encode(canonEntry(e));
   const digest = await sha(bytes);
   const hashMatch = digest === e.prov.sealedHash;
@@ -2527,6 +2549,7 @@ async function onVerify(){
     + '<div><span class="lbl">sha-256 sealed</span><span>'+shortHash(e.prov.sealedHash)+'</span></div>'
     + '<div><span class="lbl">hash match</span><span class="'+(r.hashMatch?"ok":"bad")+'">'+(r.hashMatch?"&#10003; identical":"&#10007; content changed after sealing")+'</span></div>'
     + '<div><span class="lbl">ES256 signature</span><span class="'+(r.sigOk?"ok":"bad")+'">'+(r.sigOk?"&#10003; valid":"&#10007; invalid")+'</span></div>'
+    + '<div><span class="lbl">no precise location</span><span class="'+(r.locationLeak?"bad":"ok")+'">'+(r.locationLeak?"&#10007; found "+esc(r.locationLeak):"&#10003; zones only")+'</span></div>'
     + '<div><span class="lbl">verdict</span><span class="'+(r.ok?"ok":"bad")+'">'+(r.ok?"&#10003; RECORD INTACT":"&#10007; SEAL BROKEN, do not trust this record")+'</span></div>');
   const chip = document.getElementById("sealchip");
   chip.className = "sealchip" + (r.ok ? "" : " broken");

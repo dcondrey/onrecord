@@ -14,7 +14,7 @@
  */
 
 import { readFile } from 'node:fs/promises';
-import { canonicalize, parseEntry, type Entry } from './schema.js';
+import { assertNoPreciseLocation, canonicalize, parseEntry, type Entry } from './schema.js';
 import { keyFingerprint, verifyCoseEntry, verifyEntry, type VerifyResult } from './sign.js';
 import type { DidTrustDocument } from './did.js';
 
@@ -108,11 +108,21 @@ export async function verifyFile(path: string, options: { trustDocument?: DidTru
     const result = entry.provenance.protocolVersion === '2.0'
       ? await verifyCose(entry, options.trustDocument)
       : await verifyEntry(entry);
-    const ok = result.hashMatches && result.signatureValid;
     const fp = entry.provenance?.pubKey ? await keyFingerprint(entry.provenance.pubKey) : '-';
     keys.add(fp);
 
     report.statusCounts[entry.status] = (report.statusCounts[entry.status] ?? 0) + 1;
+
+    // canonicalize() only reads whitelisted fields, so a smuggled key (e.g. a
+    // hand-added `location` block) is invisible to signature verification above.
+    let locationLeak: string | undefined;
+    try {
+      assertNoPreciseLocation(entry);
+    } catch (err) {
+      locationLeak = err instanceof Error ? err.message : String(err);
+    }
+
+    const ok = result.hashMatches && result.signatureValid && !locationLeak;
 
     if (ok) report.verified++;
     else report.failed++;
@@ -125,7 +135,7 @@ export async function verifyFile(path: string, options: { trustDocument?: DidTru
       ok,
       result,
       keyFingerprint: fp,
-      ...(ok ? {} : { diagnosis: diagnose(result) }),
+      ...(ok ? {} : { diagnosis: locationLeak ? `PRECISE LOCATION FOUND — ${locationLeak}` : diagnose(result) }),
     });
   }
 
