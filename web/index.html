@@ -234,6 +234,10 @@ svg :focus-visible{outline:none}
 svg .pin:focus-visible .core,svg .spot:focus-visible .body,svg .svc:focus-visible .body{stroke:var(--amber);stroke-width:2.5}
 svg .pin:focus-visible,svg .cluster:focus-visible,svg .spot:focus-visible,svg .svc:focus-visible{
   filter:drop-shadow(0 0 0 var(--amber)) drop-shadow(0 0 6px var(--amber))}
+/* Same treatment tabbing to a district gets as hovering it — a district is a big
+   polygon, not a small icon, so it reuses the existing hover fill/stroke rather than
+   the marker glow above, which would look wrong at this scale. */
+svg .district:focus-visible .shape{fill:var(--land-hi);stroke:var(--amber);stroke-width:1.4}
 
 /* Skip link: first tab stop, so keyboard users can jump the map to the record list. */
 .skip{position:absolute;left:8px;top:-60px;z-index:200;background:var(--panel-solid);color:var(--ink);
@@ -346,7 +350,7 @@ svg.map.dragging{cursor:grabbing}
 .district.has .dlabel{fill:var(--amber);opacity:1}
 .map:not([data-level="county"]) .district .dlabel{opacity:1}
 .district.focused .dlabel{fill:var(--amber)}
-.district:hover .dlabel{opacity:1 !important}
+.district:hover .dlabel,.district:focus-visible .dlabel{opacity:1 !important}
 
 .cluster{cursor:pointer;transition:opacity .35s}
 .cluster .disc{fill:var(--panel-solid);fill:color-mix(in srgb,var(--amber) 24%,var(--panel-solid));stroke:var(--amber);stroke-width:1.4}
@@ -1509,11 +1513,22 @@ const DOWNTOWN_DETAIL = {
    (arcgis.com item cea97c1d7ff94a5081c1ef5de78e32d2). The source layer is point-level —
    one row per street corner with a headcount and exact lat/lon, which this app's own
    schema treats as a hard violation (assertNoPreciseLocation in src/schema.ts). Every
-   number below came from a server-side SUM(COUNT_) GROUP BY month statistics query —
-   no coordinate, and no row finer than a monthly neighborhood total, was ever fetched. */
+   number below came from a server-side SUM(COUNT_) GROUP BY month/type statistics
+   query — no coordinate, and no row finer than a monthly neighborhood/type total, was
+   ever fetched.
+
+   COUNT_ on a Structure or Vehicle row is an object count, not a person count — DSDP's
+   own public dashboard (item 10eec6917c8e4a0a866a4f63f2c8f527) applies its own published
+   conversion via two indicator widgets, "Individuals in Structures" ("based on an
+   estimated 1.75 individuals per structure") and "Individuals in Vehicles" ("based on
+   an estimated 2.03 individuals per vehicle"). Summing raw COUNT_ across all three types,
+   as an earlier version of this file did, overstated people by roughly 75-103% on the
+   Structure/Vehicle rows. The series below applies DSDP's own multipliers:
+   Individual + Structure*1.75 + Vehicle*2.03, rounded, so it estimates people the same
+   way DSDP's own dashboard does rather than inventing a different method. */
 const DOWNTOWN_UNSHELTERED = {
-  sourceNote: 'Downtown San Diego Partnership monthly street count, digitized by UC San Diego\'s Homelessness Hub (H-Hub). Individual + structure + vehicle counts, summed server-side across DSDP\'s own seven surveyed Downtown neighborhoods (City Center, Columbia, Cortez, East Village, East Village South, Gaslamp, Marina) — no point-level location was fetched. This is DSDP\'s own footprint, not the City\'s DOWNTOWN community-plan boundary used for the 311 corridor list above; DSDP does not survey Little Italy, which the City\'s boundary includes. DSDP\'s own methodology does not deduplicate repeat months: the same person counted in consecutive months is counted again each time, so this is a monthly headcount-event series, not a running unique-individual total.',
-  counts: {"2014-01":430,"2014-02":536,"2014-03":633,"2014-04":582,"2014-05":597,"2014-06":652,"2014-07":689,"2014-10":654,"2014-11":515,"2014-12":544,"2015-01":678,"2015-02":712,"2015-03":732,"2015-04":693,"2015-05":625,"2015-07":794,"2015-08":679,"2015-09":569,"2015-10":658,"2015-11":764,"2015-12":886,"2016-01":668,"2016-02":810,"2016-03":831,"2016-04":819,"2016-05":1150,"2016-06":1165,"2016-07":1141,"2016-08":1386,"2016-09":1137,"2016-10":1124,"2016-11":1168,"2016-12":1410,"2017-01":875,"2017-02":1023,"2017-03":1099,"2017-04":741,"2017-05":769,"2017-06":971,"2017-07":924,"2017-08":1110,"2017-09":1101,"2017-10":953,"2017-11":807,"2017-12":858,"2018-01":711,"2018-02":752,"2018-03":510,"2018-04":419,"2018-05":488,"2018-06":433,"2018-07":829,"2018-08":909,"2018-09":697,"2018-10":678,"2018-12":714,"2019-01":739,"2019-02":699,"2019-03":654,"2019-04":676,"2019-05":757,"2019-06":715,"2019-07":856,"2019-08":702,"2019-09":856,"2019-10":792,"2019-11":629,"2020-01":660,"2020-02":664,"2020-03":468,"2020-04":515,"2020-05":381,"2020-06":639,"2020-07":615,"2020-08":487,"2020-09":642,"2020-10":593,"2020-11":599,"2020-12":524,"2021-01":613,"2021-02":522,"2021-03":577,"2021-04":537,"2021-05":620,"2021-06":727,"2021-07":701,"2021-08":630,"2021-09":605,"2021-10":683,"2021-11":764,"2021-12":839,"2022-01":918,"2022-02":962,"2022-03":769,"2022-04":928,"2022-05":895,"2022-06":968,"2022-07":784,"2022-08":1029,"2022-09":1023,"2022-10":1013,"2022-11":955,"2022-12":1004,"2023-01":790,"2023-02":826,"2023-03":797,"2023-04":878,"2023-05":975,"2023-06":705,"2023-07":912,"2023-08":927,"2023-09":970,"2023-10":973,"2023-11":842,"2023-12":658,"2024-01":778,"2024-02":807,"2024-03":673,"2024-04":652,"2024-05":692,"2024-06":721,"2024-07":718,"2024-08":696,"2024-09":632,"2024-10":680,"2024-11":641,"2024-12":686,"2025-01":665,"2025-02":649,"2025-03":604,"2025-04":645,"2025-05":624,"2025-06":588,"2025-09":612,"2025-12":771}
+  sourceNote: 'Downtown San Diego Partnership monthly street count, digitized by UC San Diego\'s Homelessness Hub (H-Hub). Estimated people, not a raw object count: Individual rows counted 1:1, Structure and Vehicle rows converted via DSDP\'s own published multipliers (1.75 people/structure, 2.03 people/vehicle) rather than summed as objects. Covers DSDP\'s own seven surveyed Downtown neighborhoods (City Center, Columbia, Cortez, East Village, East Village South, Gaslamp, Marina) — no point-level location was fetched. This is DSDP\'s own footprint, not the City\'s DOWNTOWN community-plan boundary used for the 311 corridor list above; DSDP does not survey Little Italy, which the City\'s boundary includes. DSDP\'s own methodology does not deduplicate repeat months: the same person counted in consecutive months is counted again each time, so this is a monthly estimate, not a running unique-individual total.',
+  counts: {"2014-01":430,"2014-02":536,"2014-03":633,"2014-04":582,"2014-05":597,"2014-06":652,"2014-07":689,"2014-10":655,"2014-11":515,"2014-12":544,"2015-01":678,"2015-02":712,"2015-03":732,"2015-04":693,"2015-05":625,"2015-07":794,"2015-08":679,"2015-09":569,"2015-10":658,"2015-11":764,"2015-12":886,"2016-01":668,"2016-02":810,"2016-03":831,"2016-04":819,"2016-05":1150,"2016-06":1165,"2016-07":1149,"2016-08":1386,"2016-09":1147,"2016-10":1124,"2016-11":1168,"2016-12":1410,"2017-01":875,"2017-02":1023,"2017-03":1112,"2017-04":879,"2017-05":887,"2017-06":1149,"2017-07":1112,"2017-08":1332,"2017-09":1271,"2017-10":1092,"2017-11":937,"2017-12":989,"2018-01":804,"2018-02":862,"2018-03":558,"2018-04":448,"2018-05":535,"2018-06":461,"2018-07":917,"2018-08":980,"2018-09":767,"2018-10":735,"2018-12":803,"2019-01":849,"2019-02":795,"2019-03":731,"2019-04":753,"2019-05":866,"2019-06":798,"2019-07":944,"2019-08":759,"2019-09":934,"2019-10":866,"2019-11":681,"2020-01":717,"2020-02":732,"2020-03":557,"2020-04":568,"2020-05":427,"2020-06":736,"2020-07":678,"2020-08":524,"2020-09":703,"2020-10":675,"2020-11":685,"2020-12":611,"2021-01":727,"2021-02":650,"2021-03":714,"2021-04":673,"2021-05":755,"2021-06":926,"2021-07":841,"2021-08":738,"2021-09":705,"2021-10":819,"2021-11":912,"2021-12":1044,"2022-01":1206,"2022-02":1309,"2022-03":971,"2022-04":1192,"2022-05":1233,"2022-06":1229,"2022-07":1061,"2022-08":1302,"2022-09":1363,"2022-10":1271,"2022-11":1267,"2022-12":1361,"2023-01":1124,"2023-02":1138,"2023-03":1058,"2023-04":1154,"2023-05":1322,"2023-06":982,"2023-07":1270,"2023-08":1205,"2023-09":1265,"2023-10":1269,"2023-11":1094,"2023-12":808,"2024-01":985,"2024-02":1006,"2024-03":775,"2024-04":778,"2024-05":800,"2024-06":834,"2024-07":813,"2024-08":785,"2024-09":749,"2024-10":769,"2024-11":722,"2024-12":770,"2025-01":757,"2025-02":710,"2025-03":671,"2025-04":708,"2025-05":690,"2025-06":651,"2025-09":681,"2025-12":903}
 };
 
 /* RTFH Housing Inventory Count pivot table, City of San Diego rows only, via H-Hub
@@ -1768,12 +1783,15 @@ function findPreciseLocation(value, path){
   return null;
 }
 async function verifyEntry(e){
+  // Same scan seal() already ran at boot — intentional, not a missed dedup. Hash and
+  // signature are also independently recomputed here rather than trusted from the boot
+  // seal, so this function's whole contract is "never trust cached verification state";
+  // narrowing the leak scan to boot-only would break that contract for this one check.
   const locationLeak = findPreciseLocation(e, "$");
   const r = e.provenance?.protocolVersion==="2.0" ? await verifyV2(e) : await verifyEntryV1(e);
   if(!locationLeak) return r;
-  /* e.prov.ok, not this function's return value, is what markers/list/dashboard
-     actually read (see refreshMarkers/renderList/renderDash) — verifyV2 never
-     touches it and seal() only set it once at boot, before any leak existed. */
+  // e.prov.ok, not this function's return value, is what markers/list/dashboard
+  // actually read (see refreshMarkers/renderList/renderDash).
   e.prov = e.prov || {};
   e.prov.ok = false;
   e.prov.tampered = true;
@@ -2023,7 +2041,7 @@ function buildMap(){
   for(const k in DISTRICTS){
     const d = DISTRICTS[k], has = !!(byZone[k] && byZone[k].length);
     const lx = (d.cx + (d.labelDx||0)), ly = (d.cy - d.h*.5 - 6 + (d.labelDy||0));
-    s += '<g class="district'+(has?" has":"")+(d.major?" major":"")+'" id="dz-'+k+'" data-zone="'+k+'">'
+    s += '<g class="district'+(has?" has":"")+(d.major?" major":"")+'" id="dz-'+k+'" data-zone="'+k+'" role="button" tabindex="0" aria-label="'+d.label+', zoom in">'
        + '<path class="shape" d="'+path(d.poly)+'"><title>'+d.label+districtHoverStat(k)+'</title></path>'
        + (d.noLabel ? '' : '<text class="dlabel" data-cs="1" data-px="'+lx.toFixed(1)+'" data-py="'+ly.toFixed(1)+'" transform="translate('+lx.toFixed(1)+','+ly.toFixed(1)+')">'+d.label.toUpperCase()+'</text>')
        + '</g>';
@@ -2094,14 +2112,18 @@ function buildMap(){
      each handler. Matches the W3C APG button pattern's own reference implementation:
      Enter fires on keydown; Space only prevents its default (page scroll) on keydown
      and fires on keyup, so holding Space doesn't repeat-fire via key-repeat the way
-     binding it to keydown alone would. .district has no role/tabindex — it's a map
-     region, not a control. */
+     binding it to keydown alone would. .district now carries role="button" + tabindex
+     too — every neighborhood drill-in on the map, not just markers, needs a keyboard
+     path. */
   const onKeydown = fn => ev => {
     if(ev.key === " ") ev.preventDefault();
     else if(ev.key === "Enter"){ ev.preventDefault(); fn(ev); }
   };
   const onKeyup = fn => ev => { if(ev.key === " "){ ev.preventDefault(); fn(ev); } };
-  svg.querySelectorAll(".district").forEach(g => g.addEventListener("click", () => { if(!dragMoved) focusZone(g.dataset.zone); }));
+  svg.querySelectorAll(".district").forEach(g => {
+    const fn = () => { if(!dragMoved) focusZone(g.dataset.zone); };
+    g.addEventListener("click", fn); g.addEventListener("keydown", onKeydown(fn)); g.addEventListener("keyup", onKeyup(fn));
+  });
   svg.querySelectorAll(".cluster").forEach(g => {
     const fn = ev => { ev.stopPropagation(); if(!dragMoved) focusZone(g.dataset.zone); };
     g.addEventListener("click", fn); g.addEventListener("keydown", onKeydown(fn)); g.addEventListener("keyup", onKeyup(fn));
@@ -2189,6 +2211,15 @@ function refreshMarkers(){
    such group, so their on-screen size scales with view.k directly.
    ========================================================= */
 let labelDefs = [];
+/* This system (collectLabelDefs' forced()/priority ordering, declutterLabels' greedy
+   placement, the CSS !important tug-of-war between .label-collapsed and any :hover/
+   :focus-visible reveal rule) has caused three real regressions in one session: a
+   district losing its collision slot to an emptier neighbor purely from iteration
+   order, hover going dead on collapsed labels from a specificity mismatch, and a false
+   negative in a live check of the same rule from an automation timing artifact. None
+   of those were caught by reading the code — each needed an actual rendered page and a
+   real hover/focus/tab interaction. Any future change here needs the same: a live
+   browser check of the specific interaction changed, not just a visual screenshot. */
 function collectLabelDefs(){
   labelDefs = [];
   const add = (el, opts) => { if(el) labelDefs.push(Object.assign({el}, opts)); };
@@ -2776,6 +2807,14 @@ function downtownDetailHTML(){
     ? Math.round((uAvgLast3 - priorYearVals.reduce((a,b)=>a+b,0)/3) / (priorYearVals.reduce((a,b)=>a+b,0)/3) * 100)
     : null;
 
+  // Inner-join on month key, not index — both series have their own gaps (DSDP misses
+  // months entirely; TRENDS starts in 2024 and runs past DSDP's last month), so only
+  // months present in BOTH belong in a direct comparison.
+  const overlapMonths = uMonths.filter(m => TRENDS.zones.downtown.reports[m] !== undefined);
+  const overlapReports = overlapMonths.map(m => TRENDS.zones.downtown.reports[m]);
+  const overlapUnsheltered = overlapMonths.map(m => u.counts[m]);
+  const overlapR = overlapMonths.length > 1 ? pearsonR(overlapReports, overlapUnsheltered) : null;
+
   return '<div class="eyebrow" style="margin-top:18px">Downtown, block by block</div>'
     + '<p class="defn">The hackathon’s Downtown Homelessness track asked for finer grain than a citywide view gives. Below: which corridors are getting more or fewer reports than in 2024, how long a report here typically stays open, and what happens to it.</p>'
     + '<div class="barsec"><h4>Most-reported corridors · Jan 2024–Jul 2026 · pace vs 2024</h4>' + corridorRows
@@ -2787,14 +2826,20 @@ function downtownDetailHTML(){
     + '<div class="metric"><div class="v">'+closedPct+'%</div><div class="l">closed to resolution ('+d.statusCounts.referred.toLocaleString()+' referred elsewhere)</div></div>'
     + '</div>'
     + '<p class="disclaim" style="margin-top:9px">Median, not mean, because the distribution is right-skewed by a long tail of slow cases — the mean over the same last quarter runs '+meanAvgLast3.toFixed(1)+' days, noticeably higher than the '+medAvgLast3.toFixed(0)+'-day median most reports actually see.</p></div>'
-    + '<div class="barsec" style="margin-top:12px"><h4>Unsheltered street count, Downtown core · monthly, 2014–2025</h4>'
-    + svgSparkline(uMonths, uVals, {ariaLabel:"Downtown San Diego Partnership monthly unsheltered street count, 2014 to 2025"})
+    + '<div class="barsec" style="margin-top:12px"><h4>Unsheltered people, estimated · Downtown core, monthly · 2014–2025</h4>'
+    + svgSparkline(uMonths, uVals, {ariaLabel:"Downtown San Diego Partnership monthly estimated unsheltered people, 2014 to 2025", monthGaps:true})
     + '<div class="metrics" style="margin-top:6px">'
-    + '<div class="metric"><div class="v">'+Math.round(uAvgLast3)+'</div><div class="l">avg count, last 3 surveys on record ('+uMonths.slice(-3).map(monthLabel).join(", ")+')</div></div>'
+    + '<div class="metric"><div class="v">'+Math.round(uAvgLast3)+'</div><div class="l">avg estimate, last 3 surveys on record ('+uMonths.slice(-3).map(monthLabel).join(", ")+')</div></div>'
     + (uYoyPct===null ? '' : '<div class="metric"><div class="v" style="color:'+(uYoyPct>=0?"var(--broken)":"var(--ok)")+'">'+(uYoyPct>=0?"+":"")+uYoyPct+'%</div><div class="l">vs those same 3 months, one year earlier</div></div>')
     + '</div>'
-    + '<p class="disclaim" style="margin-top:9px">This is a separate, independent count from the 311 encampment reports above — DSDP staff and volunteers doing a street count, not residents filing reports — so agreement or disagreement between the two is itself informative. The footprints are close but not identical: DSDP surveys its own seven core Downtown neighborhoods, which do not include Little Italy, while the City’s DOWNTOWN community-plan area used for the 311 corridor list above does — Little Italy streets (State St, Cedar St, India St, Kettner Blvd, among others) show real report volume in the raw 311 data. The two charts’ time windows only partly overlap, too: the corridor list above covers Jan 2024–Jul 2026, this one runs 2014–2025, so the shared comparison window is really just 2024–2025. Counts are also not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as street presence per month, not a running total of unique people. Nine months in this window have no recorded count (no count was run) and are skipped rather than shown as zero — the line above draws straight across each gap, so it should not be read as continuous month-to-month coverage.</p>'
+    + '<p class="disclaim" style="margin-top:9px">This is a separate, independent measurement from the 311 encampment reports above — DSDP staff and volunteers doing a street count, not residents filing reports — so agreement or disagreement between the two is itself informative. The footprints are close but not identical: DSDP surveys its own seven core Downtown neighborhoods, which do not include Little Italy, while the City’s DOWNTOWN community-plan area used for the 311 corridor list above does — Little Italy streets (State St, Cedar St, India St, Kettner Blvd, among others) show real report volume in the raw 311 data. The two charts’ time windows only partly overlap, too: the corridor list above covers Jan 2024–Jul 2026, this one runs 2014–2025, so the shared comparison window is really just 2024–2025. This is also not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as an estimate of people present per month, not a running total of unique people. Nine months in this window have no recorded count (dashed segments in the line above mark exactly where) and are skipped rather than shown as zero.</p>'
     + '<p class="footnote">'+esc(u.sourceNote)+'</p></div>'
+    + (overlapMonths.length > 1 ? '<div class="barsec" style="margin-top:12px"><h4>Do the two measurements agree? · '+overlapMonths[0].slice(0,4)+'–'+overlapMonths[overlapMonths.length-1].slice(0,4)+', both indexed to their first shared month = 100</h4>'
+      + svgDualSparkline(overlapMonths, overlapReports, overlapUnsheltered, {ariaLabel:"311 encampment reports vs. DSDP estimated unsheltered people, both indexed to 100 at the first shared month", labelA:"311 encampment reports", labelB:"DSDP estimated unsheltered people"})
+      + '<div class="metrics" style="margin-top:6px">'
+      + '<div class="metric"><div class="v">'+(overlapR===null?"—":(overlapR>=0?"+":"")+overlapR.toFixed(2))+'</div><div class="l">correlation, the '+overlapMonths.length+' months both measurements cover</div></div>'
+      + '</div>'
+      + '<p class="disclaim" style="margin-top:9px">Indexing both series to 100 at their first shared month makes their shapes comparable on one chart despite being different units (report volume vs. an estimated headcount) at very different scales — it deliberately throws away which series is bigger, so read this for whether the two move together, not for either one\'s real size.</p></div>' : '')
     + '<p class="disclaim">Downtown’s only listed shelter with a named cross-street, Alpha Project Bridge Shelter, sits at 16th &amp; Newton — on 16th St, this map’s #2 corridor by report volume and the corridor with the steepest 2026 increase. Proximity to a shelter is a known confound for where encampment activity gets reported, not evidence either way of cause.</p>'
     + '<p class="footnote">'+esc(d.sourceNote)+'</p>';
 }
@@ -2811,6 +2856,11 @@ function shelterBedHistoryHTML(){
     + '<p class="disclaim" style="margin-top:6px">'+latest.toLocaleString()+' beds in '+years[years.length-1]+', up from '+first.toLocaleString()+' in '+years[0]+' but down from a peak of '+vals[peakIdx].toLocaleString()+' in '+peakYear+' — '+facilityPeakPct+'% of that peak was facility-based capacity, not hotel/motel vouchers, which were a small share throughout this series. City total, not the countywide figure above — the two are related but not the same geography or the same vintage.</p>'
     + '<p class="footnote">'+esc(b.sourceNote)+'</p></div>';
 }
+/** Months between two "YYYY-MM" keys. Used only to detect calendar gaps, not to plot. */
+function monthDelta(a, b){
+  const [ay,am] = a.split("-").map(Number), [by,bm] = b.split("-").map(Number);
+  return (by-ay)*12 + (bm-am);
+}
 function svgSparkline(months, vals, opts){
   opts = opts || {};
   const label = opts.tickLabel || monthLabel;
@@ -2820,15 +2870,57 @@ function svgSparkline(months, vals, opts){
   const xAt = i => x0 + xStep*i;
   const yMax = Math.max.apply(null, vals) * 1.15 || 1;
   const yAt = v => y1 - (v/yMax)*(y1-y0);
-  const pts = vals.map((v,i) => xAt(i).toFixed(1)+","+yAt(v).toFixed(1)).join(" ");
+  const ptAt = i => xAt(i).toFixed(1)+","+yAt(vals[i]).toFixed(1);
+  const tickIdx = [0, Math.floor((n-1)/2), n-1];
+  const tickEls = tickIdx.map(i =>
+    '<text class="trend-tick" x="'+xAt(i).toFixed(1)+'" y="'+(y1+10)+'" text-anchor="middle" style="font-size:6.5px;fill:var(--muted)">'+label(months[i])+'</text>'
+  ).join("");
+  let lineEls;
+  if(opts.monthGaps && n > 1){
+    // A calendar gap (a month with no recorded count) gets a dashed bridge instead of
+    // a solid line, so the chart doesn't imply continuous coverage it doesn't have.
+    lineEls = "";
+    for(let i=1;i<n;i++){
+      const gap = monthDelta(months[i-1], months[i]) > 1;
+      lineEls += '<polyline points="'+ptAt(i-1)+' '+ptAt(i)+'" style="fill:none;stroke:#e0563f;stroke-width:1.6'+(gap?';stroke-dasharray:2,2;opacity:.55':'')+'"/>';
+    }
+  }else{
+    lineEls = '<polyline points="'+vals.map((v,i)=>ptAt(i)).join(" ")+'" style="fill:none;stroke:#e0563f;stroke-width:1.6"/>';
+  }
+  return '<svg viewBox="0 0 300 76" style="width:100%;height:auto;display:block" role="img" aria-label="'+esc(opts.ariaLabel||"trend")+'">'
+    + lineEls
+    + tickEls
+    + '</svg>';
+}
+/** Two series on their own shared month axis, each indexed to its own first value = 100
+    so they're comparable regardless of scale (reports vs. estimated people). Not for
+    series with different units read at face value — indexing throws away the original
+    scale on purpose, so the metrics below the chart carry the real numbers. */
+function svgDualSparkline(months, valsA, valsB, opts){
+  opts = opts || {};
+  const label = opts.tickLabel || monthLabel;
+  const x0=6, x1=294, y0=8, y1=60;
+  const n = months.length;
+  const xStep = n > 1 ? (x1-x0)/(n-1) : 0;
+  const xAt = i => x0 + xStep*i;
+  const idxA = valsA.map(v => v/valsA[0]*100), idxB = valsB.map(v => v/valsB[0]*100);
+  const yMax = Math.max.apply(null, idxA.concat(idxB)) * 1.08 || 1;
+  const yMin = Math.min(0, Math.min.apply(null, idxA.concat(idxB)));
+  const yAt = v => y1 - ((v-yMin)/(yMax-yMin))*(y1-y0);
+  const ptsFor = idx => idx.map((v,i) => xAt(i).toFixed(1)+","+yAt(v).toFixed(1)).join(" ");
   const tickIdx = [0, Math.floor((n-1)/2), n-1];
   const tickEls = tickIdx.map(i =>
     '<text class="trend-tick" x="'+xAt(i).toFixed(1)+'" y="'+(y1+10)+'" text-anchor="middle" style="font-size:6.5px;fill:var(--muted)">'+label(months[i])+'</text>'
   ).join("");
   return '<svg viewBox="0 0 300 76" style="width:100%;height:auto;display:block" role="img" aria-label="'+esc(opts.ariaLabel||"trend")+'">'
-    + '<polyline points="'+pts+'" style="fill:none;stroke:#e0563f;stroke-width:1.6"/>'
+    + '<polyline points="'+ptsFor(idxA)+'" style="fill:none;stroke:#e0563f;stroke-width:1.6"/>'
+    + '<polyline points="'+ptsFor(idxB)+'" style="fill:none;stroke:var(--teal);stroke-width:1.6;stroke-dasharray:3,2"/>'
     + tickEls
-    + '</svg>';
+    + '</svg>'
+    + '<div style="display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:2px">'
+    + '<span><span style="display:inline-block;width:9px;height:2px;background:#e0563f;margin-right:4px;vertical-align:middle"></span>'+esc(opts.labelA||"A")+'</span>'
+    + '<span><span style="display:inline-block;width:9px;height:2px;border-top:1.5px dashed var(--teal);margin-right:4px;vertical-align:middle"></span>'+esc(opts.labelB||"B")+'</span>'
+    + '</div>';
 }
 function renderArea(){
   const host = document.getElementById("panel-area");
