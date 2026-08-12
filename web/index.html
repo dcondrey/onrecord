@@ -346,7 +346,7 @@ svg.map.dragging{cursor:grabbing}
 .district.has .dlabel{fill:var(--amber);opacity:1}
 .map:not([data-level="county"]) .district .dlabel{opacity:1}
 .district.focused .dlabel{fill:var(--amber)}
-.district:hover .dlabel{opacity:1}
+.district:hover .dlabel{opacity:1 !important}
 
 .cluster{cursor:pointer;transition:opacity .35s}
 .cluster .disc{fill:var(--panel-solid);fill:color-mix(in srgb,var(--amber) 24%,var(--panel-solid));stroke:var(--amber);stroke-width:1.4}
@@ -1506,6 +1506,7 @@ const DOWNTOWN_DETAIL = {
 /** Ordinary least squares over an evenly-spaced series; x = 0..n-1. */
 function linreg(ys){
   const n = ys.length;
+  if(n <= 1) return {slope:0, intercept: n ? ys[0] : 0, se:0};
   let sumX=0,sumY=0,sumXY=0,sumXX=0;
   for(let i=0;i<n;i++){ sumX+=i; sumY+=ys[i]; sumXY+=i*ys[i]; sumXX+=i*i; }
   const slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
@@ -1519,6 +1520,7 @@ function linreg(ys){
 /** Pearson correlation coefficient between two equal-length series. */
 function pearsonR(xs, ys){
   const n = xs.length;
+  if(n === 0) return 0;
   const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
   let num=0, dx2=0, dy2=0;
   for(let i=0;i<n;i++){ const dx=xs[i]-mx, dy=ys[i]-my; num+=dx*dy; dx2+=dx*dx; dy2+=dy*dy; }
@@ -1849,7 +1851,7 @@ function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
  * small and remove event handlers, dangerous URLs, and style attributes.
  */
 const SAFE_HTML_TAGS = new Set(["A","B","BR","BUTTON","CIRCLE","CODE","DIV","H2","H3","H4","LABEL","LI","OPTION","P","PATH","PRE","SELECT","SMALL","SPAN","STRONG","SVG","TEXTAREA","INPUT","UL"]);
-const SAFE_HTML_ATTRS = new Set(["aria-current","aria-expanded","aria-hidden","aria-label","aria-live","aria-pressed","aria-controls","autocomplete","class","cx","cy","d","data-c","data-cat","data-claim","data-id","data-need","data-rec","data-svc","data-spot","disabled","fill","for","hidden","id","inputmode","maxlength","min","max","name","opacity","placeholder","r","readonly","role","selected","spellcheck","step","stroke","stroke-dasharray","stroke-linecap","stroke-linejoin","stroke-opacity","style","tabindex","type","value","viewbox"]);
+const SAFE_HTML_ATTRS = new Set(["aria-current","aria-expanded","aria-hidden","aria-label","aria-live","aria-pressed","aria-controls","autocomplete","class","cx","cy","d","data-c","data-cat","data-claim","data-id","data-need","data-rec","data-svc","data-spot","disabled","fill","for","hidden","href","id","inputmode","maxlength","min","max","name","opacity","placeholder","r","readonly","rel","role","selected","spellcheck","step","stroke","stroke-dasharray","stroke-linecap","stroke-linejoin","stroke-opacity","style","tabindex","target","type","value","viewbox"]);
 function setSafeHTML(el, html){
   const doc = new DOMParser().parseFromString(String(html), "text/html");
   const walk = node => {
@@ -2016,7 +2018,7 @@ function buildMap(){
        + '<rect class="plate" x="-8" y="-8" width="16" height="16" rx="4"/>'
        + svcGlyph(v.kind)
        + '<text class="sl" x="0" y="-11">'+esc(v.name)+'</text>'
-       + (v.beds ? '<text class="sb" x="0" y="17" id="bl-'+v.id+'">'+v.beds.available+' of '+v.beds.total+' beds</text>'
+       + (v.beds ? '<text class="sb" x="0" y="17" id="bl-'+v.id+'">'+bedLineText(v)+'</text>'
                  : '<text class="sb" x="0" y="17">'+v.services.slice(0,2).map(x=>SERVICE_LABEL[x]).join(" · ")+'</text>')
        + '</g>';
   });
@@ -2080,12 +2082,12 @@ function refreshMarkers(){
     g.classList.toggle("layer-off", !state.layers.svc);
     g.classList.toggle("dim", !passesNeed(v));
     g.classList.toggle("selected", state.svc === v);
-    if(v.beds){ const t = document.getElementById("bl-"+v.id); if(t) t.textContent = v.beds.available + " of " + v.beds.total + " beds"; }
+    if(v.beds){ const t = document.getElementById("bl-"+v.id); if(t) t.textContent = bedLineText(v); }
   });
   document.getElementById("heatlayer").classList.toggle("layer-off", !state.layers.heat);
   document.querySelectorAll(".district").forEach(z => {
     z.classList.toggle("focused", state.focusedZone === z.dataset.zone);
-    z.classList.toggle("muted", !!state.focusedZone && state.focusedZone !== z.dataset.zone && lvl === "zone");
+    z.classList.toggle("muted", !!state.focusedZone && state.focusedZone !== z.dataset.zone && lvl !== "county");
   });
   drawCrumbs();
   declutterLabels();
@@ -2109,7 +2111,9 @@ function collectLabelDefs(){
     if(!label) return;
     add(label, {priority:0, pinned:true, ax:parseFloat(label.dataset.px), ay:parseFloat(label.dataset.py),
       dx:0, dy:0, w:label.getBBox().width, h:label.getBBox().height,
-      forced:() => state.focusedZone === g.dataset.zone});
+      /* A district with real recorded activity (.has) must never lose the collision
+         pass to an emptier neighbor just because of DOM order — it's always forced. */
+      forced:() => state.focusedZone === g.dataset.zone || g.classList.contains("has")});
   });
   ENTRIES.forEach(e => {
     const g = document.getElementById("pin-"+e.id);
@@ -2157,8 +2161,6 @@ let lastDeclutterK = null;
 function declutterLabels(){
   lastDeclutterK = view.k;
   labelDefs.forEach(d => d.el.classList.remove("label-collapsed"));
-  const lvl = svg.dataset.level;
-  if(lvl === "county") return;
   const k = view.k;
   /* +1.8 covers half the widest paint-order stroke among these label
      classes (up to stroke-width:3.4) — getBBox() reports glyph geometry
@@ -2330,7 +2332,7 @@ function renderList(){
       + '<span class="sdot" style="background:'+(v.beds?"var(--amber)":"var(--ok)")+'"></span>'
       + '<span><span class="z">'+esc(v.name)+'</span>'
       + '<span class="c">'+DISTRICTS[v.zone].label+' · '+KIND_LABEL[v.kind]+'</span>'
-      + '<span class="m">'+(v.beds ? v.beds.available+" of "+v.beds.total+" beds" : v.services.slice(0,3).map(x=>SERVICE_LABEL[x]).join(" · "))+'</span></span></button></li>').join(""));
+      + '<span class="m">'+(v.beds ? bedLineText(v) : v.services.slice(0,3).map(x=>SERVICE_LABEL[x]).join(" · "))+'</span></span></button></li>').join(""));
     ul.querySelectorAll(".recitem").forEach(b => b.onclick = () => openService(b.dataset.id));
     document.getElementById("listempty").hidden = SERVICES.filter(passesNeed).length > 0;
     return;
@@ -2623,6 +2625,12 @@ function ago(iso){
   const s2 = Math.max(0, Math.round((Date.now() - new Date(iso).getTime())/1000));
   return s2 < 60 ? s2+"s ago" : Math.round(s2/60)+"m ago";
 }
+function bedLineText(v){
+  /* Real shelters have a real, sourced total but no real availability feed — showing
+     an "available" number for them would be fabricated data under a real org's name.
+     Only the fictional demo:true site simulates a live count. */
+  return v.demo ? v.beds.available+' of '+v.beds.total+' beds' : v.beds.total+' published beds · no live feed';
+}
 function bedTotals(list){
   const l = (list||SHELTERS).filter(v => v.beds);
   return {open:l.reduce((a,v)=>a+v.beds.available,0), total:l.reduce((a,v)=>a+v.beds.total,0), sites:l.length};
@@ -2634,7 +2642,7 @@ function updateBedChip(){
 }
 function svcCard(v){
   const bedLine = v.beds
-    ? '<div class="bd'+(v.beds.available===0?" zero":"")+'">'+v.beds.available+' / '+v.beds.total+'</div>' : '';
+    ? '<div class="bd'+(v.demo && v.beds.available===0?" zero":"")+'">'+bedLineText(v)+'</div>' : '';
   return '<div class="svccard" id="svc-'+v.id+'"'+(state.svc===v?' style="border-color:var(--amber)"':'')+'>'
     + '<div class="sh"><div><div class="nm">'+esc(v.name)
     + (v.demo ? '<span class="sample">sample account</span>' : (v.source ? '<a class="srclink" href="'+esc(v.source)+'" target="_blank" rel="noopener noreferrer">source</a>' : ''))+'</div>'
@@ -2643,7 +2651,8 @@ function svcCard(v){
     + (v.kiosk ? '<span class="tag" style="border-color:var(--amber);color:var(--amber);background:var(--amber-dim)">Record kiosk</span>' : '')+'</div>'
     + '<div class="svcmeta"><b>Hours:</b> '+esc(v.hours)+'<br><b>Getting in:</b> '+esc(v.intake)+'<br>'+esc(v.note)
     + (v.kiosk ? '<br><b>Record kiosk:</b> open or check your own request here with a claim card. No phone or ID needed.' : '')+'</div>'
-    + (v.beds ? '<div class="svcmeta" style="margin-top:7px;font-family:var(--mono);font-size:9.5px;color:var(--ok)">count signed '+(v.beds.hash?v.beds.hash.slice(0,8):"…")+' · observed '+ago(v.beds.observedAt)+'</div>' : '')
+    + (v.beds && v.demo ? '<div class="svcmeta" style="margin-top:7px;font-family:var(--mono);font-size:9.5px;color:var(--ok)">simulated count signed '+(v.beds.hash?v.beds.hash.slice(0,8):"…")+' · observed '+ago(v.beds.observedAt)+'</div>' : '')
+    + (v.beds && !v.demo ? '<div class="svcmeta" style="margin-top:7px;font-size:9.5px;color:var(--muted)">Published capacity only — this map has no live availability feed for '+esc(v.name)+'.</div>' : '')
     + '</div></div>';
 }
 function downtownDetailHTML(){
@@ -2685,7 +2694,7 @@ function svgSparkline(months, vals, opts){
   opts = opts || {};
   const x0=6, x1=294, y0=8, y1=60;
   const n = vals.length;
-  const xStep = (x1-x0)/(n-1);
+  const xStep = n > 1 ? (x1-x0)/(n-1) : 0;
   const xAt = i => x0 + xStep*i;
   const yMax = Math.max.apply(null, vals) * 1.15 || 1;
   const yAt = v => y1 - (v/yMax)*(y1-y0);
@@ -2719,8 +2728,9 @@ function renderArea(){
   if(key === "downtown") h += downtownDetailHTML();
 
   if(bt.sites){
+    const demoShelter = svcs.find(v => v.beds && v.demo);
     h += '<div class="bedbox"><div class="bh"><div class="eyebrow">Published capacity reference in '+d.label+'</div>'
-       + '<span class="tick" id="areatick">updated '+ago(svcs.filter(v=>v.beds)[0].beds.observedAt)+'</span></div>'
+       + (demoShelter ? '<span class="tick" id="areatick">simulated feed updated '+ago(demoShelter.beds.observedAt)+'</span>' : '')+'</div>'
        + '<div class="bb"><span class="big">'+bt.total+'</span><span class="of">published capacity across '+bt.sites+' '+(bt.sites===1?"site":"sites")+'</span></div>'
        + '<div class="sgn">Capacity is a reference only. This page has no live placement feed; call the provider or coordinated-entry hub.</div></div>';
   }
@@ -2755,7 +2765,11 @@ function renderArea(){
 }
 async function tickBeds(){
   if(!KEYS) return;
-  for(const v of SHELTERS){
+  /* Only the fictional demo:true site simulates a live feed. The other four SHELTERS
+     are real, named organizations with real sourced capacity (beds.total) but no real
+     availability feed exists to read from — inventing and signing a number for them
+     would attribute fabricated operational data to an org that never published it. */
+  for(const v of SHELTERS.filter(v => v.demo)){
     if(Date.now() < v.beds.frozenUntil) continue; /* a provider published its own count recently; the simulated feed does not overwrite it */
     const cap = Math.max(2, Math.round(v.beds.total * .09));
     const delta = [-1,-1,0,0,1][Math.floor(Math.random()*5)];
@@ -3045,7 +3059,7 @@ function barRow(label, open, total, max, drill, key){
 const MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function monthLabel(m){ const [y,mo] = m.split("-"); return MONTH_ABBR[+mo-1]+" ’"+y.slice(2); }
 
-function svgTrendChart(months, vals, fc, rentVals){
+function svgTrendChart(months, vals, fc, rentMonths, rentVals){
   const total = months.length + fc.points.length;
   const x0=6, x1=294, y0=14, y1=100;
   const xStep = (x1-x0) / (total-1);
@@ -3063,7 +3077,14 @@ function svgTrendChart(months, vals, fc, rentVals){
   const bandPoly = bandHi.concat(bandLo.slice().reverse()).join(" ");
 
   const rMin = Math.min.apply(null, rentVals), rMax = Math.max.apply(null, rentVals);
-  const rentPts = rentVals.map((v,i) => xAt(i).toFixed(1)+","+yAt(y0For(v)).toFixed(1));
+  /* rentMonths can be a shorter or differently-ended series than `months` (e.g. a rent
+     source lagging the latest report month) — plot each point at its own month's real
+     x position via lookup, never assume rentVals[i] lines up with months[i]. */
+  const monthIdx = {}; months.forEach((m,i) => { monthIdx[m] = i; });
+  const rentPts = rentMonths
+    .map((m,i) => [monthIdx[m], rentVals[i]])
+    .filter(([i]) => i !== undefined)
+    .map(([i,v]) => xAt(i).toFixed(1)+","+yAt(y0For(v)).toFixed(1));
   function y0For(v){ const norm = rMax>rMin ? (v-rMin)/(rMax-rMin) : 0.5; return norm*yMax; }
 
   const nowX = xAt(lastIdx + 0.5).toFixed(1);
@@ -3100,23 +3121,28 @@ function trendCard(zk){
   const vals = months.map(m => z.reports[m]);
   const rentMonths = Object.keys(z.rentUsd).sort();
   const rentVals = rentMonths.map(m => z.rentUsd[m]);
-  const overlapN = Math.min(vals.length, rentVals.length);
-  const r = pearsonR(vals.slice(0,overlapN), rentVals.slice(0,overlapN));
+  /* Pair by actual month key, not array position — the two source series can end on
+     different months (e.g. a rent pull lagging the latest report month), and index-based
+     zipping would silently pair the wrong months together if that gap ever moved. */
+  const overlapMonths = months.filter(m => z.rentUsd.hasOwnProperty(m));
+  const overlapVals = overlapMonths.map(m => z.reports[m]);
+  const overlapRent = overlapMonths.map(m => z.rentUsd[m]);
+  const r = pearsonR(overlapVals, overlapRent);
   const fc = forecastSeries(z.reports, 12, 3);
 
   const last3 = vals.slice(-3), prev3 = vals.slice(-6,-3);
   const avgLast3 = last3.reduce((a,b)=>a+b,0)/last3.length;
   const avgPrev3 = prev3.length ? prev3.reduce((a,b)=>a+b,0)/prev3.length : avgLast3;
   const pctChange = avgPrev3 ? Math.round((avgLast3-avgPrev3)/avgPrev3*100) : 0;
-  const rentChangePct = Math.round((rentVals[rentVals.length-1]-rentVals[0])/rentVals[0]*100);
+  const rentChangePct = Math.round((overlapRent[overlapRent.length-1]-overlapRent[0])/overlapRent[0]*100);
 
   return '<div class="barsec"><h4>'+esc(DISTRICTS[zk].label)+'</h4>'
-    + svgTrendChart(months, vals, fc, rentVals)
+    + svgTrendChart(months, vals, fc, rentMonths, rentVals)
     + '<div class="metrics" style="margin-top:6px">'
     + '<div class="metric"><div class="v">'+Math.round(avgLast3)+'</div><div class="l">reports/mo, last quarter</div></div>'
     + '<div class="metric"><div class="v" style="color:'+(pctChange>=0?'var(--broken)':'var(--ok)')+'">'+(pctChange>=0?"+":"")+pctChange+'%</div><div class="l">vs prior quarter</div></div>'
     + '<div class="metric"><div class="v">'+(r>=0?"+":"")+r.toFixed(2)+'</div><div class="l">correlation with rent</div></div>'
-    + '<div class="metric"><div class="v">'+(rentChangePct>=0?"+":"")+rentChangePct+'%</div><div class="l">rent, '+money(rentVals[0])+'→'+money(rentVals[rentVals.length-1])+'</div></div></div></div>';
+    + '<div class="metric"><div class="v">'+(rentChangePct>=0?"+":"")+rentChangePct+'%</div><div class="l">rent, '+money(overlapRent[0])+'→'+money(overlapRent[overlapRent.length-1])+'</div></div></div></div>';
 }
 
 function renderTrends(){
@@ -3791,7 +3817,7 @@ async function boot(){
     for(const e of ENTRIES) await seal(e);
     let msgs = 0;
     for(const sp of SPOTS){ for(let i=0;i<sp.thread.length;i++){ await sealMsg(sp.id, sp.thread[i], i+1); msgs++; } }
-    for(const v of SHELTERS) await sealBeds(v);
+    for(const v of SHELTERS.filter(v => v.demo)) await sealBeds(v);
     for(const e of ENTRIES){
       const c = CODES[e.id];
       if(!c) continue;

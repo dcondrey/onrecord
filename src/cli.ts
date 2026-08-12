@@ -121,6 +121,7 @@ function parseArgs(argv: string[]): Args {
 
 function str(args: Args, name: string): string | undefined {
   const v = args.flags.get(name);
+  if (v === true) die(`--${name} was given no value (the next token looked like a flag). Pass a value after --${name}.`);
   return typeof v === 'string' ? v : undefined;
 }
 
@@ -219,6 +220,11 @@ async function cmdAdd(args: Args): Promise<void> {
 
   const id = str(args, 'id') ?? `or_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
 
+  const entries = await readEntriesFile(ENTRIES_PATH);
+  if (entries.some((e) => e.id === id)) {
+    die(`--id "${id}" already exists in ${ENTRIES_PATH}. Pass a different --id or omit it to generate one.`);
+  }
+
   // Shape the story before validating: an entry is not writable until it has
   // both halves, and we want the AI failure to surface before we touch disk.
   if (!bool(args, 'json')) {
@@ -272,7 +278,6 @@ async function cmdAdd(args: Args): Promise<void> {
   });
 
   await mkdir(MANIFESTS_DIR, { recursive: true });
-  const entries = await readEntriesFile(ENTRIES_PATH);
   entries.push(entry);
   await writeFile(ENTRIES_PATH, JSON.stringify(entries, null, 2) + '\n');
   const manifestPath = join(MANIFESTS_DIR, `${entry.id}.json`);
