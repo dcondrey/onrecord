@@ -34,6 +34,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Includes a fixture-based check that the CLI verifier (src/schema.ts) and the
+      # browser verifier (web/index.html, parsed directly out of the shipped file) agree
+      # on the same precise-location fixtures — the two verifiers must never disagree,
+      # and this is what actually enforces that instead of just documenting it.
+      - name: Test
+        run: node --test
+
       # No key required: each entry carries its own public key, so this re-derives the canonical
       # form from the committed content and checks the signature. Exits non-zero if any seal broke.
       - name: Verify committed signatures
