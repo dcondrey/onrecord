@@ -22,5 +22,7 @@ officer and counsel before integration.
 
 Before interoperability, establish a data-sharing agreement, permitted-use matrix, role mapping,
 retention/deletion schedule, client notice/consent process, correction and grievance process, breach
-response, and an access-controlled API. Treat HUD/HMIS mapping as an integration project—not as a
-reason to publish more personal data on this map.
+response, an access-controlled API, a threat model, synthetic test fixtures (never real client data in
+a connector's test path), freshness/provenance checks on synced data, and a rollback plan. A connector
+that cannot answer these questions stays disabled. Treat HUD/HMIS mapping as an integration
+project—not as a reason to publish more personal data on this map.

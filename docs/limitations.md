@@ -30,9 +30,20 @@ misused, and providers can be overwhelmed. Rate limits, advocate restoration, mo
 response, accessibility testing, and trauma-informed governance are required before real use.
 
 The three-letter-name/date/ZIP pattern is familiar in some outreach settings, but it is not a secret
-and may be guessable. Treat it as a convenience locator, never as strong authentication: use a separate
-PIN, limit attempts, avoid revealing whether a guess matched, and offer advocate-led restore. Do not use
-it where a person could face retaliation, stalking, or coercion.
+and may be guessable. Treat it as a convenience locator, never as strong authentication, and use a
+separate PIN alongside it.
+
+That PIN is a 4-digit code (`recovery.verifierTag` in `src/recovery.ts`, PBKDF2-derived, published
+in plaintext in every signed entry so the scheme stays fully offline-verifiable — no server is
+consulted to check it). "Limit attempts" and "avoid revealing whether a guess matched" are not
+available mitigations for it: there is no request path to rate-limit or to keep silent on, since
+anyone holding the entry file and the public first3/last3/DOB/ZIP fields can brute-force all 10,000
+PINs offline, on their own machine, in well under a minute. Advocate-led restore remains available,
+but attempt-limiting is not — do not represent it as a real mitigation in a pilot's risk writeup.
+Where a person could face retaliation, stalking, or coercion, do not use `claim-card/identity-v1` at
+all: use the phrase-based `claim-card/v1` scheme instead (a random multi-word phrase plus PIN, high
+enough entropy that offline brute-forcing the same way is not practical), and steer higher-risk real
+deployments toward it as the default.
 
 When month/day order or two-digit years are ambiguous, the operator must show the normalized date and
 obtain explicit confirmation. An age floor is a validation rule, not proof of identity.

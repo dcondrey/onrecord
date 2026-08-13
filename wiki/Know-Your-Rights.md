@@ -8,9 +8,11 @@ are in immediate danger, prioritize safety. For legal help, contact qualified le
 Stay as safe as possible, keep hands visible, and do not physically resist a search. You can ask,
 “Am I free to go?” If detained, ask why. You generally may remain silent; say clearly that you are
 exercising that right. If arrested, ask for a lawyer and avoid discussing the facts until counsel is
-available. Rules differ for drivers, borders, probation, and search conditions. ACLU SoCal’s
-[When stopped by an officer](https://www.aclusocal.org/know-your-rights/when-stopped-officer/) guide is a
-useful current reference.
+available. Rules differ for drivers, borders, probation, and search conditions. You may record officers
+or sanitation workers performing their duties in public when doing so does not interfere or put you in
+danger — but do not post a person's face, camp, medical information, or location without consent. ACLU
+SoCal's [When stopped by an officer](https://www.aclusocal.org/know-your-rights/when-stopped-officer/)
+guide is a useful current reference.
 
 ## Sweeps, citations, and property
 

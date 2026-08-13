@@ -17,8 +17,16 @@
 
 The public layer must not contain full names, DOBs, ZIP codes, health or victim-service information,
 recovery material, immigration information, or precise locations. The familiar first-three-letters plus
-date/ZIP pattern is guessable and is not strong authentication. A separate PIN, attempt limits,
-non-revealing errors, and advocate-led restore are required for any real deployment.
+date/ZIP pattern is guessable and is not strong authentication; use a separate PIN alongside it.
+
+That PIN is fully offline-verifiable by design (published in every signed entry so no server is
+consulted to check it), which means "limit attempts" and "avoid revealing whether a guess matched" are
+not real mitigations for it — there is no request path to limit or to keep silent on, and all 10,000
+PINs can be brute-forced offline in well under a minute given only the public identity fields. Advocate-
+led restore remains available; attempt-limiting does not. Where a person could face retaliation,
+stalking, or coercion, use the phrase-based `claim-card/v1` scheme instead of the identity-based one —
+see [docs/limitations.md](https://github.com/writerslogic/onrecord/blob/main/docs/limitations.md) for
+the full explanation.
 
 Date normalization must show the result and ask for confirmation when month/day order or two-digit years
 are ambiguous. An age floor validates a range; it does not prove identity.
@@ -27,6 +35,12 @@ are ambiguous. An age floor validates a range; it does not prove identity.
 
 The project will not rank people’s worth, publish encampment locations, create punitive provider scores,
 replace HMIS/coordinated entry, or turn a voluntary placard into legal permission.
+
+## Release rule
+
+Do not connect real client data or a real provider system until the deployment roadmap, privacy notice,
+security baseline, data-sharing agreements, threat model, incident plan, retention rules, and an
+independent privacy/security review are complete.
 
 ## Stop conditions
 

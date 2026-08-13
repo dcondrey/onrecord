@@ -13,6 +13,8 @@ extra time, or an advocate. Unrelated help should not depend on giving optional 
 A paper card can help you return from a borrowed phone, kiosk, or partner site. Keep it private. The
 first-three-letters/date/ZIP pattern is memorable but guessable; use a separate PIN and never give the
 code to a stranger. If the card is lost, ask for advocate-led restore. The card is not proof of identity.
+A provider cannot mark their own promise complete — only you get to say whether an answer actually
+happened.
 
 ## Staying safer outdoors
 

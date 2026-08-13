@@ -55,7 +55,11 @@ Reports restating them are welcome as discussion, but they are already known:
   that verifies. There is no key pinning or trust list yet.
 - `signedAtISO` is self-asserted. There is no timestamp authority, so backdating is undetectable.
 - There is no key revocation.
-- The format is C2PA-*shaped*, not C2PA-conformant — no COSE signing and no certificate chain.
+- The format is C2PA-*shaped*, not C2PA-conformant. Protocol v2 entries do carry a real detached
+  COSE_Sign1 ES256 signature over deterministic CBOR (see docs/protocol.md §"Protocol v2"), and
+  `on-record c2pa` attaches a real certificate chain (dev or CA-issued) to exported assets via the
+  official C2PA Node SDK — but the JSON bridge manifest format itself has no certificate chain or
+  trust list; a public key ships inside each entry with no pinning, per the bullet above.
 - A signature proves bytes are unmodified. It proves nothing about whether the account is true.
 
 ## Handling of keys and secrets

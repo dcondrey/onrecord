@@ -15,6 +15,7 @@ tests. Victim-service providers may require a separate workflow under VAWA, FVPS
 
 ## Integration review packet
 
-Before enabling a connector, document fields and direction of flow, legal basis and notice, roles,
-retention/deletion, correction/withdrawal/grievance, threat model, synthetic fixtures, incident plan,
-freshness/provenance, and rollback. A connector that cannot answer these questions stays disabled.
+Before enabling a connector, document fields and direction of flow, a data-sharing agreement and
+permitted-use matrix, legal basis and notice, roles, retention/deletion, correction/withdrawal/grievance,
+an access-controlled API, threat model, synthetic fixtures, incident plan, freshness/provenance, and
+rollback. A connector that cannot answer these questions stays disabled.

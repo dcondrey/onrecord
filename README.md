@@ -165,15 +165,36 @@ on-record add    [--file <path>] --zone <zone> --category <cat> --summary <text>
                  [--org-claim <text>] [--source <text>] [--json]
                  (raw story is read from stdin when --file is omitted)
 
+on-record withdraw <entry-id> [--reason <text>] [--json]
+                 remove an entry from the public record for good, at the requester's word alone
+
 on-record verify [<file>] [--did-doc <path>] [--json]    independently re-check every signature
+on-record export <entry-id> --output <path.zip>          export an offline-verifiable record bundle
+on-record c2pa   <entry-id> --asset <path> --output <path>   attach a C2PA manifest to a real asset
 on-record seed   [--force] [--ai]     write the composite sample set
-on-record serve  [--port <n>]         serve the local viewer
+on-record serve  [--port <n>] [--host <addr>]   serve the viewer + a /add intake form (127.0.0.1 by default)
 on-record keys                        show the signing key in use
 ```
+
+`on-record withdraw` deletes the entry from `data/entries.json` and its manifest — it does not
+re-sign a "withdrawn" tombstone, so nothing about the record stays public. A local, gitignored
+`data/withdrawn.json` keeps an internal record that it happened (id, zone, category, timestamp,
+optional reason) — never the story text, never served by `on-record serve`, never embedded into
+the map.
 
 `--advocate` and `--consent-method` are required and have no default. An entry with no named
 advocate and no record of how consent was given is refused, because consent is not optional and a
 system that lets you skip it will be used to skip it.
+
+### Adding an entry without the terminal
+
+`on-record serve` also serves a plain HTML form at `/add` for advocates who aren't comfortable on
+the command line — no JS, no build step, just a `<form>` that POSTs to `/api/add` and calls the same
+`addEntry()` pipeline as `on-record add` (`src/add.ts`). It covers the common case only: zone,
+category, the account itself, an optional amount, advocate ID, and consent method. Recovery-card
+issuance (`--recovery-phrase`/identity fields) and setting a status other than `requested` still
+require the CLI. The server binds to `127.0.0.1` by default since this route calls Claude and writes
+to `data/entries.json`; pass `--host` to expose it elsewhere.
 
 Environment: `ANTHROPIC_API_KEY` is required for `add`; `ONRECORD_MODEL` overrides the default model.
 Copy `.env.example` to `.env` to set them.
@@ -354,9 +375,6 @@ now and any future interactive deployment.
 
 Discussion triage is documented in [moderation automation](./docs/moderation-automation.md). The workflow
 flags review signals but does not auto-delete, auto-ban, or send discussion content to a third-party AI.
-The [code-scanning triage guide](./docs/code-scanning-triage.md) explains how to disposition alerts, and
-`bash scripts/configure-github-labels.sh` bootstraps the project’s issue, quality, security, and moderation
-labels from an authenticated local GitHub CLI session.
 
 Discussion seeds are intentionally not promises or policy. A maintainer should post them one at a time,
 identify the decision needed, invite people with lived experience first, summarize disagreement without
