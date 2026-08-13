@@ -187,6 +187,14 @@ export function validateUnsigned(entry: UnsignedEntry): void {
   assertNoPreciseLocation(entry);
 
   if (!entry.id || typeof entry.id !== 'string') fail('id is required');
+  // id is interpolated directly into a filesystem path (data/manifests/<id>.json)
+  // in add.ts, export.ts, and withdraw.ts — an id like "../../../../tmp/evil"
+  // would write or delete files outside data/manifests/ via path.join's
+  // arithmetic collapsing of ".." segments. Restricting the charset here closes
+  // that off at the one place every write and read path already calls through.
+  if (!/^[a-zA-Z0-9_-]+$/.test(entry.id)) {
+    fail('id may only contain letters, digits, hyphens, and underscores');
+  }
   if (!isZone(entry.zone)) fail(`zone must be one of: ${ZONES.join(', ')}`);
   if (!isCategory(entry.ask.category)) fail(`ask.category must be one of: ${CATEGORIES.join(', ')}`);
   if (!entry.ask.summary?.trim()) fail('ask.summary is required');

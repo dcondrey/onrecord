@@ -61,6 +61,14 @@ export interface TransformResult {
   outputTokens: number;
 }
 
+/** Thrown specifically when Claude declines to shape a story, so callers can
+ * distinguish this from other transform failures (missing key, empty input,
+ * network error) and fall back to publishing the raw text unchanged instead
+ * of failing the whole entry. */
+export class TransformRefusalError extends Error {
+  override readonly name = 'TransformRefusalError';
+}
+
 function buildUserMessage({ raw, ask, zone }: TransformInput): string {
   const amount = ask.amountUsd !== undefined ? `\nStated amount: $${ask.amountUsd}` : '';
   return [
@@ -94,7 +102,7 @@ export async function transform(input: TransformInput): Promise<TransformResult>
   });
 
   if (response.stop_reason === 'refusal') {
-    throw new Error(
+    throw new TransformRefusalError(
       'Claude declined to shape this story. The raw text is unchanged and nothing was written.',
     );
   }

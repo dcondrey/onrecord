@@ -25,3 +25,8 @@ npm-debug.log*
 
 # Cached GIS source data for scripts/sync-geo.mjs (large, refetchable)
 .gis-cache/
+
+# Internal withdrawal log (id/zone/category/timestamp only, never the story) —
+# deliberately not committed: the whole point of `on-record withdraw` is that
+# the entry is gone from the public record, not relocated into git history.
+data/withdrawn.json
