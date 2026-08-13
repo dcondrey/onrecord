@@ -63,6 +63,32 @@ function tokenNumber(token: string): number | undefined {
   const digits = token.match(/^\d{1,4}(?:st|nd|rd|th)?$/)?.[0].replace(/(?:st|nd|rd|th)$/, '');
   return digits ? Number(digits) : numberWords(token);
 }
+/**
+ * The top-level tokenizer splits on hyphens the same as spaces, so
+ * "twenty-first" and "twenty first" both arrive here as two separate
+ * tokens ["twenty", "first"] — mapped independently via tokenNumber() they
+ * become 20 and 1, not 21, and 20 (a valid day on its own) would wrongly
+ * win the day-number search before "first" ever gets considered. This
+ * merges an adjacent [tens-word, ones-ordinal] pair (twenty/thirty + first
+ * through ninth) into the single number it actually names, ahead of that
+ * search. A compound token like "twentyfirst" (no separator) doesn't hit
+ * this path — numberWords() already resolves it directly via ORDINALS.
+ */
+function dayCandidateNumbers(tokens: string[]): number[] {
+  const nums: number[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const tens = NUMBER_WORDS[tokens[i]!];
+    const ones = i + 1 < tokens.length ? ORDINALS[tokens[i + 1]!] : undefined;
+    if ((tens === 20 || tens === 30) && ones !== undefined && ones >= 1 && ones <= 9) {
+      nums.push(tens + ones);
+      i++;
+      continue;
+    }
+    const n = tokenNumber(tokens[i]!);
+    if (n !== undefined) nums.push(n);
+  }
+  return nums;
+}
 function normalizedDate(year: number | undefined, month: number | undefined, day: number | undefined): string {
   const currentYear = new Date().getFullYear();
   if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31 || year < currentYear - 100 || year > currentYear) throw new Error('could not understand that date of birth');
@@ -77,7 +103,7 @@ export function normalizeDob(value: string): string {
   if (monthIndex >= 0) {
     const month = MONTHS[tokens[monthIndex]!]!;
     const rest = tokens.filter((_, i) => i !== monthIndex);
-    const nums = rest.map(tokenNumber).filter((x): x is number => x !== undefined);
+    const nums = dayCandidateNumbers(rest);
     const year = yearFromTokens(rest);
     const day = nums.find((n) => n >= 1 && n <= 31 && n !== year);
     return normalizedDate(year, month, day);
