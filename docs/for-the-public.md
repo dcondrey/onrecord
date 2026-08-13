@@ -16,5 +16,6 @@ concern, use the local outreach or coordinated-entry route rather than confronti
 
 On Record is designed to make requests and responses more visible without turning a person into public
 content. Read the privacy notice, do not add protected information, and remember that a public map is
-not a shelter-placement feed. Compassion and boundaries can coexist: keep shared spaces usable while
-recognizing the dignity and agency of the people who need them.
+not a shelter-placement feed. The live demo of this project is synthetic/composite material, not a real
+client feed — see [the limitations page](./limitations.md). Compassion and boundaries can coexist: keep
+shared spaces usable while recognizing the dignity and agency of the people who need them.

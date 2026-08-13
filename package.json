@@ -31,12 +31,13 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "npm run build && node --test test/protocol.test.js",
+    "test": "npm run build && node --test",
     "c2pa:dev-cert": "node scripts/generate-c2pa-dev-cert.mjs",
     "web:sync": "npm run build && npm run seed -- --force && node scripts/sync-web-data.mjs",
     "web:geo": "node scripts/sync-geo.mjs",
     "sticker": "node scripts/generate-respectful-neighbor-sticker.mjs",
     "typecheck": "tsc --noEmit",
+    "lint": "biome lint",
     "on-record": "node dist/cli.js",
     "seed": "node dist/cli.js seed",
     "verify": "node dist/cli.js verify",
@@ -51,6 +52,7 @@
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.8",
     "@types/node": "^22.20.1",
     "topojson-client": "^3.1.0",
     "topojson-server": "^3.0.1",

@@ -12,6 +12,7 @@ or obvious character floods.
 - No penalty for disagreement, anger, poverty, disability, or criticism.
 - Every signal requires human context review and may be a false positive.
 - Reviewers preserve only necessary evidence and provide a private appeal route.
+- It does not expose the suspected content in a public bot reply.
 
 Review the signal list quarterly with lived-experience and accessibility advisors. Add a signal only with
 a harm example, false-positive test, owner, and rollback plan.

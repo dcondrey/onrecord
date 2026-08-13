@@ -2,46 +2,37 @@
 /**
  * on-record CLI.
  *
- *   on-record add     raw story (stdin or --file) -> Claude transform -> sign -> append
- *   on-record verify  independent re-check of every signature in a file
- *   on-record seed    write the composite sample set
- *   on-record serve   static server for the local viewer
- *   on-record keys    show the signing key in use
+ *   on-record add       raw story (stdin or --file) -> Claude transform -> sign -> append
+ *   on-record withdraw  remove an entry from the public record for good, at the requester's word
+ *   on-record verify    independent re-check of every signature in a file
+ *   on-record seed      write the composite sample set
+ *   on-record serve     serves the viewer + data, plus a no-JS /add intake form (127.0.0.1 by default)
+ *   on-record keys      show the signing key in use
  */
 
 import { createReadStream, existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
-import { randomUUID } from 'node:crypto';
 import { stat } from 'node:fs/promises';
 
 import {
-  isCategory,
-  isStatus,
-  isZone,
-  validateUnsigned,
   ValidationError,
   ZONES,
   CATEGORIES,
   STATUSES,
   type Entry,
-  type UnsignedEntry,
 } from './schema.js';
-import {
-  buildManifest,
-  keyFingerprint,
-  loadOrCreateKeyPair,
-  sha256Hex,
-  signEntryCose,
-} from './sign.js';
-import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
+import { keyFingerprint, loadOrCreateKeyPair } from './sign.js';
+import { modelId } from './transform.js';
 import { verifyFile } from './verify.js';
-import { ENTRIES_PATH, MANIFESTS_DIR, DATA_DIR, runSeed } from './seed.js';
-import { buildDidDocument, didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
+import { ENTRIES_PATH, DATA_DIR, runSeed } from './seed.js';
+import { didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
-import { dobCandidates, dobIsAmbiguous, normalizeDob, recoveryIdentityTag, recoveryTag } from './recovery.js';
+import { addEntry, AddEntryError, type AddEntryInput } from './add.js';
+import { withdrawEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
+import { renderIntakeForm, renderIntakeSuccess, parseIntakeFields } from './intake-form.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -104,12 +95,18 @@ function parseArgs(argv: string[]): Args {
       if (eq !== -1) {
         flags.set(token.slice(2, eq), token.slice(eq + 1));
       } else {
+        const name = token.slice(2);
         const next = argv[i + 1];
-        if (next !== undefined && !next.startsWith('--')) {
-          flags.set(token.slice(2), next);
+        // Boolean-only flags never consume the next token, even if it doesn't
+        // look like a flag — otherwise `on-record verify --json somefile.json`
+        // silently eats the positional arg as --json's value, leaving
+        // cmdVerify to fall back to the default entries.json and reporting a
+        // clean verify of the wrong file instead of erroring.
+        if (!BOOLEAN_FLAGS.has(name) && next !== undefined && !next.startsWith('--')) {
+          flags.set(name, next);
           i++;
         } else {
-          flags.set(token.slice(2), true);
+          flags.set(name, true);
         }
       }
     } else {
@@ -119,8 +116,11 @@ function parseArgs(argv: string[]): Args {
   return { positional, flags };
 }
 
+const BOOLEAN_FLAGS = new Set(['json', 'force', 'ai']);
+
 function str(args: Args, name: string): string | undefined {
   const v = args.flags.get(name);
+  if (v === true) die(`--${name} was given no value (the next token looked like a flag). Pass a value after --${name}.`);
   return typeof v === 'string' ? v : undefined;
 }
 
@@ -163,120 +163,52 @@ async function cmdAdd(args: Args): Promise<void> {
     );
   }
 
-  const zone = required(args, 'zone', `One of: ${ZONES.join(', ')}`);
-  if (!isZone(zone)) die(`unknown zone "${zone}". One of: ${ZONES.join(', ')}`);
-
-  const category = required(args, 'category', `One of: ${CATEGORIES.join(', ')}`);
-  if (!isCategory(category)) die(`unknown category "${category}". One of: ${CATEGORIES.join(', ')}`);
-
-  const status = str(args, 'status') ?? 'requested';
-  if (!isStatus(status)) die(`unknown status "${status}". One of: ${STATUSES.join(', ')}`);
-
-  const summary = str(args, 'summary')?.trim() || raw.split(/\s+/).slice(0, 10).join(' ');
-
-  const amountRaw = str(args, 'amount');
-  let amountUsd: number | undefined;
-  if (amountRaw !== undefined) {
-    amountUsd = Number(amountRaw);
-    if (!Number.isFinite(amountUsd) || amountUsd < 0) die(`--amount must be a non-negative number`);
-  }
-
-  const advocateId = required(
-    args,
-    'advocate',
-    'Entries without a named advocate are refused — consent is not optional.',
-  );
-  const consentMethod = required(
-    args,
-    'consent-method',
-    'Record how consent was given, e.g. --consent-method "verbal, in person, witnessed".',
-  );
-  const consentAt = str(args, 'consent-at') ?? new Date().toISOString();
-  if (Number.isNaN(Date.parse(consentAt))) die(`--consent-at must be an ISO 8601 timestamp`);
-
-  const orgClaimText = str(args, 'org-claim');
-  const orgClaimSource = str(args, 'source');
-  const recoveryPhrase = str(args, 'recovery-phrase');
-  const recoveryPin = str(args, 'recovery-pin');
-  const confirmedDob = str(args, 'confirm-dob');
-  const identity = {
-    first3: str(args, 'first3'), last3: str(args, 'last3'),
-    dateOfBirth: str(args, 'dob'), postalCode: str(args, 'zip'),
-  };
-  const hasIdentity = Object.values(identity).some(Boolean);
-  if (hasIdentity && Object.values(identity).some((v) => !v)) die('--first3, --last3, --dob, and --zip must be supplied together');
-  if (hasIdentity && recoveryPhrase) die('choose either identity recovery or --recovery-phrase, not both');
-  if ((recoveryPhrase && !recoveryPin) || (!recoveryPhrase && !hasIdentity && recoveryPin)) die('--recovery-phrase or the four identity fields must be supplied with --recovery-pin');
-  if (hasIdentity && !recoveryPin) die('identity recovery also requires --recovery-pin');
-  if (hasIdentity && identity.dateOfBirth && dobIsAmbiguous(identity.dateOfBirth)) {
-    if (!confirmedDob || !/^\d{4}-\d{2}-\d{2}$/.test(confirmedDob) || !dobCandidates(identity.dateOfBirth).includes(normalizeDob(confirmedDob))) {
-      die(`DOB "${identity.dateOfBirth}" is ambiguous. Confirm one intended ISO date with --confirm-dob YYYY-MM-DD. Options: ${dobCandidates(identity.dateOfBirth).join(', ')}`);
-    }
-  }
-
-  const ask: UnsignedEntry['ask'] = { category, summary };
-  if (amountUsd !== undefined) ask.amountUsd = amountUsd;
-
-  const id = str(args, 'id') ?? `or_${randomUUID().replace(/-/g, '').slice(0, 12)}`;
-
-  // Shape the story before validating: an entry is not writable until it has
-  // both halves, and we want the AI failure to surface before we touch disk.
-  if (!bool(args, 'json')) {
-    process.stderr.write(c.dim(`calling ${modelId()} to shape the story...\n`));
-  }
-  const result = await transform({ raw, ask, zone });
-
-  const unsigned: UnsignedEntry = {
-    id,
-    zone,
-    ask,
-    story: { raw, shaped: result.shaped },
-    consent: { advocateId, method: consentMethod, timestampISO: consentAt },
-    ...(recoveryPhrase && recoveryPin ? { recovery: { scheme: 'claim-card/v1' as const, verifierTag: await recoveryTag(recoveryPhrase, recoveryPin, id) } } : {}),
-    ...(hasIdentity && recoveryPin ? { recovery: { scheme: 'claim-card/identity-v1' as const, verifierTag: await recoveryIdentityTag(identity as { first3: string; last3: string; dateOfBirth: string; postalCode: string }, recoveryPin, id) } } : {}),
-    status,
+  const input: AddEntryInput = {
+    raw,
+    zone: required(args, 'zone', `One of: ${ZONES.join(', ')}`),
+    category: required(args, 'category', `One of: ${CATEGORIES.join(', ')}`),
+    status: str(args, 'status'),
+    summary: str(args, 'summary'),
+    amount: str(args, 'amount'),
+    advocateId: required(
+      args,
+      'advocate',
+      'Entries without a named advocate are refused — consent is not optional.',
+    ),
+    consentMethod: required(
+      args,
+      'consent-method',
+      'Record how consent was given, e.g. --consent-method "verbal, in person, witnessed".',
+    ),
+    consentAt: str(args, 'consent-at'),
+    orgClaimText: str(args, 'org-claim'),
+    orgClaimSource: str(args, 'source'),
+    recoveryPhrase: str(args, 'recovery-phrase'),
+    recoveryPin: str(args, 'recovery-pin'),
+    confirmedDob: str(args, 'confirm-dob'),
+    first3: str(args, 'first3'),
+    last3: str(args, 'last3'),
+    dob: str(args, 'dob'),
+    zip: str(args, 'zip'),
+    id: str(args, 'id'),
   };
 
+  let output;
   try {
-    validateUnsigned(unsigned);
+    output = await addEntry(input, {
+      onStatus: (msg) => {
+        if (!bool(args, 'json')) process.stderr.write(c.dim(`${msg}\n`));
+      },
+    });
   } catch (err) {
-    if (err instanceof ValidationError) die(err.message);
+    if (err instanceof AddEntryError || err instanceof ValidationError) die(err.message);
     throw err;
   }
 
-  const keys = await loadOrCreateKeyPair();
-  const issuer = process.env['ONRECORD_ISSUER_DID']?.trim() || didKeyFromPublicJwk(keys.publicJwk);
-  await mkdir(DATA_DIR, { recursive: true });
-  await writeFile(join(DATA_DIR, 'did.json'), JSON.stringify(buildDidDocument(issuer, keys.publicJwk), null, 2) + '\n');
-  const entry = await signEntryCose(unsigned, keys);
-
-  const manifest = await buildManifest({
-    entry,
-    aiTransform: {
-      applied: true,
-      model: result.model,
-      promptSha256: await sha256Hex(SYSTEM_PROMPT),
-      method: 'Raw advocate text re-rendered by Claude under a no-fabrication system prompt.',
-      inputTokens: result.inputTokens,
-      outputTokens: result.outputTokens,
-    },
-    ...(orgClaimText
-      ? {
-          orgClaim: {
-            text: orgClaimText,
-            ...(orgClaimSource ? { source: orgClaimSource } : {}),
-            alleged: !orgClaimSource,
-          },
-        }
-      : {}),
-  });
-
-  await mkdir(MANIFESTS_DIR, { recursive: true });
+  const { entry, manifestPath, transformResult: result, recoveryPhrase, recoveryPin, identity } = output;
+  const orgClaimText = input.orgClaimText?.trim() || undefined;
+  const orgClaimSource = input.orgClaimSource?.trim() || undefined;
   const entries = await readEntriesFile(ENTRIES_PATH);
-  entries.push(entry);
-  await writeFile(ENTRIES_PATH, JSON.stringify(entries, null, 2) + '\n');
-  const manifestPath = join(MANIFESTS_DIR, `${entry.id}.json`);
-  await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
 
   if (bool(args, 'json')) {
     out(JSON.stringify(entry, null, 2));
@@ -317,7 +249,7 @@ async function cmdAdd(args: Args): Promise<void> {
     out(`  PIN          ${recoveryPin}`);
     out(c.dim('  The words and PIN are not stored in the record. Possession is the recovery credential.'));
   }
-  if (hasIdentity && recoveryPin) {
+  if (identity && recoveryPin) {
     out();
     rule('RECOVERY CARD — print and hand to the requester');
     out(`  record       ${entry.id}`);
@@ -343,6 +275,38 @@ async function cmdAdd(args: Args): Promise<void> {
   out(c.green(`  wrote ${manifestPath}`));
   out();
   out(c.dim(`  tokens: ${result.inputTokens} in / ${result.outputTokens} out`));
+  out();
+}
+
+// --- command: withdraw -------------------------------------------------------
+
+async function cmdWithdraw(args: Args): Promise<void> {
+  const id = args.positional[0];
+  if (!id) die('usage: on-record withdraw <entry-id> [--reason <text>]');
+  const reason = str(args, 'reason');
+
+  let result;
+  try {
+    result = await withdrawEntry(id, reason);
+  } catch (err) {
+    if (err instanceof WithdrawError) die(err.message);
+    throw err;
+  }
+
+  if (bool(args, 'json')) {
+    out(JSON.stringify({ id: result.entry.id, zone: result.entry.zone, category: result.entry.ask.category, logPath: result.logPath }, null, 2));
+    return;
+  }
+
+  out();
+  rule(c.bold('WITHDRAWN'));
+  out(`  ${c.bold(result.entry.id)}   ${result.entry.zone}   ${result.entry.ask.category}`);
+  out();
+  out(c.green(`  removed from ${ENTRIES_PATH}`));
+  out(result.manifestDeleted ? c.green(`  deleted ${result.manifestPath}`) : c.dim(`  no manifest found at ${result.manifestPath}`));
+  out(c.dim(`  logged in ${result.logPath}  (id/zone/category/timestamp only — never the story text, never committed)`));
+  out();
+  out(c.dim('  this entry is no longer in the published dataset. It will not appear on the map on the next serve or deploy.'));
   out();
 }
 
@@ -493,9 +457,109 @@ const MIME: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 
+// Origin (when the browser sends one) must match the Host we were actually
+// reached on. A bare <form method=post> submission is not subject to CORS —
+// this is the only thing standing between /api/add and a malicious page that
+// gets a visitor's browser to POST to it.
+function isSameOrigin(req: import('node:http').IncomingMessage): boolean {
+  const origin = req.headers['origin'];
+  if (typeof origin !== 'string') return true;
+  try {
+    return new URL(origin).host === req.headers['host'];
+  } catch {
+    return false;
+  }
+}
+
+const MAX_BODY_BYTES = 256 * 1024;
+
+async function readBody(req: import('node:http').IncomingMessage): Promise<string> {
+  const chunks: Buffer[] = [];
+  let total = 0;
+  for await (const chunk of req) {
+    total += chunk.length;
+    if (total > MAX_BODY_BYTES) throw new Error('request body too large');
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+function intakeInputFromFields(fields: Record<string, string>): AddEntryInput {
+  return {
+    raw: fields['raw'] ?? '',
+    zone: fields['zone'] ?? '',
+    category: fields['category'] ?? '',
+    summary: fields['summary'],
+    amount: fields['amount'],
+    advocateId: fields['advocate'] ?? '',
+    consentMethod: fields['consent_method'] ?? '',
+    orgClaimText: fields['org_claim'],
+    orgClaimSource: fields['org_source'],
+  };
+}
+
+// Chain that serializes addEntry() calls across concurrent /api/add requests. See
+// the comment at its use site in handleIntakeSubmit for why this exists.
+let intakeQueue: Promise<unknown> = Promise.resolve();
+
+// No pending-review gate here, unlike the browser demo's chat-based intake
+// flow (web/index.html's submitIntake() sets pendingReview:true). That's not
+// an oversight — the two flows have different trust models. The chat demo's
+// own consent.method literally says "self-service demo intake chat — no
+// advocate present"; that scenario is exactly what warrants holding a record
+// for review before it counts anywhere. /api/add and `on-record add` both
+// require an advocate ID and a stated consent method, the same requirement
+// the CLI has always published immediately under with no review step. Adding
+// one here would treat the advocate-mediated path as if it carried the
+// self-service path's risk, which it doesn't.
+async function handleIntakeSubmit(req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse): Promise<void> {
+  if (!isSameOrigin(req)) {
+    res.writeHead(403, { 'content-type': 'text/plain; charset=utf-8' }).end('forbidden: cross-origin submission');
+    return;
+  }
+
+  let fields: Record<string, string>;
+  try {
+    const body = await readBody(req);
+    if (!(req.headers['content-type'] ?? '').startsWith('application/x-www-form-urlencoded')) {
+      res.writeHead(415, { 'content-type': 'text/plain; charset=utf-8' }).end('expected application/x-www-form-urlencoded');
+      return;
+    }
+    fields = parseIntakeFields(body);
+  } catch (err) {
+    res.writeHead(413, { 'content-type': 'text/plain; charset=utf-8' }).end(err instanceof Error ? err.message : String(err));
+    return;
+  }
+
+  // addEntry() does a read-modify-write on entries.json with a multi-second Claude
+  // call in between. The form has no JS to disable the button mid-submit, so a
+  // double-click must not let two requests read the same array and both append —
+  // one entry would silently disappear. Serialize actual submissions through a
+  // single chain; the CSRF check and body parsing above stay unserialized since
+  // they touch no shared state.
+  const task = intakeQueue.then(() => addEntry(intakeInputFromFields(fields)));
+  intakeQueue = task.then(
+    () => undefined,
+    () => undefined,
+  );
+
+  try {
+    const output = await task;
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(renderIntakeSuccess(output));
+  } catch (err) {
+    const message = err instanceof AddEntryError || err instanceof ValidationError
+      ? err.message
+      : err instanceof Error
+        ? `could not publish this entry: ${err.message}`
+        : 'could not publish this entry';
+    res.writeHead(400, { 'content-type': 'text/html; charset=utf-8' }).end(renderIntakeForm({ error: message, values: fields }));
+  }
+}
+
 async function cmdServe(args: Args): Promise<void> {
   const port = Number(str(args, 'port') ?? 8080);
   if (!Number.isInteger(port) || port < 1 || port > 65535) die('--port must be a valid port number');
+  const host = str(args, 'host') ?? '127.0.0.1';
 
   const root = resolve(process.cwd());
 
@@ -503,12 +567,29 @@ async function cmdServe(args: Args): Promise<void> {
     void (async () => {
       const url = new URL(req.url ?? '/', 'http://localhost');
       let pathname = decodeURIComponent(url.pathname);
+
+      if (req.method === 'POST' && pathname === '/api/add') {
+        await handleIntakeSubmit(req, res);
+        return;
+      }
+      if (req.method === 'GET' && pathname === '/add') {
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(renderIntakeForm());
+        return;
+      }
+
       if (pathname === '/') pathname = '/web/index.html';
 
       // Contain everything under the repo root.
       const target = resolve(join(root, normalize(pathname)));
       if (target !== root && !target.startsWith(root + sep)) {
         res.writeHead(403).end('forbidden');
+        return;
+      }
+
+      // The withdrawal log is internal — id/zone/category/timestamp of entries
+      // someone pulled from the public record. Never served, unlike entries.json.
+      if (target === resolve(WITHDRAWN_LOG_PATH)) {
+        res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(`not found: ${pathname}`);
         return;
       }
 
@@ -529,11 +610,12 @@ async function cmdServe(args: Args): Promise<void> {
     })();
   });
 
-  server.listen(port, () => {
+  server.listen(port, host, () => {
     out();
     out(`  serving ${c.dim(root)}`);
-    out(`  viewer  ${c.cyan(`http://localhost:${port}/web/index.html`)}`);
-    out(`  data    ${c.dim(`http://localhost:${port}/data/entries.json`)}`);
+    out(`  viewer  ${c.cyan(`http://${host}:${port}/web/index.html`)}`);
+    out(`  add     ${c.cyan(`http://${host}:${port}/add`)}`);
+    out(`  data    ${c.dim(`http://${host}:${port}/data/entries.json`)}`);
     out();
     out(c.dim('  ctrl-c to stop'));
     out();
@@ -550,13 +632,19 @@ ${c.bold('on-record')} — signed, provenance-wrapped entries for the On Record 
                   [--amount <usd>] --advocate <id> --consent-method <text>
                   [--consent-at <iso>] [--status <status>] [--id <id>]
                   [--org-claim <text>] [--source <text>] [--json]
-                  ${c.dim('raw story is read from stdin when --file is omitted')}
+                  [--recovery-phrase "four or more words" --recovery-pin <4 digits>]
+                  [--first3 <3 letters> --last3 <3 letters> --dob <flexible date>
+                   --confirm-dob <YYYY-MM-DD> --zip <5 digits> --recovery-pin <4 digits>]
+                  ${c.dim('raw story is read from stdin when --file is omitted; --confirm-dob only needed if --dob is ambiguous')}
+
+  ${c.bold('on-record withdraw')} <entry-id> [--reason <text>] [--json]
+                  ${c.dim('remove an entry from the public record for good, at the requester\'s word alone')}
 
   ${c.bold('on-record verify')} [<file>] [--json]   ${c.dim(`defaults to ${ENTRIES_PATH}`)}
   ${c.bold('on-record c2pa')} <entry-id> --asset <path> --output <path>  ${c.dim('attach a C2PA manifest to a real asset')}
   ${c.bold('on-record export')} <entry-id> --output <path.zip>         ${c.dim('export an offline-verifiable record bundle')}
   ${c.bold('on-record seed')} [--force] [--ai]      ${c.dim('write the composite sample set')}
-  ${c.bold('on-record serve')} [--port <n>]         ${c.dim('serve the local viewer')}
+  ${c.bold('on-record serve')} [--port <n>] [--host <addr>]  ${c.dim("serve the viewer + a /add intake form (127.0.0.1 by default)")}
   ${c.bold('on-record keys')}                       ${c.dim('show the signing key')}
 
   zones       ${ZONES.join(', ')}
@@ -578,6 +666,9 @@ async function main(): Promise<void> {
   switch (command) {
     case 'add':
       await cmdAdd(args);
+      break;
+    case 'withdraw':
+      await cmdWithdraw(args);
       break;
     case 'verify':
       await cmdVerify(args);

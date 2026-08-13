@@ -24,9 +24,14 @@ events only when an approved operator has the security controls and a legitimate
 ## Recovery credentials
 
 The first-three-letters/date/ZIP pattern can be memorable but is guessable. It is a locator, not strong
-authentication. Pair it with a separate PIN, rate-limit attempts, use non-revealing errors, and offer
-advocate-led restore. Never write the PIN, DOB, ZIP, or phrase in logs, screenshots, public posts, or
-analytics. Avoid this method if disclosure could create danger or coercion.
+authentication. Pair it with a separate PIN — but that PIN is offline-verifiable by design (published
+in every signed entry so no server needs to be consulted to check it), so rate-limiting attempts and
+using non-revealing errors are not real mitigations for it: there is no request path to limit or to
+keep silent on, and all 10,000 PINs can be brute-forced offline in well under a minute given only the
+public identity fields. Advocate-led restore remains available regardless. Never write the PIN, DOB,
+ZIP, or phrase in logs, screenshots, public posts, or analytics. Where disclosure could create danger or
+coercion, use the phrase-based recovery scheme instead of the identity-based one — see
+[Limitations](./Limitations) for the full explanation.
 
 ## Operator notice fields
 
