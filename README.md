@@ -39,9 +39,9 @@ itself in your browser — offline, with zero network requests.
 > provider/HMIS information. Start with [Limitations](./docs/limitations.md) and the [deployment
 > roadmap](./docs/roadmap.md).
 
-On Record is two things that fit together. The **map** (`web/index.html`) is one self-contained HTML
-file: it renders San Diego by neighborhood, shows what people have asked for, and lets any visitor
-check the signature on every entry — then deliberately *break* one and watch the seal fail. The
+On Record is two things that fit together. The **map** (`web/index.html`) is renders San Diego by 
+neighborhood, shows what people have asked for, and lets any visitor check the signature on every 
+entry — then deliberately *break* one and watch the seal fail. The
 **CLI** (`src/`) is the pipeline that produces those entries: it takes an advocate's raw notes,
 passes them through a disclosed Claude transform that is forbidden from inventing anything, signs
 the result with ECDSA P-256, and writes a C2PA-style provenance manifest alongside it.
@@ -228,26 +228,6 @@ on-record c2pa or_seed_01 --asset intake.png --output intake-signed.png
 Development certificates are intentionally untrusted; production needs a C2PA CA-issued signing
 certificate. The ledger never fabricates a PNG or other media file for a text record.
 
-## Deployment
-
-The map is deployed to GitHub Pages from `web/` by
-[`.github/workflows/pages.yml`](.github/workflows/pages.yml) on every push to `main`. Enable it once
-under **Settings ▸ Pages ▸ Source: GitHub Actions**; after that it is automatic. Forks get a working
-demo without edits — the workflow derives no repository-specific paths.
-
-Hosting it anywhere else is equally simple: the map is a single static file with no build step and
-no backend, so any static host works. HTTPS is required, because WebCrypto is unavailable on
-insecure origins.
-
-### Verifying the "no network requests" claim
-
-The claim is enforced, not just asserted. `web/index.html` carries a
-`Content-Security-Policy` meta tag with `default-src 'none'`, so the browser blocks any fetch, font,
-tile, remote image, or analytics beacon the page could ever attempt. WebCrypto is unaffected by CSP,
-so signing and verification still work.
-
-To confirm it yourself: open DevTools ▸ Network and reload. Only the HTML document should appear.
-
 ## Purpose
 
 On Record exists to test a narrow question: can a person who does not have a reliable device, email,
@@ -292,8 +272,6 @@ written:
 3. Who can see, correct, withdraw, export, and delete the data—and on what schedule?
 4. What happens when a device, provider, model, network, or key is wrong or unavailable?
 5. What evidence from lived-experience testing would make us stop or redesign it?
-
-If those answers are not written down, the change is not ready for a production pilot.
 
 ## What this is—and is not
 
@@ -359,14 +337,10 @@ and [docs/security-and-provider-policy.md](./docs/security-and-provider-policy.m
 ## Discussions and the wiki
 
 The project is intended to be shaped by people with lived experience, advocates, providers, privacy
-professionals, accessibility practitioners, and maintainers. Discussion seeds are in
-[docs/discussions](./docs/discussions/README.md). They cover the first pilot, recovery cards, public/
-private boundaries, moderation, provider participation, field accessibility, and HMIS interoperability.
+professionals, accessibility practitioners, and maintainers.
 
 The [wiki mirror](./wiki/Home.md) organizes architecture, limitations, roadmap, community guides, and
-rights information for readers who prefer a handbook. Before publishing a page to a live wiki or
-starting a discussion, remove any real client story, recovery material, precise location, or protected
-provider information from the draft.
+rights information for readers who prefer a handbook.
 
 All project spaces follow the [Community Standards](./COMMUNITY-STANDARDS.md). The shorter
 [participation guide](./docs/participation-guidelines.md) is written for website and Discussion
@@ -376,14 +350,7 @@ now and any future interactive deployment.
 Discussion triage is documented in [moderation automation](./docs/moderation-automation.md). The workflow
 flags review signals but does not auto-delete, auto-ban, or send discussion content to a third-party AI.
 
-Discussion seeds are intentionally not promises or policy. A maintainer should post them one at a time,
-identify the decision needed, invite people with lived experience first, summarize disagreement without
-identifying participants, and record an owner and review date for any accepted action. Close a thread with
-what changed, what did not change, and why.
-
-After configuring the categories described in [the category plan](./docs/discussions/categories.md), a
-maintainer can publish the prepared topics with `bash scripts/publish-discussions.sh` from an authenticated
-local GitHub CLI session.
+Discussion seeds are intentionally not promises or policy. 
 
 ## Contributing responsibly
 
@@ -412,9 +379,6 @@ This project is about people who cannot correct the record about themselves, whi
   named advocate and a recorded consent method, so there is no path that quietly omits it.
 - **The raw text always ships with the shaped text.** A reader who distrusts the model can always
   read around it.
-
-If you deploy this with real people's accounts, those obligations become yours, and they are heavier
-than the code.
 
 ## Contributing
 
