@@ -1,10 +1,10 @@
 /**
- * PLACEHOLDER — pipeline smoke-test data.
+ * Composite sample set for the sign/verify pipeline and the demo map.
  *
- * This file is owned by the parallel scaffolding pass (see CODEX_TASK.md) and is
- * expected to be replaced with the full set of 10 composite records covering all
- * 8 zones and all 7 ask categories. These 3 exist so the sign/verify pipeline can
- * be exercised end-to-end before that lands.
+ * Covers all 8 ZONES and all 7 CATEGORIES from src/schema.ts at least once —
+ * a contributor adding a zone or category there should extend this set too,
+ * so the map's filters and dashboards have something to show for it rather
+ * than an empty bucket.
  *
  * Every record here is a composite illustration assembled from patterns in public
  * reporting on unhoused people in San Diego. None of them is a real individual,
@@ -67,6 +67,86 @@ export const SEEDS: SeedRecord[] = [
       advocateId: 'adv_dtn_027',
       method: 'verbal, recorded with permission',
       timestampISO: '2026-05-19T20:41:00Z',
+    },
+    status: 'unanswered',
+  },
+  {
+    id: 'or_seed_04',
+    zone: 'Balboa Park',
+    ask: { category: 'medical', summary: 'refill of an existing blood pressure prescription' },
+    story: {
+      raw: '[COMPOSITE — not a real individual] blood pressure meds ran out three weeks ago, been getting dizzy standing up fast. went to the free clinic near the park twice, both times the wait list was full for new patients. says he just needs someone to see him once and write the same prescription again.',
+      shaped:
+        "My blood pressure medication ran out three weeks ago, and I've been getting dizzy when I stand up quickly. I went to the free clinic near the park twice, and both times the new-patient waitlist was full. I don't need anything new — just someone to see me once and refill the same prescription. (Composite illustration.)",
+    },
+    consent: {
+      advocateId: 'adv_bp_009',
+      method: 'verbal, in person, witnessed by clinic outreach worker',
+      timestampISO: '2026-07-01T10:15:00Z',
+    },
+    status: 'acknowledged',
+  },
+  {
+    id: 'or_seed_05',
+    zone: 'Hillcrest',
+    ask: { category: 'work_docs', summary: 'food handler card before a Monday restaurant shift', amountUsd: 11 },
+    story: {
+      raw: '[COMPOSITE — not a real individual] got offered a job at a restaurant on university ave, they need a food handler card before her first shift monday. says she has the ten dollars but not a way to get online long enough to finish the course and print the card.',
+      shaped:
+        'I was offered a job at a restaurant on University Avenue, and I need a food handler card before my first shift on Monday. I have the ten dollars for the course, but not reliable enough internet access to finish it and print the card in time. (Composite illustration.)',
+    },
+    consent: {
+      advocateId: 'adv_hc_042',
+      method: 'written, signed intake form',
+      timestampISO: '2026-07-22T09:40:00Z',
+    },
+    status: 'requested',
+  },
+  {
+    id: 'or_seed_06',
+    zone: 'Chula Vista',
+    ask: { category: 'phone', summary: 'a phone to reach a case worker about a housing voucher' },
+    story: {
+      raw: '[COMPOSITE — not a real individual] phone got taken in a fight at the shelter, cant call the case worker back or check on the housing voucher application. says he missed one callback already because there was no way to reach him.',
+      shaped:
+        "My phone was taken in a fight at the shelter. I can't call my case worker back or check on my housing voucher application, and I already missed one callback because there was no way to reach me. (Composite illustration.)",
+    },
+    consent: {
+      advocateId: 'adv_cv_018',
+      method: 'verbal, in person, witnessed by shelter staff',
+      timestampISO: '2026-06-11T16:50:00Z',
+    },
+    status: 'unanswered',
+  },
+  {
+    id: 'or_seed_07',
+    zone: 'El Cajon',
+    ask: { category: 'childcare', summary: 'childcare for the morning of a warehouse job interview' },
+    story: {
+      raw: '[COMPOSITE — not a real individual] has an interview lined up at a warehouse but no one to watch her three year old that morning, says her sister used to help but moved to arizona in the spring. missing the interview means waiting another month for the next opening.',
+      shaped:
+        "I have a job interview lined up at a warehouse, but no one to watch my three-year-old that morning. My sister used to help, but she moved to Arizona this spring. If I miss the interview, the next opening isn't for another month. (Composite illustration.)",
+    },
+    consent: {
+      advocateId: 'adv_ec_031',
+      method: 'verbal, recorded with permission',
+      timestampISO: '2026-07-30T08:05:00Z',
+    },
+    status: 'requested',
+  },
+  {
+    id: 'or_seed_08',
+    zone: 'La Mesa',
+    ask: { category: 'shelter_bed', summary: 'any available shelter bed, no location preference' },
+    story: {
+      raw: "[COMPOSITE — not a real individual] been on the coordinated entry list since february, keeps getting told hes close but nothing opens up. cold at night now, says he'd take anything with four walls at this point, doesnt care about location.",
+      shaped:
+        "I have been on the coordinated entry list since February. I keep getting told I'm close, but nothing opens up. It's cold at night now — I would take anything with four walls at this point; I don't care about location. (Composite illustration.)",
+    },
+    consent: {
+      advocateId: 'adv_lm_006',
+      method: 'written, signed intake form',
+      timestampISO: '2026-04-28T19:30:00Z',
     },
     status: 'unanswered',
   },

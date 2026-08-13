@@ -2,23 +2,23 @@
   "format": "org.onrecord.c2pa-bridge/1",
   "manifestVersion": "1.0",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
-  "instanceId": "urn:onrecord:entry:or_seed_01",
-  "createdISO": "2026-08-13T00:34:57.437Z",
+  "instanceId": "urn:onrecord:entry:or_seed_04",
+  "createdISO": "2026-08-13T00:34:57.548Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
       "data": {
-        "advocateId": "adv_ecv_014",
-        "method": "verbal, in person, witnessed by outreach partner",
-        "timestampISO": "2026-07-14T18:22:00Z",
+        "advocateId": "adv_bp_009",
+        "method": "verbal, in person, witnessed by clinic outreach worker",
+        "timestampISO": "2026-07-01T10:15:00Z",
         "recordedBeforePublication": true
       }
     },
     {
       "label": "org.onrecord.story.hash",
       "data": {
-        "rawSha256": "6bd3fc0d0e1389c51289b29a5d195b4f0df1d788571f5d3fccef37d7ba2828a4",
-        "shapedSha256": "0ff5a63a893555c8754d320fdadf0d4f78ebc7bd7d43740fa621eae096030d50",
+        "rawSha256": "72b3ecfec6e652f00d40e7fe745f15acce3c498b716744a83fb0664fb5289aa8",
+        "shapedSha256": "860d8fe0edc8805598946865931d7812f898461cd27f2205570fbf9c38016e91",
         "bothPublished": true
       }
     },
@@ -50,7 +50,7 @@
       "label": "org.onrecord.location-precision",
       "data": {
         "granularity": "zone",
-        "zone": "East Village",
+        "zone": "Balboa Park",
         "note": "Zone only. No coordinates, addresses, or shelter names are collected or stored."
       }
     },
@@ -64,22 +64,22 @@
   ],
   "signature": {
     "alg": "COSE-ES256",
-    "contentHash": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhjflfjyENdadL1m61mG6CIuLqhseGrmBSOMpV+Jeu6hebvuDJk/aUB8/FULmgz/495HzFNDpFHzO6cFRo1dBFg==",
+    "contentHash": "370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAtOSyPHL6uEEjtlFbUdv+5vQPBJ9sA8+jdh7k2talpdipEl7JJmptOjy3iqXQO7Y/a8CkHI+1Yl497SOzC7VejA==",
     "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
     "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-13T00:34:57.436Z",
+    "signedAtISO": "2026-08-13T00:34:57.548Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
     "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
     "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhjflfjyENdadL1m61mG6CIuLqhseGrmBSOMpV+Jeu6hebvuDJk/aUB8/FULmgz/495HzFNDpFHzO6cFRo1dBFg=="
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAtOSyPHL6uEEjtlFbUdv+5vQPBJ9sA8+jdh7k2talpdipEl7JJmptOjy3iqXQO7Y/a8CkHI+1Yl497SOzC7VejA=="
   },
   "claim": {
-    "instanceId": "urn:onrecord:entry:or_seed_01",
+    "instanceId": "urn:onrecord:entry:or_seed_04",
     "asset": {
       "mediaType": "application/json",
-      "cborSha256": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b"
+      "cborSha256": "370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d"
     },
     "assertions": [
       "org.onrecord.consent",

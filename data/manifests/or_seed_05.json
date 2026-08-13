@@ -2,23 +2,23 @@
   "format": "org.onrecord.c2pa-bridge/1",
   "manifestVersion": "1.0",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
-  "instanceId": "urn:onrecord:entry:or_seed_01",
-  "createdISO": "2026-08-13T00:34:57.437Z",
+  "instanceId": "urn:onrecord:entry:or_seed_05",
+  "createdISO": "2026-08-13T00:34:57.550Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
       "data": {
-        "advocateId": "adv_ecv_014",
-        "method": "verbal, in person, witnessed by outreach partner",
-        "timestampISO": "2026-07-14T18:22:00Z",
+        "advocateId": "adv_hc_042",
+        "method": "written, signed intake form",
+        "timestampISO": "2026-07-22T09:40:00Z",
         "recordedBeforePublication": true
       }
     },
     {
       "label": "org.onrecord.story.hash",
       "data": {
-        "rawSha256": "6bd3fc0d0e1389c51289b29a5d195b4f0df1d788571f5d3fccef37d7ba2828a4",
-        "shapedSha256": "0ff5a63a893555c8754d320fdadf0d4f78ebc7bd7d43740fa621eae096030d50",
+        "rawSha256": "1c43fe5e9edc4d3178d42e02c4f3e6eb75f7902dbfa9ea22c6fc98d78b7f0a4f",
+        "shapedSha256": "bbf8e5e60eb2c06ebc961ee3b02d28323191d3ca95db74ea62ec4f951aa10618",
         "bothPublished": true
       }
     },
@@ -50,7 +50,7 @@
       "label": "org.onrecord.location-precision",
       "data": {
         "granularity": "zone",
-        "zone": "East Village",
+        "zone": "Hillcrest",
         "note": "Zone only. No coordinates, addresses, or shelter names are collected or stored."
       }
     },
@@ -64,22 +64,22 @@
   ],
   "signature": {
     "alg": "COSE-ES256",
-    "contentHash": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhjflfjyENdadL1m61mG6CIuLqhseGrmBSOMpV+Jeu6hebvuDJk/aUB8/FULmgz/495HzFNDpFHzO6cFRo1dBFg==",
+    "contentHash": "cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhASLbFfHmOYwTjPHLQWJt9typtdcP6nMi8aBgJs5Lr8+CbyRv7/DxgwWysyKnF+mlu/3C/zWTYX299pgzohFnv4w==",
     "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
     "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-13T00:34:57.436Z",
+    "signedAtISO": "2026-08-13T00:34:57.550Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
     "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
     "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhjflfjyENdadL1m61mG6CIuLqhseGrmBSOMpV+Jeu6hebvuDJk/aUB8/FULmgz/495HzFNDpFHzO6cFRo1dBFg=="
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhASLbFfHmOYwTjPHLQWJt9typtdcP6nMi8aBgJs5Lr8+CbyRv7/DxgwWysyKnF+mlu/3C/zWTYX299pgzohFnv4w=="
   },
   "claim": {
-    "instanceId": "urn:onrecord:entry:or_seed_01",
+    "instanceId": "urn:onrecord:entry:or_seed_05",
     "asset": {
       "mediaType": "application/json",
-      "cborSha256": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b"
+      "cborSha256": "cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d"
     },
     "assertions": [
       "org.onrecord.consent",

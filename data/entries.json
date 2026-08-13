@@ -22,12 +22,12 @@
       "contentHash": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.0",
-      "signedAtISO": "2026-08-07T23:18:56.852Z",
+      "signedAtISO": "2026-08-13T00:34:57.436Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAxY2Fza6Nnc3VtbWFyeXdyZXBsYWNlbWVudCBDQSBzdGF0ZSBJRGhjYXRlZ29yeWxpZF9kb2N1bWVudHNpYW1vdW50VXNkGCdkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3kBFFtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gd2FsbGV0IHRha2VuIHdoaWxlIGhlIHNsZXB0LCBiYWNrIGluIG1hcmNoLiBzYXlzIGhlIGNhbnQgZ2V0IHRoZSBJRCB3aXRob3V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBhbmQgY2FudCBnZXQgdGhlIGJpcnRoIGNlcnRpZmljYXRlIHdpdGhvdXQgdGhlIElELiBiZWVuIGluIHRoYXQgbG9vcCA1IG1vbnRocy4gaGVzIHRpcmVkIG9mIGV4cGxhaW5pbmcgaXQgdG8gcGVvcGxlLiB3YXMgYSBsaW5lIGNvb2sgYmVmb3JlLmZzaGFwZWR5AShNeSB3YWxsZXQgd2FzIHRha2VuIHdoaWxlIEkgd2FzIHNsZWVwaW5nIGJhY2sgaW4gTWFyY2guIFRvIHJlcGxhY2UgbXkgSUQgSSBuZWVkIG15IGJpcnRoIGNlcnRpZmljYXRlLCBhbmQgdG8gZ2V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBJIG5lZWQgbXkgSUQuIEkgaGF2ZSBiZWVuIGdvaW5nIGluIHRoYXQgY2lyY2xlIGZvciBmaXZlIG1vbnRocy4gSSB1c2VkIHRvIHdvcmsgYXMgYSBsaW5lIGNvb2suIEkgYW0gdGlyZWQgb2YgZXhwbGFpbmluZyB0aGlzIHRvIHBlb3BsZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNpcmVxdWVzdGVkZ2NvbnNlbnSjZm1ldGhvZHgwdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCBwYXJ0bmVyamFkdm9jYXRlSWRrYWR2X2Vjdl8wMTRsdGltZXN0YW1wSVNPdDIwMjYtMDctMTRUMTg6MjI6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAJ+q34EGV+R5Gu1TZwZ9pEuxh6Zighg2J3tnNCATK5y6XbzB9q21Dfk05Yw0TFNc5pRet5YeGjCFfVBORUtHw7g=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhjflfjyENdadL1m61mG6CIuLqhseGrmBSOMpV+Jeu6hebvuDJk/aUB8/FULmgz/495HzFNDpFHzO6cFRo1dBFg=="
     }
   },
   {
@@ -52,12 +52,12 @@
       "contentHash": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.0",
-      "signedAtISO": "2026-08-07T23:18:56.865Z",
+      "signedAtISO": "2026-08-13T00:34:57.481Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAyY2Fza6Jnc3VtbWFyeXg3bW9udGhseSB0cmFuc2l0IHBhc3MgdG8gcmVhY2ggYSBqb2Igc2l0ZSBpbiBLZWFybnkgTWVzYWhjYXRlZ29yeWd0cmFuc2l0ZHpvbmVrT2NlYW4gQmVhY2hlc3RvcnmiY3Jhd3kBAltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IGhpcmVkIG9uIGF0IGEgd2FyZWhvdXNlIGluIGtlYXJueSBtZXNhLCBzdGFydHMgaW4gdHdvIHdlZWtzLiB0aGUgY29tbXV0ZSBpcyB0aGUgcHJvYmxlbSDigJQgdHdvIGJ1c2VzIGVhY2ggd2F5IGFuZCBzaGUgY2FudCBjb3ZlciB0aGUgcGFzcyB1bnRpbCB0aGUgZmlyc3QgY2hlY2sgY2xlYXJzLiBzaGUgd2FzIHZlcnkgbWF0dGVyIG9mIGZhY3QgYWJvdXQgaXQsIG5vIGRyYW1hLmZzaGFwZWR40kkgaGF2ZSBiZWVuIGhpcmVkIGF0IGEgd2FyZWhvdXNlIGluIEtlYXJueSBNZXNhIGFuZCBJIHN0YXJ0IGluIHR3byB3ZWVrcy4gVGhlIHByb2JsZW0gaXMgZ2V0dGluZyB0aGVyZTogaXQgaXMgdHdvIGJ1c2VzIGVhY2ggd2F5LCBhbmQgSSBjYW5ub3QgY292ZXIgYSBwYXNzIHVudGlsIG15IGZpcnN0IGNoZWNrIGNsZWFycy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNoYW5zd2VyZWRnY29uc2VudKNmbWV0aG9keBt3cml0dGVuLCBzaWduZWQgaW50YWtlIGZvcm1qYWR2b2NhdGVJZGphZHZfb2JfMDAzbHRpbWVzdGFtcElTT3QyMDI2LTA2LTMwVDE1OjA1OjAwWg==",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7B5xwOKg1Dc6Is+Ls+q/z8hvcyELrRWQyIjj0cbAs7hNQRpflWD6+JY0vZeKkdFL+GlAhMIsh47GXcVTLzeRBQ=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAcuPZKMVlSZvpkBwLM+5cDxfCnkyWrnORUKd4P4d9PkUGJlcSRyQGLS1J0XIMqAXZDKg9yPvnQlvTPTmnDFQGTA=="
     }
   },
   {
@@ -82,12 +82,163 @@
       "contentHash": "d66091f4a558b8da775934b175c1b9f08e70112778b11d23c4ad537c4a126116",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.0",
-      "signedAtISO": "2026-08-07T23:18:56.873Z",
+      "signedAtISO": "2026-08-13T00:34:57.526Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAzY2Fza6Jnc3VtbWFyeXglc2hlbHRlciBiZWQsIGdyb3VuZCBmbG9vciBpZiBwb3NzaWJsZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25laERvd250b3duZXN0b3J5omNyYXd5AQFbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIHR1cm5lZCBhd2F5IHR3aWNlIG5vdywgc2F5cyB0aGUgYmVkcyB3ZXJlIGZ1bGwgYm90aCB0aW1lcy4ga25lZSBpcyBiYWQgc28gc3RhaXJzIGFyZSBoYXJkLCBoZXMgYXNraW5nIGZvciBncm91bmQgZmxvb3IgaWYgdGhlcmVzIGFueS4gYmVlbiBzbGVlcGluZyBiZWhpbmQgYSBzdG9yZSBvZmYgYnJvYWR3YXkuIG5vIG9uZSBoYXMgZm9sbG93ZWQgdXAgd2l0aCBoaW0gc2luY2UgbWF5LmZzaGFwZWR5ARlJIGhhdmUgYmVlbiB0dXJuZWQgYXdheSB0d2ljZTsgYm90aCB0aW1lcyBJIHdhcyB0b2xkIHRoZSBiZWRzIHdlcmUgZnVsbC4gTXkga25lZSBpcyBiYWQsIHNvIHN0YWlycyBhcmUgaGFyZCDigJQgSSBhbSBhc2tpbmcgZm9yIGEgZ3JvdW5kIGZsb29yIGJlZCBpZiB0aGVyZSBpcyBvbmUuIEkgaGF2ZSBiZWVuIHNsZWVwaW5nIGJlaGluZCBhIHN0b3JlIG9mZiBCcm9hZHdheS4gTm8gb25lIGhhcyBmb2xsb3dlZCB1cCB3aXRoIG1lIHNpbmNlIE1heS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRrYWR2X2R0bl8wMjdsdGltZXN0YW1wSVNPdDIwMjYtMDUtMTlUMjA6NDE6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAdU3PprwwJjQp3ICj6tj98+RnzBz7UE7F0w/yFsxGd3IRlFrniGNVJA0gbqH2j/GxH9g1Fb2rA9NvFH8j/wsCUw=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAMukE2YmlC0Xoa5CcQIS14ENd7//53L1f2NHgBsSDVuQhfUEbZWNReBr0vqb30EHLc/nbopIZBMJ7BQPrkgVojw=="
+    }
+  },
+  {
+    "id": "or_seed_04",
+    "zone": "Balboa Park",
+    "ask": {
+      "category": "medical",
+      "summary": "refill of an existing blood pressure prescription"
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] blood pressure meds ran out three weeks ago, been getting dizzy standing up fast. went to the free clinic near the park twice, both times the wait list was full for new patients. says he just needs someone to see him once and write the same prescription again.",
+      "shaped": "My blood pressure medication ran out three weeks ago, and I've been getting dizzy when I stand up quickly. I went to the free clinic near the park twice, and both times the new-patient waitlist was full. I don't need anything new — just someone to see me once and refill the same prescription. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_bp_009",
+      "method": "verbal, in person, witnessed by clinic outreach worker",
+      "timestampISO": "2026-07-01T10:15:00Z"
+    },
+    "status": "acknowledged",
+    "provenance": {
+      "alg": "COSE-ES256",
+      "contentHash": "370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-13T00:34:57.548Z",
+      "protocolVersion": "2.0",
+      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "cborPayload": "pmJpZGpvcl9zZWVkXzA0Y2Fza6Jnc3VtbWFyeXgxcmVmaWxsIG9mIGFuIGV4aXN0aW5nIGJsb29kIHByZXNzdXJlIHByZXNjcmlwdGlvbmhjYXRlZ29yeWdtZWRpY2FsZHpvbmVrQmFsYm9hIFBhcmtlc3RvcnmiY3Jhd3kBKltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gYmxvb2QgcHJlc3N1cmUgbWVkcyByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYmVlbiBnZXR0aW5nIGRpenp5IHN0YW5kaW5nIHVwIGZhc3QuIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGJvdGggdGltZXMgdGhlIHdhaXQgbGlzdCB3YXMgZnVsbCBmb3IgbmV3IHBhdGllbnRzLiBzYXlzIGhlIGp1c3QgbmVlZHMgc29tZW9uZSB0byBzZWUgaGltIG9uY2UgYW5kIHdyaXRlIHRoZSBzYW1lIHByZXNjcmlwdGlvbiBhZ2Fpbi5mc2hhcGVkeQFBTXkgYmxvb2QgcHJlc3N1cmUgbWVkaWNhdGlvbiByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYW5kIEkndmUgYmVlbiBnZXR0aW5nIGRpenp5IHdoZW4gSSBzdGFuZCB1cCBxdWlja2x5LiBJIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGFuZCBib3RoIHRpbWVzIHRoZSBuZXctcGF0aWVudCB3YWl0bGlzdCB3YXMgZnVsbC4gSSBkb24ndCBuZWVkIGFueXRoaW5nIG5ldyDigJQganVzdCBzb21lb25lIHRvIHNlZSBtZSBvbmNlIGFuZCByZWZpbGwgdGhlIHNhbWUgcHJlc2NyaXB0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2xhY2tub3dsZWRnZWRnY29uc2VudKNmbWV0aG9keDZ2ZXJiYWwsIGluIHBlcnNvbiwgd2l0bmVzc2VkIGJ5IGNsaW5pYyBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfYnBfMDA5bHRpbWVzdGFtcElTT3QyMDI2LTA3LTAxVDEwOjE1OjAwWg==",
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAtOSyPHL6uEEjtlFbUdv+5vQPBJ9sA8+jdh7k2talpdipEl7JJmptOjy3iqXQO7Y/a8CkHI+1Yl497SOzC7VejA=="
+    }
+  },
+  {
+    "id": "or_seed_05",
+    "zone": "Hillcrest",
+    "ask": {
+      "category": "work_docs",
+      "summary": "food handler card before a Monday restaurant shift",
+      "amountUsd": 11
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] got offered a job at a restaurant on university ave, they need a food handler card before her first shift monday. says she has the ten dollars but not a way to get online long enough to finish the course and print the card.",
+      "shaped": "I was offered a job at a restaurant on University Avenue, and I need a food handler card before my first shift on Monday. I have the ten dollars for the course, but not reliable enough internet access to finish it and print the card in time. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_hc_042",
+      "method": "written, signed intake form",
+      "timestampISO": "2026-07-22T09:40:00Z"
+    },
+    "status": "requested",
+    "provenance": {
+      "alg": "COSE-ES256",
+      "contentHash": "cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-13T00:34:57.550Z",
+      "protocolVersion": "2.0",
+      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "cborPayload": "pmJpZGpvcl9zZWVkXzA1Y2Fza6Nnc3VtbWFyeXgyZm9vZCBoYW5kbGVyIGNhcmQgYmVmb3JlIGEgTW9uZGF5IHJlc3RhdXJhbnQgc2hpZnRoY2F0ZWdvcnlpd29ya19kb2NzaWFtb3VudFVzZAtkem9uZWlIaWxsY3Jlc3Rlc3RvcnmiY3Jhd3kBBVtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IG9mZmVyZWQgYSBqb2IgYXQgYSByZXN0YXVyYW50IG9uIHVuaXZlcnNpdHkgYXZlLCB0aGV5IG5lZWQgYSBmb29kIGhhbmRsZXIgY2FyZCBiZWZvcmUgaGVyIGZpcnN0IHNoaWZ0IG1vbmRheS4gc2F5cyBzaGUgaGFzIHRoZSB0ZW4gZG9sbGFycyBidXQgbm90IGEgd2F5IHRvIGdldCBvbmxpbmUgbG9uZyBlbm91Z2ggdG8gZmluaXNoIHRoZSBjb3Vyc2UgYW5kIHByaW50IHRoZSBjYXJkLmZzaGFwZWR5AQtJIHdhcyBvZmZlcmVkIGEgam9iIGF0IGEgcmVzdGF1cmFudCBvbiBVbml2ZXJzaXR5IEF2ZW51ZSwgYW5kIEkgbmVlZCBhIGZvb2QgaGFuZGxlciBjYXJkIGJlZm9yZSBteSBmaXJzdCBzaGlmdCBvbiBNb25kYXkuIEkgaGF2ZSB0aGUgdGVuIGRvbGxhcnMgZm9yIHRoZSBjb3Vyc2UsIGJ1dCBub3QgcmVsaWFibGUgZW5vdWdoIGludGVybmV0IGFjY2VzcyB0byBmaW5pc2ggaXQgYW5kIHByaW50IHRoZSBjYXJkIGluIHRpbWUuIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4G3dyaXR0ZW4sIHNpZ25lZCBpbnRha2UgZm9ybWphZHZvY2F0ZUlkamFkdl9oY18wNDJsdGltZXN0YW1wSVNPdDIwMjYtMDctMjJUMDk6NDA6MDBa",
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhASLbFfHmOYwTjPHLQWJt9typtdcP6nMi8aBgJs5Lr8+CbyRv7/DxgwWysyKnF+mlu/3C/zWTYX299pgzohFnv4w=="
+    }
+  },
+  {
+    "id": "or_seed_06",
+    "zone": "Chula Vista",
+    "ask": {
+      "category": "phone",
+      "summary": "a phone to reach a case worker about a housing voucher"
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] phone got taken in a fight at the shelter, cant call the case worker back or check on the housing voucher application. says he missed one callback already because there was no way to reach him.",
+      "shaped": "My phone was taken in a fight at the shelter. I can't call my case worker back or check on my housing voucher application, and I already missed one callback because there was no way to reach me. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_cv_018",
+      "method": "verbal, in person, witnessed by shelter staff",
+      "timestampISO": "2026-06-11T16:50:00Z"
+    },
+    "status": "unanswered",
+    "provenance": {
+      "alg": "COSE-ES256",
+      "contentHash": "13c67d22073e54bf9eb09c2bd14f0639a92204b1d10a927fd514264b98ecceba",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-13T00:34:57.587Z",
+      "protocolVersion": "2.0",
+      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "cborPayload": "pmJpZGpvcl9zZWVkXzA2Y2Fza6Jnc3VtbWFyeXg2YSBwaG9uZSB0byByZWFjaCBhIGNhc2Ugd29ya2VyIGFib3V0IGEgaG91c2luZyB2b3VjaGVyaGNhdGVnb3J5ZXBob25lZHpvbmVrQ2h1bGEgVmlzdGFlc3RvcnmiY3Jhd3jnW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBwaG9uZSBnb3QgdGFrZW4gaW4gYSBmaWdodCBhdCB0aGUgc2hlbHRlciwgY2FudCBjYWxsIHRoZSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIHRoZSBob3VzaW5nIHZvdWNoZXIgYXBwbGljYXRpb24uIHNheXMgaGUgbWlzc2VkIG9uZSBjYWxsYmFjayBhbHJlYWR5IGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBoaW0uZnNoYXBlZHjcTXkgcGhvbmUgd2FzIHRha2VuIGluIGEgZmlnaHQgYXQgdGhlIHNoZWx0ZXIuIEkgY2FuJ3QgY2FsbCBteSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIG15IGhvdXNpbmcgdm91Y2hlciBhcHBsaWNhdGlvbiwgYW5kIEkgYWxyZWFkeSBtaXNzZWQgb25lIGNhbGxiYWNrIGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBtZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4LXZlcmJhbCwgaW4gcGVyc29uLCB3aXRuZXNzZWQgYnkgc2hlbHRlciBzdGFmZmphZHZvY2F0ZUlkamFkdl9jdl8wMThsdGltZXN0YW1wSVNPdDIwMjYtMDYtMTFUMTY6NTA6MDBa",
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhArio/sZ0R0p3EsL/V/Opg/jtHFhoyAk725BVrK8KwyBwSQlRwam4GfSr4HbONQ+Q0N8Qceoq+v7h5bsX4qi9DsA=="
+    }
+  },
+  {
+    "id": "or_seed_07",
+    "zone": "El Cajon",
+    "ask": {
+      "category": "childcare",
+      "summary": "childcare for the morning of a warehouse job interview"
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] has an interview lined up at a warehouse but no one to watch her three year old that morning, says her sister used to help but moved to arizona in the spring. missing the interview means waiting another month for the next opening.",
+      "shaped": "I have a job interview lined up at a warehouse, but no one to watch my three-year-old that morning. My sister used to help, but she moved to Arizona this spring. If I miss the interview, the next opening isn't for another month. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_ec_031",
+      "method": "verbal, recorded with permission",
+      "timestampISO": "2026-07-30T08:05:00Z"
+    },
+    "status": "requested",
+    "provenance": {
+      "alg": "COSE-ES256",
+      "contentHash": "d15c06d9b3039f5173e2ce41901a788e68ee9b879ef5d635ac3f2463d16fe580",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-13T00:34:57.614Z",
+      "protocolVersion": "2.0",
+      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "cborPayload": "pmJpZGpvcl9zZWVkXzA3Y2Fza6Jnc3VtbWFyeXg2Y2hpbGRjYXJlIGZvciB0aGUgbW9ybmluZyBvZiBhIHdhcmVob3VzZSBqb2IgaW50ZXJ2aWV3aGNhdGVnb3J5aWNoaWxkY2FyZWR6b25laEVsIENham9uZXN0b3J5omNyYXd5AQxbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIGhhcyBhbiBpbnRlcnZpZXcgbGluZWQgdXAgYXQgYSB3YXJlaG91c2UgYnV0IG5vIG9uZSB0byB3YXRjaCBoZXIgdGhyZWUgeWVhciBvbGQgdGhhdCBtb3JuaW5nLCBzYXlzIGhlciBzaXN0ZXIgdXNlZCB0byBoZWxwIGJ1dCBtb3ZlZCB0byBhcml6b25hIGluIHRoZSBzcHJpbmcuIG1pc3NpbmcgdGhlIGludGVydmlldyBtZWFucyB3YWl0aW5nIGFub3RoZXIgbW9udGggZm9yIHRoZSBuZXh0IG9wZW5pbmcuZnNoYXBlZHj+SSBoYXZlIGEgam9iIGludGVydmlldyBsaW5lZCB1cCBhdCBhIHdhcmVob3VzZSwgYnV0IG5vIG9uZSB0byB3YXRjaCBteSB0aHJlZS15ZWFyLW9sZCB0aGF0IG1vcm5pbmcuIE15IHNpc3RlciB1c2VkIHRvIGhlbHAsIGJ1dCBzaGUgbW92ZWQgdG8gQXJpem9uYSB0aGlzIHNwcmluZy4gSWYgSSBtaXNzIHRoZSBpbnRlcnZpZXcsIHRoZSBuZXh0IG9wZW5pbmcgaXNuJ3QgZm9yIGFub3RoZXIgbW9udGguIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRqYWR2X2VjXzAzMWx0aW1lc3RhbXBJU090MjAyNi0wNy0zMFQwODowNTowMFo=",
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAAyrXQnQGPSUiR6wJnk/EisN+ppTVJUIM5JHaCHnSpRnnMPFMNsvtog+jJZcLXmlr5bJTzxStC8uNQd2cpt/I9g=="
+    }
+  },
+  {
+    "id": "or_seed_08",
+    "zone": "La Mesa",
+    "ask": {
+      "category": "shelter_bed",
+      "summary": "any available shelter bed, no location preference"
+    },
+    "story": {
+      "raw": "[COMPOSITE — not a real individual] been on the coordinated entry list since february, keeps getting told hes close but nothing opens up. cold at night now, says he'd take anything with four walls at this point, doesnt care about location.",
+      "shaped": "I have been on the coordinated entry list since February. I keep getting told I'm close, but nothing opens up. It's cold at night now — I would take anything with four walls at this point; I don't care about location. (Composite illustration.)"
+    },
+    "consent": {
+      "advocateId": "adv_lm_006",
+      "method": "written, signed intake form",
+      "timestampISO": "2026-04-28T19:30:00Z"
+    },
+    "status": "unanswered",
+    "provenance": {
+      "alg": "COSE-ES256",
+      "contentHash": "9fa30a40e520160bab6d6a21eb3895c70d05a8b4970b25d564b97d6394d102e1",
+      "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
+      "manifestVersion": "1.0",
+      "signedAtISO": "2026-08-13T00:34:57.655Z",
+      "protocolVersion": "2.0",
+      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
+      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "cborPayload": "pmJpZGpvcl9zZWVkXzA4Y2Fza6Jnc3VtbWFyeXgxYW55IGF2YWlsYWJsZSBzaGVsdGVyIGJlZCwgbm8gbG9jYXRpb24gcHJlZmVyZW5jZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25lZ0xhIE1lc2Flc3RvcnmiY3Jhd3jxW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIGZlYnJ1YXJ5LCBrZWVwcyBnZXR0aW5nIHRvbGQgaGVzIGNsb3NlIGJ1dCBub3RoaW5nIG9wZW5zIHVwLiBjb2xkIGF0IG5pZ2h0IG5vdywgc2F5cyBoZSdkIHRha2UgYW55dGhpbmcgd2l0aCBmb3VyIHdhbGxzIGF0IHRoaXMgcG9pbnQsIGRvZXNudCBjYXJlIGFib3V0IGxvY2F0aW9uLmZzaGFwZWR49UkgaGF2ZSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIEZlYnJ1YXJ5LiBJIGtlZXAgZ2V0dGluZyB0b2xkIEknbSBjbG9zZSwgYnV0IG5vdGhpbmcgb3BlbnMgdXAuIEl0J3MgY29sZCBhdCBuaWdodCBub3cg4oCUIEkgd291bGQgdGFrZSBhbnl0aGluZyB3aXRoIGZvdXIgd2FsbHMgYXQgdGhpcyBwb2ludDsgSSBkb24ndCBjYXJlIGFib3V0IGxvY2F0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2p1bmFuc3dlcmVkZ2NvbnNlbnSjZm1ldGhvZHgbd3JpdHRlbiwgc2lnbmVkIGludGFrZSBmb3JtamFkdm9jYXRlSWRqYWR2X2xtXzAwNmx0aW1lc3RhbXBJU090MjAyNi0wNC0yOFQxOTozMDowMFo=",
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAo75aPsBZCYAvjHoq4zIvqWehg7F0gamBryna9C0xp5ykSAgUuVBYPkQ7tqj/zxVDiQy38hYSTlepgwXEJwXSaQ=="
     }
   }
 ]
