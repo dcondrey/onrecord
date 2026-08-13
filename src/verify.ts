@@ -72,18 +72,28 @@ export async function verifyFile(path: string, options: { trustDocument?: DidTru
     return report;
   }
 
-  if (!Array.isArray(parsed)) {
-    report.parseError = `expected a JSON array of entries in ${path}`;
+  // A single exported record (see export.ts's entry.json — the whole point of
+  // an export bundle is one standalone entry, not an array-of-one) is just as
+  // valid an input here as the full entries.json array. `on-record export`'s
+  // own VERIFY.txt tells a reader to run `on-record verify entry.json`, so
+  // this had to accept exactly that shape.
+  let entriesRaw: unknown[];
+  if (Array.isArray(parsed)) {
+    entriesRaw = parsed;
+  } else if (parsed !== null && typeof parsed === 'object') {
+    entriesRaw = [parsed];
+  } else {
+    report.parseError = `expected a JSON array of entries (or a single entry object) in ${path}`;
     return report;
   }
 
   const keys = new Set<string>();
 
-  for (let i = 0; i < parsed.length; i++) {
+  for (let i = 0; i < entriesRaw.length; i++) {
     report.total++;
     let entry: Entry;
     try {
-      entry = parseEntry(parsed[i], i);
+      entry = parseEntry(entriesRaw[i], i);
     } catch (err) {
       report.failed++;
       report.entries.push({
@@ -143,15 +153,32 @@ export async function verifyFile(path: string, options: { trustDocument?: DidTru
   return report;
 }
 
+/**
+ * verifyCoseEntry() can throw (e.g. malformed base64 in pubKey/coseSign1, a
+ * corrupted CBOR payload) rather than returning false — the same class of
+ * malformed input verifyEntry()'s v1 path already survives via its own
+ * try/catch. Without this wrapper, one corrupted v2 entry would abort
+ * verifyFile()'s whole loop instead of reporting that entry as a clean FAIL.
+ */
 async function verifyCose(entry: Entry, trustDocument?: DidTrustDocument): Promise<VerifyResult> {
-  const valid = await verifyCoseEntry(entry, trustDocument);
-  return {
-    hashMatches: valid,
-    signatureValid: valid,
-    recomputedHash: entry.provenance.contentHash,
-    claimedHash: entry.provenance.contentHash,
-    ...(valid ? {} : { error: 'COSE_Sign1 or detached CBOR payload failed verification' }),
-  };
+  try {
+    const valid = await verifyCoseEntry(entry, trustDocument);
+    return {
+      hashMatches: valid,
+      signatureValid: valid,
+      recomputedHash: entry.provenance.contentHash,
+      claimedHash: entry.provenance.contentHash,
+      ...(valid ? {} : { error: 'COSE_Sign1 or detached CBOR payload failed verification' }),
+    };
+  } catch (err) {
+    return {
+      hashMatches: false,
+      signatureValid: false,
+      recomputedHash: '',
+      claimedHash: entry.provenance?.contentHash ?? '',
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 /** Exposed for debugging: show exactly what bytes were hashed for a given entry. */
