@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { addEntry } from '../dist/add.js';
 import {
   signWithdrawRequest,
+  verifyWithdrawRequest,
   withdrawEntry,
   withdrawSelfAttestedEntry,
   WithdrawError,
@@ -13,6 +14,7 @@ import {
 } from '../dist/withdraw.js';
 import { ENTRIES_PATH, MANIFESTS_DIR } from '../dist/seed.js';
 import { deriveContributorPseudonym, loadOrCreateContributorKeyPair } from '../dist/gateway/contributor-identity.js';
+import { loadOrCreateKeyPair } from '../dist/sign.js';
 
 /**
  * withdrawEntry() deletes an entry from data/entries.json and its manifest,
@@ -198,8 +200,17 @@ test('withdrawSelfAttestedEntry refuses an entry with sourceClass self-attested 
     );
     assert.equal(entry.provenance.signerTier, 'org');
 
-    const someContributorKeys = await loadOrCreateContributorKeyPair('+15551230007');
-    const signature = await signWithdrawRequest(entry.id, someContributorKeys);
+    // Sign with the SAME org key that actually signed the entry, so
+    // verifyWithdrawRequest's signature check passes on a correct key — this
+    // isolates the signerTier gate specifically, rather than incidentally
+    // failing on a mismatched key regardless of whether that gate exists.
+    const orgKeys = await loadOrCreateKeyPair();
+    const signature = await signWithdrawRequest(entry.id, orgKeys);
+    assert.equal(
+      await verifyWithdrawRequest(entry, signature),
+      true,
+      'sanity check: the org key must actually verify against this entry, or this test is not isolating the signerTier gate',
+    );
     await assert.rejects(withdrawSelfAttestedEntry(entry.id, signature), WithdrawError);
 
     const entries = JSON.parse(await readFile(ENTRIES_PATH, 'utf8'));

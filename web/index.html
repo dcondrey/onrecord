@@ -2315,13 +2315,15 @@ function refreshMarkers(){
     g.classList.toggle("broken", !!(e.prov && !e.prov.ok));
     g.classList.toggle("pending", !!e.pendingReview);
     g.classList.toggle("selected", state.selected === e);
-    /* Bed status never changes after buildMap (no code mutates shelterStatus post-seed),
-       but this handler runs immediately after the initial render too (see buildMap's
-       tail call) and overwrites aria-label unconditionally, so the bed-status wording
-       set there must be reproduced here or it is lost before a screen reader ever sees
-       it — see the matching comment on the ENTRIES.forEach render loop above. */
+    /* Bed status and sourceClass never change after buildMap (no code mutates shelterStatus
+       or sourceClass post-seed), but this handler runs immediately after the initial render
+       too (see buildMap's tail call) and overwrites aria-label unconditionally, so both the
+       bed-status wording and the Street Pulse suffix set there must be reproduced here or
+       they are lost before a screen reader ever sees them — see the matching comment on the
+       ENTRIES.forEach render loop above. */
     const bed = e.ask.category === "shelter_bed" && e.shelterStatus ? e.shelterStatus.bedStatus : null;
-    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status));
+    const witness = e.sourceClass === "self_attested_witness";
+    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(witness?', Street Pulse — unreviewed street report':'')+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status));
   });
   SPOTS.forEach(sp => {
     const g = document.getElementById("sp-"+sp.id);

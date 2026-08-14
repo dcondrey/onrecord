@@ -139,3 +139,24 @@ test("web/index.html's self-reported street counts (#30) are never combined with
     'a line computing selfReported/selfReportedHTML also references the DOWNTOWN_UNSHELTERED series — it must stay a separate, never-summed signal',
   );
 });
+
+/**
+ * #18 regression guard: refreshMarkers() rewrites aria-label unconditionally on
+ * every call (~20 call sites) and previously dropped buildMap()'s Street Pulse
+ * suffix, silently reverting the accessible name on the first refresh after
+ * boot. No jsdom in this repo, so this is a static check instead.
+ */
+test('web/index.html\'s refreshMarkers() reproduces the Street Pulse aria-label suffix, not just buildMap()', () => {
+  const html = readFileSync(fileURLToPath(new URL('../web/index.html', import.meta.url)), 'utf8');
+  const buildMapAria = html.match(/const ariaTail = \(witness\?[^;]+;/);
+  assert.ok(buildMapAria, 'buildMap()\'s ariaTail computation moved or was renamed — update this test, do not skip it');
+  const refreshFn = html.match(/function refreshMarkers\(\)\{[\s\S]*?\n\}/);
+  assert.ok(refreshFn, 'refreshMarkers() moved or was renamed in web/index.html — update this test, do not skip it');
+  const ariaLine = refreshFn[0].split('\n').find((line) => line.includes('setAttribute("aria-label"'));
+  assert.ok(ariaLine, 'refreshMarkers() no longer sets aria-label directly — if a helper now does it, point this test at that helper instead');
+  assert.match(
+    ariaLine,
+    /witness/,
+    'refreshMarkers()\'s aria-label line does not reference the witness/sourceClass suffix that buildMap() sets — a filter change or seal check would silently clobber the Street Pulse accessible name back to generic text',
+  );
+});
