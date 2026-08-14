@@ -180,6 +180,33 @@ test('withdrawSelfAttestedEntry refuses an advocate-attested entry even with a v
   });
 });
 
+test('withdrawSelfAttestedEntry refuses an entry with sourceClass self-attested but signerTier org (sourceClass alone is not enough)', async () => {
+  await withTempCwd(async () => {
+    const pseudonym = await deriveContributorPseudonym('+15551230006');
+    // No `keys` override -> signed with the org key, but claiming a
+    // self-attested sourceClass. This should never happen via addEntry's
+    // real call sites, but the gate must not trust sourceClass alone.
+    const { entry } = await addEntry(
+      {
+        ...BASE_INPUT,
+        id: 'or_self_attested_org_signed',
+        advocateId: pseudonym,
+        consentMethod: 'self-attested via SMS',
+        sourceClass: 'self_attested_witness',
+      },
+      { transform: stubTransform, contributorPseudonym: pseudonym },
+    );
+    assert.equal(entry.provenance.signerTier, 'org');
+
+    const someContributorKeys = await loadOrCreateContributorKeyPair('+15551230007');
+    const signature = await signWithdrawRequest(entry.id, someContributorKeys);
+    await assert.rejects(withdrawSelfAttestedEntry(entry.id, signature), WithdrawError);
+
+    const entries = JSON.parse(await readFile(ENTRIES_PATH, 'utf8'));
+    assert.ok(entries.some((e) => e.id === entry.id));
+  });
+});
+
 test('withdrawSelfAttestedEntry requires a non-empty signature', async () => {
   await withTempCwd(async () => {
     const entry = await addSelfAttestedEntry('+15551230005', { id: 'or_self_withdraw_no_sig' });

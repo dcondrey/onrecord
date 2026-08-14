@@ -295,7 +295,11 @@ async function cmdWithdraw(args: Args): Promise<void> {
     if (handle) {
       // Self-attested entries (#14/#28) have no advocate mediating, so
       // withdrawal is gated on a signature from the same contributor key
-      // that signed the entry, not the CLI operator's word alone.
+      // that signed the entry, not the CLI operator's word alone. Note:
+      // loadOrCreateContributorKeyPair persists a new key file for a handle
+      // that has never been seen before, even one typo'd here — harmless
+      // (withdrawal below still correctly fails to verify), but it means a
+      // wrong --handle isn't a pure no-op against keys/contributors/.
       const keys = await loadOrCreateContributorKeyPair(handle);
       const signature = await signWithdrawRequest(id, keys);
       result = await withdrawSelfAttestedEntry(id, signature, reason);

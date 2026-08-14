@@ -132,9 +132,16 @@ export async function withdrawSelfAttestedEntry(id: string, signatureB64: string
   if (index === -1) throw new WithdrawError(`no entry with id "${id}" found in ${ENTRIES_PATH}`);
   const entry = entries[index] as Entry;
 
-  if (entry.sourceClass !== 'self_attested_witness' && entry.sourceClass !== 'self_attested_personal') {
+  // Both checks matter: sourceClass alone doesn't guarantee a contributor key
+  // signed this entry (addEntry sets provenance.signerTier independently of
+  // sourceClass), and signerTier alone doesn't guarantee this is an entry a
+  // contributor is entitled to self-withdraw.
+  if (
+    (entry.sourceClass !== 'self_attested_witness' && entry.sourceClass !== 'self_attested_personal') ||
+    entry.provenance.signerTier !== 'contributor'
+  ) {
     throw new WithdrawError(
-      `entry "${id}" is not self-attested (sourceClass "${entry.sourceClass ?? 'advocate_attested'}"); use withdrawEntry() instead`,
+      `entry "${id}" is not self-attested (sourceClass "${entry.sourceClass ?? 'advocate_attested'}", signerTier "${entry.provenance.signerTier ?? 'org'}"); use withdrawEntry() instead`,
     );
   }
   if (!(await verifyWithdrawRequest(entry, signatureB64))) {
