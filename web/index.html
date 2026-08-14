@@ -485,6 +485,39 @@ svg.map.dragging{cursor:grabbing}
 .panel.left{left:12px;top:60px;width:296px}
 .panel.right{right:12px;width:min(430px,44vw)}
 .panel.right.collapsed{display:none}
+
+/* Semantic metadata inspector (#24): a slide-in drawer independent of the right detail
+   panel, opened by clicking a shelter_bed pin's diamond status indicator (see the .pin
+   click wiring in buildMap). renderShelterInspector() reads e.shelterStatus and e.prov.ok
+   straight off the live in-memory entry, so a tampered record is visibly flagged here the
+   instant onVerify() flips e.prov.ok, never a separately re-derived check.
+   Docked like .chatdock (below the header, no scrim) rather than a viewport-spanning
+   fixed panel, so it never paints over #panelbtn or the top bar; and it picks up the
+   same .stage.panel-open right-shift .layers/.zoomctl already use, because the pin
+   handler that opens this also opens the right detail panel (to reach the Story tab's
+   tamper affordance) — without the shift the drawer would sit on top of that panel
+   instead of beside it. */
+.shelterinspector{position:absolute;right:12px;top:60px;width:min(340px,92vw);
+  max-height:calc(100% - 84px);
+  background:var(--panel-solid);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  transform:translateX(calc(100% + 24px));transition:transform .32s cubic-bezier(.22,.9,.32,1),right .3s;
+  z-index:50;display:flex;flex-direction:column;overflow:hidden}
+.shelterinspector[hidden]{display:none}
+.shelterinspector.open{transform:translateX(0)}
+.stage.panel-open .shelterinspector{right:calc(min(430px,44vw) + 24px)}
+.si-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--panel-2);flex:none}
+.si-head h2{font-family:var(--serif);font-weight:400;font-size:18px;margin:0;line-height:1.2}
+.si-body{flex:1;overflow-y:auto;padding:16px}
+.si-badge{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:5px 11px;border:1px solid;margin-bottom:4px}
+.si-badge.bed-open{color:var(--ok);border-color:var(--ok);background:var(--ok-dim)}
+.si-badge.bed-full,.si-badge.bed-turning_away{color:var(--broken);border-color:var(--broken);background:var(--broken-dim)}
+.si-badge.bed-unknown{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+.si-fields.untrusted{opacity:.5}
+.si-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.si-row:last-child{border-bottom:0}
+.si-row .k{color:var(--muted)}
+.si-row .v{color:var(--ink);font-weight:600;text-align:right}
 .phead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);background:var(--panel-2)}
 .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain}
 .pclose{background:none;border:1px solid var(--line);border-radius:8px;width:26px;height:26px;display:grid;place-items:center;color:var(--muted);font-size:14px}
@@ -770,6 +803,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
   .topbar{height:auto;padding:10px 12px;flex-wrap:wrap}
   .impact-badge{font-size:9px;padding:3px 7px}
   .stage.panel-open .zoomctl,.stage.panel-open .layers{right:12px}
+  .stage.panel-open .shelterinspector{right:12px}
   body{overflow-y:auto}
 
   /* Someone on a cheap phone or a library computer is here to file a request, check
@@ -950,6 +984,10 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
       <div id="panel-trends" role="tabpanel" aria-labelledby="tab-trends" tabindex="0"></div>
     </div>
   </aside>
+
+  <!-- Semantic metadata inspector (#24): populated entirely by renderShelterInspector();
+       kept empty here so there is no stale markup to reconcile with the live entry. -->
+  <aside class="shelterinspector" id="shelterinspector" aria-label="Shelter status inspector" hidden></aside>
 </main>
 
 <div class="modal" id="claimmodal" hidden role="dialog" aria-modal="true" aria-labelledby="claimtitle">
@@ -1214,6 +1252,11 @@ const CATEGORY_SHORT = {id_documents:"ID docs", shelter_bed:"Shelter", medical:"
    entries that carry a shelterStatus (src/schema.ts). Drives the layered zone-visualizer
    status indicator's text and its "bed-<status>" color class below. */
 const BED_STATUS_LABEL = {open:"Open", full:"Full", turning_away:"Turning away", unknown:"Status unknown"};
+/* Labels for the rest of ShelterStatus (src/schema.ts) — storagePolicy and
+   safetyVolatility — rendered by the semantic metadata inspector (#24). */
+const STORAGE_POLICY_LABEL = {none:"No storage offered", backpack_only:"Backpack only",
+  cart_allowed:"Carts allowed", secure_lockers:"Secure lockers"};
+const SAFETY_LEVEL_LABEL = {low:"Low", moderate:"Moderate", high:"High"};
 
 /* =========================================================
    3. SEED STORIES (composite; no real individuals)
@@ -1963,7 +2006,8 @@ function zoomBy(f){ flyTo((VBW/2-view.x)/view.k, (VBH/2-view.y)/view.k, view.k*f
    ========================================================= */
 const state = {selected:null, spot:null, focusedZone:null, view:"shaped", manifestOpen:false,
   tab:"trends", leftTab:"asks", status:"all", category:"all", panelOpen:true,
-  layers:{asks:true, spots:true, heat:true, svc:true}, needs:new Set(), svc:null};
+  layers:{asks:true, spots:true, heat:true, svc:true}, needs:new Set(), svc:null,
+  shelterEntry:null};
 const STEPS = [{k:"map",t:"Explore"},{k:"zone",t:"Drill in"},{k:"story",t:"Open a story"},
   {k:"words",t:"Their words / AI"},{k:"prov",t:"Provenance"},{k:"tamper",t:"Tamper"},
   {k:"cg",t:"Common ground"},{k:"post",t:"Post to a place"},{k:"author",t:"Open with a card"},{k:"offer",t:"Answer an ask"},{k:"claim",t:"Claim card"},{k:"chat",t:"File a request"},{k:"dash",t:"Non-response"}];
@@ -2206,7 +2250,18 @@ function buildMap(){
     g.addEventListener("click", fn); g.addEventListener("keydown", onKeydown(fn)); g.addEventListener("keyup", onKeyup(fn));
   });
   svg.querySelectorAll(".pin").forEach(g => {
-    const fn = ev => { ev.stopPropagation(); if(!dragMoved) select(g.dataset.id); };
+    const fn = ev => {
+      ev.stopPropagation();
+      if(dragMoved) return;
+      select(g.dataset.id);
+      /* Shelter status indicators (#24): a shelter_bed pin carrying a shelterStatus
+         report also opens the semantic metadata inspector, in addition to the normal
+         Story tab a click on any other pin opens (that tab is still how the tamper
+         affordance is reached, which the inspector's own state.shelterEntry tracks
+         separately and re-renders on — see onVerify/onTamper/onRestore). */
+      const ent = ENTRIES.find(x => x.id === g.dataset.id);
+      if(ent && ent.shelterStatus) openShelterInspector(g.dataset.id);
+    };
     g.addEventListener("click", fn); g.addEventListener("keydown", onKeydown(fn)); g.addEventListener("keyup", onKeyup(fn));
   });
   svg.querySelectorAll(".spot").forEach(g => {
@@ -2514,6 +2569,57 @@ function openSpot(id){
 }
 
 /* =========================================================
+   10b. SEMANTIC METADATA INSPECTOR (#24)
+   A slide-in drawer, independent of the right detail panel, opened by clicking a
+   shelter_bed pin's diamond status indicator. Everything it shows comes straight off
+   the live in-memory entry (e.shelterStatus, e.prov.ok) — never re-derived — so tamper
+   state (verified via the Story tab's existing "Tamper with this record" affordance)
+   shows up here the instant onVerify() flips e.prov.ok. See the onVerify/onTamper/
+   onRestore hooks below, which call renderShelterInspector() again after each check.
+   ========================================================= */
+function openShelterInspector(id){
+  const e = ENTRIES.find(x => x.id === id);
+  if(!e || !e.shelterStatus) return;
+  state.shelterEntry = e;
+  const el = document.getElementById("shelterinspector");
+  el.hidden = false;
+  renderShelterInspector();
+  requestAnimationFrame(() => el.classList.add("open"));
+  say("Opened shelter status for " + e.id + ".");
+}
+function closeShelterInspector(){
+  const el = document.getElementById("shelterinspector");
+  el.classList.remove("open");
+  state.shelterEntry = null;
+  setTimeout(() => { if(!el.classList.contains("open")) el.hidden = true; }, 340);
+}
+function renderShelterInspector(){
+  const el = document.getElementById("shelterinspector"), e = state.shelterEntry;
+  if(!el || !e || !e.shelterStatus) return;
+  const s = e.shelterStatus, r = s.restrictions;
+  // Same flag markers/list/dashboard already trust (refreshMarkers) — not a separate check.
+  const broken = !(e.prov && e.prov.ok);
+  const h = '<div class="si-head"><h2>Shelter status</h2><button class="pclose" id="siclose" type="button" aria-label="Close">&times;</button></div>'
+    + '<div class="si-body">'
+    + '<div class="eyebrow">'+esc(DISTRICTS[e.zone].label)+' &middot; record '+esc(e.id)+'</div>'
+    + (broken
+        ? '<div class="integrity bad" style="margin:10px 0 14px">&#9888; SEAL BROKEN &mdash; this record no longer verifies. The values below cannot be trusted.</div>'
+        : '<div class="integrity" style="margin:10px 0 14px">&#10003; Seal verified &mdash; read straight from the signed record.</div>')
+    + '<div class="si-fields'+(broken?' untrusted':'')+'">'
+    + '<span class="si-badge bed-'+esc(s.bedStatus)+'">'+esc(BED_STATUS_LABEL[s.bedStatus]||s.bedStatus)+'</span>'
+    + '<div class="si-row"><span class="k">Estimated openings</span><span class="v">'+(s.estimatedOpenings!==undefined && s.estimatedOpenings!==null ? s.estimatedOpenings : '&mdash;')+'</span></div>'
+    + '<div class="si-row"><span class="k">Canines allowed</span><span class="v">'+(r.allowsCanines?"Yes":"No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Weapons storage</span><span class="v">'+(r.allowsWeaponsStorage?"Yes":"No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Clean screen required</span><span class="v">'+(r.requiresCleanScreen?"Yes":"No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Hard curfew</span><span class="v">'+(r.hasHardCurfew ? "Yes, "+esc(r.curfewTime||"") : "No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Storage policy</span><span class="v">'+esc(STORAGE_POLICY_LABEL[s.storagePolicy]||s.storagePolicy)+'</span></div>'
+    + '<div class="si-row"><span class="k">Safety volatility</span><span class="v">'+esc(SAFETY_LEVEL_LABEL[s.safetyVolatility]||s.safetyVolatility)+'</span></div>'
+    + '</div></div>';
+  setSafeHTML(el, h);
+  document.getElementById("siclose").onclick = closeShelterInspector;
+}
+
+/* =========================================================
    11. LISTS
    ========================================================= */
 function renderList(){
@@ -2730,6 +2836,9 @@ async function onVerify(){
     oldGlyph.replaceWith(glyphHost.firstElementChild);
   }
   refreshMarkers(); renderList(); renderDash();
+  /* Keeps the shelter inspector in sync with e.prov.ok even when it's showing a
+     different entry than state.selected — renderShelterInspector() no-ops otherwise. */
+  if(state.shelterEntry === e) renderShelterInspector();
   say(r.ok ? "Record verified." : "Verification failed. The seal is broken.");
 }
 async function onTamper(){
@@ -4118,6 +4227,8 @@ async function boot(){
     if(ev.key === "Escape"){
       const cd = document.getElementById("chatdock");
       if(!cd.hidden){ closeChat(); return; }
+      const si = document.getElementById("shelterinspector");
+      if(!si.hidden){ closeShelterInspector(); return; }
       if(!claimModal.hidden){ claimModal.hidden=true; return; }
       if(!providerModal.hidden){ providerModal.hidden=true; return; }
       if(!modal.hidden){ modal.hidden=true; return; }
