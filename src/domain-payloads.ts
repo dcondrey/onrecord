@@ -13,10 +13,9 @@
  * named "address" (or any other forbidden key) still gets refused downstream,
  * by the same gate every other field goes through.
  *
- * DOMAIN_PAYLOAD_SCHEMAS ships empty except for #29's `rental_listing`
- * registration below. Future categories (#30 self-reported homelessness
- * counts) register themselves here too; this file only builds the mechanism
- * they plug into.
+ * DOMAIN_PAYLOAD_SCHEMAS carries #29's `rental_listing` and #30's
+ * `self_reported_count` registrations below. Future categories register
+ * themselves here too; this file only builds the mechanism they plug into.
  */
 
 import { type Category, isCategory } from './schema.js';
@@ -55,10 +54,30 @@ const RENTAL_LISTING_SCHEMA: DomainPayloadSchema = {
   ],
 };
 
+/**
+ * #30: self-reported homelessness count, meant to travel under sourceClass
+ * 'self_attested_witness' (schema.ts) — this schema only shapes
+ * domainPayload.data, it does not set sourceClass itself. Registered against
+ * 'shelter_bed', the same category shelterStatus's witness observations use.
+ * Every field is optional, same reasoning as RENTAL_LISTING_SCHEMA above:
+ * collectDomainPayload has no "skip this schema" path, and most shelter_bed
+ * adds are an ordinary bed ask, not a street count.
+ */
+const SELF_REPORTED_COUNT_SCHEMA: DomainPayloadSchema = {
+  kind: 'self_reported_count',
+  fields: [
+    { name: 'count', label: 'Number of people counted', type: 'number', required: false },
+    { name: 'area', label: 'General area described (not an address)', type: 'string', required: false },
+    { name: 'method', label: 'How the count was taken (e.g. "walked the block")', type: 'string', required: false },
+    { name: 'reportedAtISO', label: 'Date counted (ISO 8601)', type: 'string', required: false },
+  ],
+};
+
 /** Category -> registered schema. */
 export const DOMAIN_PAYLOAD_SCHEMAS: Partial<Record<Category, DomainPayloadSchema>> = {
   work_docs: RENTAL_LISTING_SCHEMA,
   transit: RENTAL_LISTING_SCHEMA,
+  shelter_bed: SELF_REPORTED_COUNT_SCHEMA,
 };
 
 export function schemaForCategory(

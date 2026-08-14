@@ -119,3 +119,23 @@ test("web/index.html's sourceClass equality gates match only self_attested_witne
     'a sourceClass equality gate in web/index.html matches something other than self_attested_witness alone',
   );
 });
+
+/**
+ * #30: self_reported_count entries are a corroborating signal shown alongside
+ * DOWNTOWN_UNSHELTERED's DSDP/H-Hub series (downtownDetailHTML(), web/index.html)
+ * but must never be folded into it. Statically checks that no line computing the
+ * self-reported list also touches the DSDP series' own variables, so a future
+ * edit that merges the two fails here instead of silently corrupting the series.
+ */
+test("web/index.html's self-reported street counts (#30) are never combined with DOWNTOWN_UNSHELTERED's series", () => {
+  const html = readFileSync(fileURLToPath(new URL('../web/index.html', import.meta.url)), 'utf8');
+  const m = html.match(/function downtownDetailHTML\(\)\{[\s\S]*?\n\}/);
+  assert.ok(m, 'downtownDetailHTML() moved or was renamed in web/index.html — update this test, do not skip it');
+  const dsdpSeriesTerms = ['uVals', 'uMonths', 'uAvgLast3', 'uYoyPct', 'overlapUnsheltered', 'u.counts'];
+  const badLines = m[0].split('\n').filter((line) => line.includes('selfReported') && dsdpSeriesTerms.some((t) => line.includes(t)));
+  assert.deepEqual(
+    badLines,
+    [],
+    'a line computing selfReported/selfReportedHTML also references the DOWNTOWN_UNSHELTERED series — it must stay a separate, never-summed signal',
+  );
+});

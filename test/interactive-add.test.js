@@ -207,6 +207,59 @@ test('#29: leaving every rental_listing field blank produces no domainPayload, a
   assert.doesNotThrow(() => validateUnsigned(unsigned));
 });
 
+test('#30: self_reported_count is registered against shelter_bed in the real DOMAIN_PAYLOAD_SCHEMAS registry', async () => {
+  const schema = DOMAIN_PAYLOAD_SCHEMAS.shelter_bed;
+  assert.equal(schema?.kind, 'self_reported_count', 'expected self_reported_count registered for shelter_bed');
+  const fieldNames = schema.fields.map((f) => f.name).sort();
+  assert.deepEqual(fieldNames, ['area', 'count', 'method', 'reportedAtISO'].sort());
+
+  const ask = scripted([
+    'Downtown', // zone
+    'shelter_bed', // category
+    '', // summary
+    '', // amount
+    '14', // count
+    'under the I-5 overpass', // area
+    'walked the block', // method
+    '2026-08-01T00:00:00Z', // reportedAtISO
+    'adv_1', // advocate id
+    'verbal, in person', // consent method
+  ]);
+  const result = await promptInteractiveAdd(ask); // real registry, no override
+  assert.deepEqual(result.domainPayload, {
+    kind: 'self_reported_count',
+    data: { count: 14, area: 'under the I-5 overpass', method: 'walked the block', reportedAtISO: '2026-08-01T00:00:00Z' },
+  });
+
+  const unsigned = baseUnsigned({
+    ask: { category: result.category, summary: 'x' },
+    domainPayload: result.domainPayload,
+  });
+  assert.doesNotThrow(() => validateUnsigned(unsigned));
+});
+
+test('#30: leaving every self_reported_count field blank produces no domainPayload, and consent is still enforced', async () => {
+  const ask = scripted([
+    'Downtown', // zone
+    'shelter_bed', // category
+    '', // summary
+    '', // amount
+    '', // count (blank, optional)
+    '', // area (blank, optional)
+    '', // method (blank, optional)
+    '', // reportedAtISO (blank, optional)
+    'adv_1', // advocate id
+    'verbal, in person', // consent method
+  ]);
+  const result = await promptInteractiveAdd(ask); // real registry, no override
+  assert.equal(result.domainPayload, undefined, 'an all-blank self_reported_count answer should not sign an empty domainPayload');
+  assert.equal(result.advocateId, 'adv_1');
+  assert.equal(result.consentMethod, 'verbal, in person');
+
+  const unsigned = baseUnsigned({ ask: { category: result.category, summary: 'x' } });
+  assert.doesNotThrow(() => validateUnsigned(unsigned));
+});
+
 test('promptRawStory: collects lines until a blank line', async () => {
   const ask = scripted(['first line', 'second line', '']);
   const raw = await promptRawStory(ask);

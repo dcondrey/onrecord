@@ -2177,7 +2177,12 @@ function buildMap(){
        field on the entry. Non-shelter asks (and shelter_bed asks with no reported
        status) fall through to the unchanged text-bubble rendering. */
     const bed = e.ask.category === "shelter_bed" && e.shelterStatus ? e.shelterStatus.bedStatus : null;
-    const plabel = witness ? "Street Pulse" : bed ? BED_STATUS_LABEL[bed] : CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"");
+    /* #30: a self_reported_count witness pin shows its headcount right on the
+       label — still under the "Street Pulse" name, never blended with bed
+       status or an ask category, and never read as the DOWNTOWN_UNSHELTERED
+       survey figure it sits next to on the Trends tab. */
+    const selfCount = witness && e.domainPayload && e.domainPayload.kind === "self_reported_count" ? e.domainPayload.data.count : null;
+    const plabel = selfCount != null ? "Street Pulse · "+esc(String(selfCount)) : witness ? "Street Pulse" : bed ? BED_STATUS_LABEL[bed] : CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"");
     const ariaTail = (witness?', Street Pulse — unreviewed street report':'')+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status);
     const core = bed
       ? '<rect class="core" x="-5.6" y="-5.6" width="11.2" height="11.2" transform="rotate(45)"/>'
@@ -2704,6 +2709,9 @@ function renderStory(){
   setSafeHTML(host, '<div class="story">'
    + (e.sourceClass === "self_attested_witness" ? '<div class="pulsebadge">'+pulseGlyph()
        + '<span class="txt">Street Pulse &#183; unreviewed street report, not advocate-mediated</span></div>' : '')
+   + (e.sourceClass === "self_attested_witness" && e.domainPayload && e.domainPayload.kind === "self_reported_count" ? '<div class="pulsebadge" style="margin-top:6px">'+pulseGlyph()
+       + '<span class="txt">Self-reported count: '+esc(String(e.domainPayload.data.count))+' people'+(e.domainPayload.data.area?' &#183; '+esc(String(e.domainPayload.data.area)):'')
+       + ' &#183; a corroborating signal, not part of the DSDP/H-Hub survey series on the Trends tab</span></div>' : '')
    + (e.pendingReview ? '<div class="integrity" style="margin-top:0;margin-bottom:12px">&#9678; Filed through the intake chat, awaiting advocate review. '
        + 'Not counted on the Accountability tab until reviewed. <button class="btn btn-restore" id="markreviewed" type="button" style="margin-top:8px;display:block">Mark reviewed (advocate, demo)</button></div>' : '')
    + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
@@ -3014,6 +3022,20 @@ function downtownDetailHTML(){
   const overlapUnsheltered = overlapMonths.map(m => u.counts[m]);
   const overlapR = overlapMonths.length > 1 ? pearsonR(overlapReports, overlapUnsheltered) : null;
 
+  /* #30: self-reported street counts (domainPayload.kind "self_reported_count"),
+     contributor-signed under sourceClass self_attested_witness. Pulled straight
+     from ENTRIES and rendered in their own barsec below — never folded into
+     uMonths/uVals or any average computed from u.counts above. */
+  const selfReported = ENTRIES.filter(e => e.zone === "Downtown" && e.sourceClass === "self_attested_witness" && e.domainPayload && e.domainPayload.kind === "self_reported_count")
+    .slice().sort((a,b) => (b.domainPayload.data.reportedAtISO || b.consent.timestampISO || "").localeCompare(a.domainPayload.data.reportedAtISO || a.consent.timestampISO || ""));
+  const selfReportedHTML = selfReported.length
+    ? '<div class="barsec" style="margin-top:12px"><h4>Self-reported street counts &#183; Street Pulse, unreviewed</h4>'
+      + selfReported.map(e => '<div class="pulsebadge" style="margin-top:6px"><span class="txt">'
+          + esc(String(e.domainPayload.data.count))+' people'+(e.domainPayload.data.area?' &#183; '+esc(String(e.domainPayload.data.area)):'')
+          + ' &#183; '+esc((e.domainPayload.data.reportedAtISO || e.consent.timestampISO || "").slice(0,10))+'</span></div>').join("")
+      + '<p class="disclaim" style="margin-top:9px">These are individual contributors’ own street-level headcounts, signed under their own pseudonymous contributor key — never the org’s signing key, never advocate-mediated. They are a corroborating signal alongside the DSDP/H-Hub survey below, not audited or deduplicated against it or against each other, and never summed into that series’ totals.</p></div>'
+    : '';
+
   return '<div class="eyebrow" style="margin-top:18px">Downtown, block by block</div>'
     + '<p class="defn">The hackathon’s Downtown Homelessness track asked for finer grain than a citywide view gives. Below: which corridors are getting more or fewer reports than in 2024, how long a report here typically stays open, and what happens to it.</p>'
     + '<div class="barsec"><h4>Most-reported corridors · Jan 2024–Jul 2026 · pace vs 2024</h4>' + corridorRows
@@ -3033,6 +3055,7 @@ function downtownDetailHTML(){
     + '</div>'
     + '<p class="disclaim" style="margin-top:9px">This is a separate, independent measurement from the 311 encampment reports above — DSDP staff and volunteers doing a street count, not residents filing reports — so agreement or disagreement between the two is itself informative. The footprints are close but not identical: DSDP surveys its own seven core Downtown neighborhoods, which do not include Little Italy, while the City’s DOWNTOWN community-plan area used for the 311 corridor list above does — Little Italy streets (State St, Cedar St, India St, Kettner Blvd, among others) show real report volume in the raw 311 data. The two charts’ time windows only partly overlap, too: the corridor list above covers Jan 2024–Jul 2026, this one runs 2014–2025, so the shared comparison window is really just 2024–2025. This is also not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as an estimate of people present per month, not a running total of unique people. Nine months in this window have no recorded count (dashed segments in the line above mark exactly where) and are skipped rather than shown as zero.</p>'
     + '<p class="footnote">'+esc(u.sourceNote)+'</p></div>'
+    + selfReportedHTML
     + (overlapMonths.length > 1 ? '<div class="barsec" style="margin-top:12px"><h4>Do the two measurements agree? · '+overlapMonths[0].slice(0,4)+'–'+overlapMonths[overlapMonths.length-1].slice(0,4)+', both indexed to their first shared month = 100</h4>'
       + svgDualSparkline(overlapMonths, overlapReports, overlapUnsheltered, {ariaLabel:"311 encampment reports vs. DSDP estimated unsheltered people, both indexed to 100 at the first shared month", labelA:"311 encampment reports", labelB:"DSDP estimated unsheltered people"})
       + '<div class="metrics" style="margin-top:6px">'

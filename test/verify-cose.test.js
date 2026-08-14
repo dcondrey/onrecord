@@ -269,3 +269,76 @@ test('tampering rental_listing rentAmountUsd breaks both verifiers', async () =>
   const r = await verifyV2(projectV2(tampered));
   assert.equal(r.ok, false, 'browser verifier should reject a tampered rental_listing entry');
 });
+
+async function signedSelfReportedCountFixture(dataOverride) {
+  const pair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const privateJwk = await webcrypto.subtle.exportKey('jwk', pair.privateKey);
+  const publicJwk = await webcrypto.subtle.exportKey('jwk', pair.publicKey);
+  const pubKey = toBase64(await webcrypto.subtle.exportKey('spki', pair.publicKey));
+  const keys = { privateJwk, publicJwk, pubKey, createdISO: new Date().toISOString() };
+  const unsigned = {
+    id: 'or_test_self_reported_count',
+    zone: 'Downtown',
+    ask: { category: 'shelter_bed', summary: 'street count near the shelter' },
+    story: { raw: 'counted people sleeping under the overpass tonight', shaped: 'counted people sleeping under the overpass tonight' },
+    consent: { advocateId: 'contrib_test01', method: 'self-report', timestampISO: '2026-08-01T00:00:00Z' },
+    sourceClass: 'self_attested_witness',
+    domainPayload: {
+      kind: 'self_reported_count',
+      data: dataOverride ?? { count: 14, area: 'under the I-5 overpass', method: 'walked the block', reportedAtISO: '2026-08-01T00:00:00Z' },
+    },
+    status: 'requested',
+  };
+  assert.doesNotThrow(
+    () => validateUnsigned(unsigned, { contributorPseudonym: 'contrib_test01' }),
+    'a well-formed self_reported_count domainPayload on a self_attested_witness entry should pass validateUnsigned',
+  );
+  return signEntryCose(unsigned, keys);
+}
+
+/**
+ * #30: self-reported homelessness count registers a concrete
+ * `kind: 'self_reported_count'` shape, submitted contributor-signed under
+ * sourceClass 'self_attested_witness' (#15) — the same round-trip guarantee
+ * as rental_listing above, plus the sourceClass self-consent gate (#16).
+ */
+test('a self_reported_count domainPayload verifies through src/verify.ts and the browser verifyV2()', async () => {
+  const fixture = await signedSelfReportedCountFixture();
+
+  const dir = await mkdtemp(join(tmpdir(), 'onrecord-self-reported-count-'));
+  try {
+    const path = join(dir, 'entries.json');
+    await writeFile(path, JSON.stringify([fixture]));
+    const report = await verifyFile(path);
+    assert.equal(report.entries[0].ok, true, `CLI verifier rejected a clean self_reported_count entry: ${JSON.stringify(report.entries[0])}`);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const projected = projectV2(fixture);
+  assert.deepEqual(projected.domainPayload, fixture.domainPayload, 'projectV2 must carry the self_reported_count payload through unchanged');
+  assert.equal(projected.sourceClass, 'self_attested_witness', 'projectV2 must carry sourceClass through unchanged');
+  const r = await verifyV2(projected);
+  assert.equal(r.ok, true, `browser verifier rejected a clean self_reported_count entry: ${JSON.stringify(r)}`);
+});
+
+test('tampering self_reported_count.count breaks both verifiers', async () => {
+  const fixture = await signedSelfReportedCountFixture();
+  const tampered = structuredClone(fixture);
+  tampered.domainPayload.data.count = 999999;
+
+  const dir = await mkdtemp(join(tmpdir(), 'onrecord-self-reported-count-tamper-'));
+  try {
+    const path = join(dir, 'entries.json');
+    await writeFile(path, JSON.stringify([tampered]));
+    const report = await verifyFile(path);
+    assert.equal(report.entries[0].ok, false, 'CLI verifier should reject a tampered self_reported_count entry');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const r = await verifyV2(projectV2(tampered));
+  assert.equal(r.ok, false, 'browser verifier should reject a tampered self_reported_count entry');
+});
