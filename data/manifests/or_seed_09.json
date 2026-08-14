@@ -2,23 +2,23 @@
   "format": "org.onrecord.c2pa-bridge/1",
   "manifestVersion": "1.1",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
-  "instanceId": "urn:onrecord:entry:or_seed_02",
-  "createdISO": "2026-08-14T07:15:02.206Z",
+  "instanceId": "urn:onrecord:entry:or_seed_09",
+  "createdISO": "2026-08-14T07:15:03.890Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
       "data": {
-        "advocateId": "adv_ob_003",
-        "method": "written, signed intake form",
-        "timestampISO": "2026-06-30T15:05:00Z",
+        "advocateId": "adv_ev_051",
+        "method": "verbal, in person, witnessed by outreach worker",
+        "timestampISO": "2026-08-02T21:10:00Z",
         "recordedBeforePublication": true
       }
     },
     {
       "label": "org.onrecord.story.hash",
       "data": {
-        "rawSha256": "6c11d0bb6ecb13a896438427821226a22da06eab52b8b53e4e8a0d9516995bad",
-        "shapedSha256": "26fd80da10afb700e3e2ea04d107160d7ff0dedb452b65f4ccd6eb5d6fd56a6e",
+        "rawSha256": "ba9d3644946ae968996b2310b4767f871d68c917f9b2b91cb1aa3b000a474b31",
+        "shapedSha256": "71dbf57f79db73e964a62629f2b9b89d15079dfcc1e7c30f18df38d46881805f",
         "bothPublished": true
       }
     },
@@ -50,7 +50,7 @@
       "label": "org.onrecord.location-precision",
       "data": {
         "granularity": "zone",
-        "zone": "Ocean Beach",
+        "zone": "East Village",
         "note": "Zone only. No coordinates, addresses, or shelter names are collected or stored."
       }
     },
@@ -64,22 +64,22 @@
   ],
   "signature": {
     "alg": "COSE-ES256",
-    "contentHash": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7HPpmxvQk+X40fE1sK7ao4xzzCLrsFGgW7GxNXuqLKx6ndKqMGcyOXR0pm4kFcJIquXhsvkEZShFHBPS4hxHaA==",
+    "contentHash": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAI92hQ2901IDMMz2hmWPWVbLZEQ4y7z/aDQEDb/cJM1vSk0eYx8wt+nmGq4dJ4OoWu4FHtSVfLvACQAtvPrRzQw==",
     "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
     "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-14T07:15:02.205Z",
+    "signedAtISO": "2026-08-14T07:15:03.889Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
     "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
     "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7HPpmxvQk+X40fE1sK7ao4xzzCLrsFGgW7GxNXuqLKx6ndKqMGcyOXR0pm4kFcJIquXhsvkEZShFHBPS4hxHaA=="
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAI92hQ2901IDMMz2hmWPWVbLZEQ4y7z/aDQEDb/cJM1vSk0eYx8wt+nmGq4dJ4OoWu4FHtSVfLvACQAtvPrRzQw=="
   },
   "claim": {
-    "instanceId": "urn:onrecord:entry:or_seed_02",
+    "instanceId": "urn:onrecord:entry:or_seed_09",
     "asset": {
       "mediaType": "application/json",
-      "cborSha256": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858"
+      "cborSha256": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14"
     },
     "assertions": [
       "org.onrecord.consent",

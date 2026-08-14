@@ -55,13 +55,43 @@ export interface Recovery {
   verifierTag: string;
 }
 
+export const BED_STATUSES = ['open', 'full', 'turning_away', 'unknown'] as const;
+export type BedStatus = (typeof BED_STATUSES)[number];
+
+export const STORAGE_POLICIES = ['none', 'backpack_only', 'cart_allowed', 'secure_lockers'] as const;
+export type StoragePolicy = (typeof STORAGE_POLICIES)[number];
+
+export const SAFETY_LEVELS = ['low', 'moderate', 'high'] as const;
+export type SafetyLevel = (typeof SAFETY_LEVELS)[number];
+
+export interface ShelterRestrictions {
+  allowsCanines: boolean;
+  allowsWeaponsStorage: boolean;
+  requiresCleanScreen: boolean;
+  hasHardCurfew: boolean;
+  /** Only meaningful, and only allowed, when hasHardCurfew is true. */
+  curfewTime?: string;
+}
+
+/**
+ * A single witnessed observation of shelter conditions at intake time — not a
+ * live feed. Only valid on entries whose ask.category is 'shelter_bed'.
+ */
+export interface ShelterStatus {
+  bedStatus: BedStatus;
+  estimatedOpenings?: number;
+  restrictions: ShelterRestrictions;
+  storagePolicy: StoragePolicy;
+  safetyVolatility: SafetyLevel;
+}
+
 export interface Provenance {
   alg: 'ECDSA-P256' | 'COSE-ES256';
   contentHash: string;
   /** Legacy v1 raw P-1363 signature. Absent for protocol v2. */
   signature?: string;
   pubKey: string;
-  manifestVersion: '1.0';
+  manifestVersion: '1.0' | '1.1';
   signedAtISO: string;
   /** Standards envelope, present on protocol v2 entries. */
   protocolVersion?: '1.0' | '2.0';
@@ -78,6 +108,7 @@ export interface Entry {
   story: Story;
   consent: Consent;
   recovery?: Recovery;
+  shelterStatus?: ShelterStatus;
   status: Status;
   provenance: Provenance;
 }
@@ -120,6 +151,27 @@ export function canonicalize(entry: UnsignedEntry): string {
       timestampISO: entry.consent.timestampISO,
     },
     ...(entry.recovery ? { recovery: { scheme: entry.recovery.scheme, verifierTag: entry.recovery.verifierTag } } : {}),
+    ...(entry.shelterStatus
+      ? {
+          shelterStatus: {
+            bedStatus: entry.shelterStatus.bedStatus,
+            ...(entry.shelterStatus.estimatedOpenings !== undefined
+              ? { estimatedOpenings: entry.shelterStatus.estimatedOpenings }
+              : {}),
+            restrictions: {
+              allowsCanines: entry.shelterStatus.restrictions.allowsCanines,
+              allowsWeaponsStorage: entry.shelterStatus.restrictions.allowsWeaponsStorage,
+              requiresCleanScreen: entry.shelterStatus.restrictions.requiresCleanScreen,
+              hasHardCurfew: entry.shelterStatus.restrictions.hasHardCurfew,
+              ...(entry.shelterStatus.restrictions.curfewTime !== undefined
+                ? { curfewTime: entry.shelterStatus.restrictions.curfewTime }
+                : {}),
+            },
+            storagePolicy: entry.shelterStatus.storagePolicy,
+            safetyVolatility: entry.shelterStatus.safetyVolatility,
+          },
+        }
+      : {}),
     status: entry.status,
   };
 
@@ -178,6 +230,18 @@ export function isStatus(v: string): v is Status {
   return (STATUSES as readonly string[]).includes(v);
 }
 
+export function isBedStatus(v: string): v is BedStatus {
+  return (BED_STATUSES as readonly string[]).includes(v);
+}
+
+export function isStoragePolicy(v: string): v is StoragePolicy {
+  return (STORAGE_POLICIES as readonly string[]).includes(v);
+}
+
+export function isSafetyLevel(v: string): v is SafetyLevel {
+  return (SAFETY_LEVELS as readonly string[]).includes(v);
+}
+
 /**
  * Validates an unsigned entry. Consent is the hard gate: an entry with no
  * advocate, no stated consent method, or no consent timestamp is refused
@@ -218,6 +282,28 @@ export function validateUnsigned(entry: UnsignedEntry): void {
   }
   if (!entry.consent.timestampISO || Number.isNaN(Date.parse(entry.consent.timestampISO))) {
     fail('CONSENT REQUIRED: consent.timestampISO must be a valid ISO 8601 timestamp.');
+  }
+
+  if (entry.shelterStatus) {
+    if (entry.ask.category !== 'shelter_bed') {
+      fail('shelterStatus is only valid when ask.category is "shelter_bed"');
+    }
+    const s = entry.shelterStatus;
+    if (!isBedStatus(s.bedStatus)) fail(`shelterStatus.bedStatus must be one of: ${BED_STATUSES.join(', ')}`);
+    if (s.estimatedOpenings !== undefined) {
+      if (!Number.isFinite(s.estimatedOpenings) || s.estimatedOpenings < 0) {
+        fail('shelterStatus.estimatedOpenings must be a non-negative number');
+      }
+    }
+    if (!isStoragePolicy(s.storagePolicy)) {
+      fail(`shelterStatus.storagePolicy must be one of: ${STORAGE_POLICIES.join(', ')}`);
+    }
+    if (!isSafetyLevel(s.safetyVolatility)) {
+      fail(`shelterStatus.safetyVolatility must be one of: ${SAFETY_LEVELS.join(', ')}`);
+    }
+    if (s.restrictions.curfewTime !== undefined && !s.restrictions.hasHardCurfew) {
+      fail('shelterStatus.restrictions.curfewTime may only be set when hasHardCurfew is true');
+    }
   }
 }
 

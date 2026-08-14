@@ -16,8 +16,11 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { SEEDS, type SeedRecord } from './seeds.data.js';
 import {
+  isBedStatus,
   isCategory,
+  isSafetyLevel,
   isStatus,
+  isStoragePolicy,
   isZone,
   validateUnsigned,
   ValidationError,
@@ -44,6 +47,25 @@ function toUnsigned(seed: SeedRecord): UnsignedEntry {
   const ask: UnsignedEntry['ask'] = { category: seed.ask.category, summary: seed.ask.summary };
   if (seed.ask.amountUsd !== undefined) ask.amountUsd = seed.ask.amountUsd;
 
+  let shelterStatus: UnsignedEntry['shelterStatus'];
+  if (seed.shelterStatus) {
+    const s = seed.shelterStatus;
+    if (!isBedStatus(s.bedStatus)) throw new ValidationError(`seed ${seed.id}: bad shelterStatus.bedStatus "${s.bedStatus}"`);
+    if (!isStoragePolicy(s.storagePolicy)) {
+      throw new ValidationError(`seed ${seed.id}: bad shelterStatus.storagePolicy "${s.storagePolicy}"`);
+    }
+    if (!isSafetyLevel(s.safetyVolatility)) {
+      throw new ValidationError(`seed ${seed.id}: bad shelterStatus.safetyVolatility "${s.safetyVolatility}"`);
+    }
+    shelterStatus = {
+      bedStatus: s.bedStatus,
+      ...(s.estimatedOpenings !== undefined ? { estimatedOpenings: s.estimatedOpenings } : {}),
+      restrictions: { ...s.restrictions },
+      storagePolicy: s.storagePolicy,
+      safetyVolatility: s.safetyVolatility,
+    };
+  }
+
   return {
     id: seed.id,
     zone: seed.zone,
@@ -54,6 +76,7 @@ function toUnsigned(seed: SeedRecord): UnsignedEntry {
       method: seed.consent.method,
       timestampISO: seed.consent.timestampISO,
     },
+    ...(shelterStatus ? { shelterStatus } : {}),
     status: seed.status,
   };
 }

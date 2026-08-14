@@ -1,9 +1,9 @@
 {
   "format": "org.onrecord.c2pa-bridge/1",
-  "manifestVersion": "1.0",
+  "manifestVersion": "1.1",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
   "instanceId": "urn:onrecord:entry:or_seed_03",
-  "createdISO": "2026-08-13T00:34:57.527Z",
+  "createdISO": "2026-08-14T07:15:02.988Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
@@ -64,22 +64,22 @@
   ],
   "signature": {
     "alg": "COSE-ES256",
-    "contentHash": "d66091f4a558b8da775934b175c1b9f08e70112778b11d23c4ad537c4a126116",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAMukE2YmlC0Xoa5CcQIS14ENd7//53L1f2NHgBsSDVuQhfUEbZWNReBr0vqb30EHLc/nbopIZBMJ7BQPrkgVojw==",
+    "contentHash": "1f5a7923749c7f1a2d9ffc73f3e6f9a6bd1869d31cb5ac3885fc3c344df85bfa",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhApFRSYi+3/372NSeqEwLn7NFlGPGlLAFP4j44sU3pQlmimUXpJ95RDC8AB63lKkXynpAmhtlipF/RcUz0YLeDog==",
     "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
     "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-13T00:34:57.526Z",
+    "signedAtISO": "2026-08-14T07:15:02.988Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
     "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
     "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAMukE2YmlC0Xoa5CcQIS14ENd7//53L1f2NHgBsSDVuQhfUEbZWNReBr0vqb30EHLc/nbopIZBMJ7BQPrkgVojw=="
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhApFRSYi+3/372NSeqEwLn7NFlGPGlLAFP4j44sU3pQlmimUXpJ95RDC8AB63lKkXynpAmhtlipF/RcUz0YLeDog=="
   },
   "claim": {
     "instanceId": "urn:onrecord:entry:or_seed_03",
     "asset": {
       "mediaType": "application/json",
-      "cborSha256": "d66091f4a558b8da775934b175c1b9f08e70112778b11d23c4ad537c4a126116"
+      "cborSha256": "1f5a7923749c7f1a2d9ffc73f3e6f9a6bd1869d31cb5ac3885fc3c344df85bfa"
     },
     "assertions": [
       "org.onrecord.consent",

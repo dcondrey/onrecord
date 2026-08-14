@@ -1,9 +1,9 @@
 {
   "format": "org.onrecord.c2pa-bridge/1",
-  "manifestVersion": "1.0",
+  "manifestVersion": "1.1",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
   "instanceId": "urn:onrecord:entry:or_seed_07",
-  "createdISO": "2026-08-13T00:34:57.614Z",
+  "createdISO": "2026-08-14T07:15:03.810Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
@@ -65,15 +65,15 @@
   "signature": {
     "alg": "COSE-ES256",
     "contentHash": "d15c06d9b3039f5173e2ce41901a788e68ee9b879ef5d635ac3f2463d16fe580",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAAyrXQnQGPSUiR6wJnk/EisN+ppTVJUIM5JHaCHnSpRnnMPFMNsvtog+jJZcLXmlr5bJTzxStC8uNQd2cpt/I9g==",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAeLCaXafQ99LLWRALKEQkY1uYmtUA9hp0uVzAqnGGhXoN+kr/N/ypqTeiO2hNDmw0sikjYHly7/4DQHvcIMAEnQ==",
     "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
     "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-13T00:34:57.614Z",
+    "signedAtISO": "2026-08-14T07:15:03.810Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
     "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
     "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAAyrXQnQGPSUiR6wJnk/EisN+ppTVJUIM5JHaCHnSpRnnMPFMNsvtog+jJZcLXmlr5bJTzxStC8uNQd2cpt/I9g=="
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAeLCaXafQ99LLWRALKEQkY1uYmtUA9hp0uVzAqnGGhXoN+kr/N/ypqTeiO2hNDmw0sikjYHly7/4DQHvcIMAEnQ=="
   },
   "claim": {
     "instanceId": "urn:onrecord:entry:or_seed_07",
