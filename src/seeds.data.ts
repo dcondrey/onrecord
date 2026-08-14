@@ -19,6 +19,19 @@ export interface SeedRecord {
   story: { raw: string; shaped: string };
   consent: { advocateId: string; method: string; timestampISO: string };
   status: string;
+  shelterStatus?: {
+    bedStatus: string;
+    estimatedOpenings?: number;
+    restrictions: {
+      allowsCanines: boolean;
+      allowsWeaponsStorage: boolean;
+      requiresCleanScreen: boolean;
+      hasHardCurfew: boolean;
+      curfewTime?: string;
+    };
+    storagePolicy: string;
+    safetyVolatility: string;
+  };
 }
 
 export const SEEDS: SeedRecord[] = [
@@ -69,6 +82,19 @@ export const SEEDS: SeedRecord[] = [
       timestampISO: '2026-05-19T20:41:00Z',
     },
     status: 'unanswered',
+    shelterStatus: {
+      bedStatus: 'turning_away',
+      estimatedOpenings: 0,
+      restrictions: {
+        allowsCanines: false,
+        allowsWeaponsStorage: false,
+        requiresCleanScreen: true,
+        hasHardCurfew: true,
+        curfewTime: '19:00',
+      },
+      storagePolicy: 'backpack_only',
+      safetyVolatility: 'moderate',
+    },
   },
   {
     id: 'or_seed_04',
@@ -149,5 +175,46 @@ export const SEEDS: SeedRecord[] = [
       timestampISO: '2026-04-28T19:30:00Z',
     },
     status: 'unanswered',
+    shelterStatus: {
+      bedStatus: 'full',
+      estimatedOpenings: 0,
+      restrictions: {
+        allowsCanines: false,
+        allowsWeaponsStorage: true,
+        requiresCleanScreen: false,
+        hasHardCurfew: false,
+      },
+      storagePolicy: 'cart_allowed',
+      safetyVolatility: 'low',
+    },
+  },
+  {
+    id: 'or_seed_09',
+    zone: 'East Village',
+    ask: { category: 'shelter_bed', summary: 'an open bed reported for tonight, first-come basis' },
+    story: {
+      raw: '[COMPOSITE — not a real individual] outreach worker called ahead and confirmed two beds open tonight, no waitlist right now. says the front desk stops taking new intakes at 9, and they do a breathalyzer at the door, no exceptions.',
+      shaped:
+        'An outreach worker called ahead and confirmed two beds are open tonight, with no waitlist right now. The front desk stops taking new intakes at 9pm, and there is a breathalyzer check at the door with no exceptions. (Composite illustration.)',
+    },
+    consent: {
+      advocateId: 'adv_ev_051',
+      method: 'verbal, in person, witnessed by outreach worker',
+      timestampISO: '2026-08-02T21:10:00Z',
+    },
+    status: 'acknowledged',
+    shelterStatus: {
+      bedStatus: 'open',
+      estimatedOpenings: 2,
+      restrictions: {
+        allowsCanines: false,
+        allowsWeaponsStorage: false,
+        requiresCleanScreen: true,
+        hasHardCurfew: true,
+        curfewTime: '21:00',
+      },
+      storagePolicy: 'secure_lockers',
+      safetyVolatility: 'low',
+    },
   },
 ];
