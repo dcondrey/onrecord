@@ -89,8 +89,11 @@ export async function promptInteractiveAdd(
   const amount = prefill.amount?.trim() || (await ask('  Amount in USD (optional): ')).trim() || undefined;
 
   // Branch point: only a category with a registered schema collects a domainPayload.
+  // A schema's fields may themselves all be optional, so collectDomainPayload
+  // can return data: {} — drop it rather than signing an empty domainPayload.
   const schema = isCategory(category) ? schemas[category] : undefined;
-  const domainPayload = schema ? await collectDomainPayload(schema, ask) : undefined;
+  const collected = schema ? await collectDomainPayload(schema, ask) : undefined;
+  const domainPayload = collected && Object.keys(collected.data).length > 0 ? collected : undefined;
 
   // Consent gate. Mandatory in every branch — no path around it, and this is
   // the same two prompts regardless of whether a domainPayload was just

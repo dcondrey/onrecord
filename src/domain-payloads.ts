@@ -13,9 +13,10 @@
  * named "address" (or any other forbidden key) still gets refused downstream,
  * by the same gate every other field goes through.
  *
- * DOMAIN_PAYLOAD_SCHEMAS ships empty. Future categories (#29 rental price
- * reporting, #30 self-reported homelessness counts) register themselves here;
- * this file only builds the mechanism they plug into.
+ * DOMAIN_PAYLOAD_SCHEMAS ships empty except for #29's `rental_listing`
+ * registration below. Future categories (#30 self-reported homelessness
+ * counts) register themselves here too; this file only builds the mechanism
+ * they plug into.
  */
 
 import { type Category, isCategory } from './schema.js';
@@ -35,8 +36,30 @@ export interface DomainPayloadSchema {
   fields: DomainPayloadFieldSpec[];
 }
 
-/** Category -> registered schema. Empty until a future issue registers one. */
-export const DOMAIN_PAYLOAD_SCHEMAS: Partial<Record<Category, DomainPayloadSchema>> = {};
+/**
+ * #29: rental price reporting. Registered against both 'work_docs' and
+ * 'transit' since either can carry rent-burden context. `zone` is its own
+ * field, not a reuse of the entry's top-level zone, because the reported
+ * listing may sit in a different zone than where the ask was logged.
+ */
+// Every field is optional: work_docs/transit are ordinary ask categories most
+// of the time, and collectDomainPayload has no "skip this schema" path —
+// required fields would force rent data onto every add in either category.
+const RENTAL_LISTING_SCHEMA: DomainPayloadSchema = {
+  kind: 'rental_listing',
+  fields: [
+    { name: 'rentAmountUsd', label: 'Monthly rent (USD)', type: 'number', required: false },
+    { name: 'unitType', label: 'Unit type (e.g. studio, 1br, 2br, room)', type: 'string', required: false },
+    { name: 'zone', label: 'Zone the listing is in', type: 'string', required: false },
+    { name: 'reportedAtISO', label: 'Date reported (ISO 8601)', type: 'string', required: false },
+  ],
+};
+
+/** Category -> registered schema. */
+export const DOMAIN_PAYLOAD_SCHEMAS: Partial<Record<Category, DomainPayloadSchema>> = {
+  work_docs: RENTAL_LISTING_SCHEMA,
+  transit: RENTAL_LISTING_SCHEMA,
+};
 
 export function schemaForCategory(
   category: string,

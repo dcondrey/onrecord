@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { webcrypto } from 'node:crypto';
 import { signEntryCose } from '../dist/sign.js';
-import { validateUnsigned } from '../dist/schema.js';
+import { validateUnsigned, canonicalize } from '../dist/schema.js';
 import { toBase64 } from '../dist/encoding.js';
 import { verifyFile } from '../dist/verify.js';
 
@@ -197,4 +197,75 @@ test('tampering domainPayload.data breaks both verifiers', async () => {
   const { verifyV2, projectV2 } = loadBrowserVerifier();
   const r = await verifyV2(projectV2(tampered));
   assert.equal(r.ok, false, 'browser verifier should reject a tampered domainPayload');
+});
+
+async function signedRentalListingFixture() {
+  const pair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const privateJwk = await webcrypto.subtle.exportKey('jwk', pair.privateKey);
+  const publicJwk = await webcrypto.subtle.exportKey('jwk', pair.publicKey);
+  const pubKey = toBase64(await webcrypto.subtle.exportKey('spki', pair.publicKey));
+  const keys = { privateJwk, publicJwk, pubKey, createdISO: new Date().toISOString() };
+  const unsigned = {
+    id: 'or_test_rental_listing',
+    zone: 'Downtown',
+    ask: { category: 'work_docs', summary: 'test ask carrying a rental_listing fixture' },
+    story: { raw: 'raw test story', shaped: 'shaped test story' },
+    consent: { advocateId: 'adv_test_01', method: 'verbal, in person, witnessed', timestampISO: '2026-08-01T00:00:00Z' },
+    domainPayload: {
+      kind: 'rental_listing',
+      data: { rentAmountUsd: 1850, unitType: 'studio', zone: 'Downtown', reportedAtISO: '2026-08-01T00:00:00Z' },
+    },
+    status: 'requested',
+  };
+  assert.doesNotThrow(() => validateUnsigned(unsigned), 'a well-formed rental_listing domainPayload should pass validateUnsigned');
+  assert.ok(
+    canonicalize(unsigned).includes('"domainPayload":{"kind":"rental_listing","data":{"rentAmountUsd":1850,"unitType":"studio","zone":"Downtown","reportedAtISO":"2026-08-01T00:00:00Z"}},"status"'),
+    'canonicalize() must place domainPayload right before status, in schema-declared field order',
+  );
+  return signEntryCose(unsigned, keys);
+}
+
+/**
+ * #29: rental price reporting registers a concrete `kind: 'rental_listing'`
+ * shape on top of #20's generic escape hatch. Same round-trip guarantee as
+ * the generic domainPayload fixture above, with the real registered fields.
+ */
+test('a rental_listing domainPayload verifies through src/verify.ts and the browser verifyV2()', async () => {
+  const fixture = await signedRentalListingFixture();
+
+  const dir = await mkdtemp(join(tmpdir(), 'onrecord-rental-listing-'));
+  try {
+    const path = join(dir, 'entries.json');
+    await writeFile(path, JSON.stringify([fixture]));
+    const report = await verifyFile(path);
+    assert.equal(report.entries[0].ok, true, `CLI verifier rejected a clean rental_listing entry: ${JSON.stringify(report.entries[0])}`);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const projected = projectV2(fixture);
+  assert.deepEqual(projected.domainPayload, fixture.domainPayload, 'projectV2 must carry the rental_listing payload through unchanged');
+  const r = await verifyV2(projected);
+  assert.equal(r.ok, true, `browser verifier rejected a clean rental_listing entry: ${JSON.stringify(r)}`);
+});
+
+test('tampering rental_listing rentAmountUsd breaks both verifiers', async () => {
+  const fixture = await signedRentalListingFixture();
+  const tampered = structuredClone(fixture);
+  tampered.domainPayload.data.rentAmountUsd = 999999;
+
+  const dir = await mkdtemp(join(tmpdir(), 'onrecord-rental-listing-tamper-'));
+  try {
+    const path = join(dir, 'entries.json');
+    await writeFile(path, JSON.stringify([tampered]));
+    const report = await verifyFile(path);
+    assert.equal(report.entries[0].ok, false, 'CLI verifier should reject a tampered rental_listing entry');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const r = await verifyV2(projectV2(tampered));
+  assert.equal(r.ok, false, 'browser verifier should reject a tampered rental_listing entry');
 });

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { validateUnsigned, ValidationError } from '../dist/schema.js';
-import { collectDomainPayload, DomainPayloadInputError } from '../dist/domain-payloads.js';
+import { collectDomainPayload, DomainPayloadInputError, DOMAIN_PAYLOAD_SCHEMAS } from '../dist/domain-payloads.js';
 import { promptInteractiveAdd, promptRawStory } from '../dist/interactive-add.js';
 
 /**
@@ -150,6 +150,61 @@ test('a domainPayload field named "address" is still refused by assertNoPreciseL
   const payload = await collectDomainPayload(schema, ask);
   const unsigned = baseUnsigned({ domainPayload: payload });
   assert.throws(() => validateUnsigned(unsigned), /precise-location field/);
+});
+
+test('#29: rental_listing is registered against work_docs and transit in the real DOMAIN_PAYLOAD_SCHEMAS registry', async () => {
+  for (const category of ['work_docs', 'transit']) {
+    const schema = DOMAIN_PAYLOAD_SCHEMAS[category];
+    assert.equal(schema?.kind, 'rental_listing', `expected rental_listing registered for ${category}`);
+    const fieldNames = schema.fields.map((f) => f.name).sort();
+    assert.deepEqual(fieldNames, ['rentAmountUsd', 'reportedAtISO', 'unitType', 'zone'].sort());
+  }
+
+  const ask = scripted([
+    'Downtown', // zone
+    'transit', // category
+    '', // summary
+    '', // amount
+    '1850', // rentAmountUsd
+    'studio', // unitType
+    'Downtown', // zone (domainPayload field)
+    '2026-08-01T00:00:00Z', // reportedAtISO
+    'adv_1', // advocate id
+    'verbal, in person', // consent method
+  ]);
+  const result = await promptInteractiveAdd(ask); // real registry, no override
+  assert.deepEqual(result.domainPayload, {
+    kind: 'rental_listing',
+    data: { rentAmountUsd: 1850, unitType: 'studio', zone: 'Downtown', reportedAtISO: '2026-08-01T00:00:00Z' },
+  });
+
+  const unsigned = baseUnsigned({
+    ask: { category: result.category, summary: 'x' },
+    domainPayload: result.domainPayload,
+  });
+  assert.doesNotThrow(() => validateUnsigned(unsigned));
+});
+
+test('#29: leaving every rental_listing field blank produces no domainPayload, and consent is still enforced', async () => {
+  const ask = scripted([
+    'Downtown', // zone
+    'work_docs', // category
+    '', // summary
+    '', // amount
+    '', // rentAmountUsd (blank, optional)
+    '', // unitType (blank, optional)
+    '', // zone field (blank, optional)
+    '', // reportedAtISO (blank, optional)
+    'adv_1', // advocate id
+    'verbal, in person', // consent method
+  ]);
+  const result = await promptInteractiveAdd(ask); // real registry, no override
+  assert.equal(result.domainPayload, undefined, 'an all-blank rental_listing answer should not sign an empty domainPayload');
+  assert.equal(result.advocateId, 'adv_1');
+  assert.equal(result.consentMethod, 'verbal, in person');
+
+  const unsigned = baseUnsigned({ ask: { category: result.category, summary: 'x' } });
+  assert.doesNotThrow(() => validateUnsigned(unsigned));
 });
 
 test('promptRawStory: collects lines until a blank line', async () => {
