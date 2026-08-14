@@ -22,6 +22,11 @@ const ALGORITHM = { name: 'ECDSA', namedCurve: 'P-256' } as const;
 
 export const CONTRIBUTOR_KEYS_DIR = join('keys', 'contributors');
 
+// Domain-separated from the bare sha256(handle) used for the key filename above,
+// so the pseudonym a contributor's entries are published under can't be used to
+// derive keys/contributors/<hash>.json, or vice versa.
+const PSEUDONYM_DOMAIN = 'onrecord-contributor-pseudonym-v1:';
+
 async function sha256Hex(input: string): Promise<string> {
   const digest = await subtle.digest('SHA-256', new TextEncoder().encode(input));
   return toHex(digest);
@@ -64,4 +69,17 @@ export async function loadOrCreateContributorKeyPair(
   await writeFile(keyPath, JSON.stringify(record, null, 2) + '\n', { mode: 0o600 });
 
   return record;
+}
+
+/**
+ * Deterministic, one-way public pseudonym for a contributor handle — what
+ * self_attested_witness entries publish as consent.advocateId (see
+ * validateUnsigned() in ../schema.ts). Same handle always yields the same
+ * pseudonym, without the handle itself (e.g. a phone number) ever being
+ * written to disk.
+ */
+export async function deriveContributorPseudonym(handle: string): Promise<string> {
+  if (!handle || !handle.trim()) throw new Error('handle is required');
+  const hash = await sha256Hex(PSEUDONYM_DOMAIN + handle.trim());
+  return `contrib_${hash.slice(0, 16)}`;
 }

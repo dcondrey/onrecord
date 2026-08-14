@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { writeFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
 
 /**
  * cmdServe's HTTP intake handler (isSameOrigin CSRF check, MAX_BODY_BYTES cap,
@@ -94,4 +96,18 @@ test('GET /add renders the intake form', async () => {
   assert.equal(res.status, 200);
   const body = await res.text();
   assert.match(body, /<form method="post" action="\/api\/add">/);
+});
+
+test('data/pending-review.json is never served, even when it exists', async () => {
+  // Gitignored and normally absent — written here just long enough to prove the
+  // guard, not left behind. Held-for-review SMS submissions (gateway/sms.ts) are
+  // signed but unreviewed; serving this file would put unreviewed text on the wire.
+  const path = join(REPO_ROOT, 'data', 'pending-review.json');
+  await writeFile(path, '[]\n');
+  try {
+    const res = await fetch(`${BASE}/data/pending-review.json`);
+    assert.equal(res.status, 404);
+  } finally {
+    await rm(path, { force: true });
+  }
 });

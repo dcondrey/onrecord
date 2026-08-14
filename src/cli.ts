@@ -33,6 +33,9 @@ import { exportRecordBundle } from './export.js';
 import { addEntry, AddEntryError, type AddEntryInput } from './add.js';
 import { withdrawEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
 import { renderIntakeForm, renderIntakeSuccess, parseIntakeFields } from './intake-form.js';
+import { enqueueIntake } from './intake-queue.js';
+import { readBody } from './http-body.js';
+import { handleSmsWebhook, PENDING_REVIEW_PATH } from './gateway/sms.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -471,19 +474,6 @@ function isSameOrigin(req: import('node:http').IncomingMessage): boolean {
   }
 }
 
-const MAX_BODY_BYTES = 256 * 1024;
-
-async function readBody(req: import('node:http').IncomingMessage): Promise<string> {
-  const chunks: Buffer[] = [];
-  let total = 0;
-  for await (const chunk of req) {
-    total += chunk.length;
-    if (total > MAX_BODY_BYTES) throw new Error('request body too large');
-    chunks.push(Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks).toString('utf8');
-}
-
 function intakeInputFromFields(fields: Record<string, string>): AddEntryInput {
   return {
     raw: fields['raw'] ?? '',
@@ -497,10 +487,6 @@ function intakeInputFromFields(fields: Record<string, string>): AddEntryInput {
     orgClaimSource: fields['org_source'],
   };
 }
-
-// Chain that serializes addEntry() calls across concurrent /api/add requests. See
-// the comment at its use site in handleIntakeSubmit for why this exists.
-let intakeQueue: Promise<unknown> = Promise.resolve();
 
 // No pending-review gate here, unlike the browser demo's chat-based intake
 // flow (web/index.html's submitIntake() sets pendingReview:true). That's not
@@ -534,14 +520,11 @@ async function handleIntakeSubmit(req: import('node:http').IncomingMessage, res:
   // addEntry() does a read-modify-write on entries.json with a multi-second Claude
   // call in between. The form has no JS to disable the button mid-submit, so a
   // double-click must not let two requests read the same array and both append —
-  // one entry would silently disappear. Serialize actual submissions through a
-  // single chain; the CSRF check and body parsing above stay unserialized since
-  // they touch no shared state.
-  const task = intakeQueue.then(() => addEntry(intakeInputFromFields(fields)));
-  intakeQueue = task.then(
-    () => undefined,
-    () => undefined,
-  );
+  // one entry would silently disappear. Serialize actual submissions through the
+  // chain shared with every other intake surface (intake-queue.ts); the CSRF
+  // check and body parsing above stay unserialized since they touch no shared
+  // state.
+  const task = enqueueIntake(() => addEntry(intakeInputFromFields(fields)));
 
   try {
     const output = await task;
@@ -572,6 +555,10 @@ async function cmdServe(args: Args): Promise<void> {
         await handleIntakeSubmit(req, res);
         return;
       }
+      if (req.method === 'POST' && pathname === '/api/sms') {
+        await handleSmsWebhook(req, res);
+        return;
+      }
       if (req.method === 'GET' && pathname === '/add') {
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(renderIntakeForm());
         return;
@@ -589,6 +576,14 @@ async function cmdServe(args: Args): Promise<void> {
       // The withdrawal log is internal — id/zone/category/timestamp of entries
       // someone pulled from the public record. Never served, unlike entries.json.
       if (target === resolve(WITHDRAWN_LOG_PATH)) {
+        res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(`not found: ${pathname}`);
+        return;
+      }
+
+      // Held-for-review SMS submissions (gateway/sms.ts) are signed but not yet
+      // reviewed — the whole point of the queue is that they're not public yet.
+      // Never served, same as the withdrawal log above.
+      if (target === resolve(PENDING_REVIEW_PATH)) {
         res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(`not found: ${pathname}`);
         return;
       }
