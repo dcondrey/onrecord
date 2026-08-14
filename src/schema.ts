@@ -91,7 +91,7 @@ export interface Provenance {
   /** Legacy v1 raw P-1363 signature. Absent for protocol v2. */
   signature?: string;
   pubKey: string;
-  manifestVersion: '1.0' | '1.1';
+  manifestVersion: '1.0' | '1.1' | '1.2';
   signedAtISO: string;
   /** Standards envelope, present on protocol v2 entries. */
   protocolVersion?: '1.0' | '2.0';
@@ -99,6 +99,32 @@ export interface Provenance {
   verificationMethod?: string;
   cborPayload?: string;
   coseSign1?: string;
+  /** Org key vs. isolated per-handle contributor key (src/gateway/contributor-identity.ts). Provenance is outside canonicalize()'s input, so this carries no key-order constraint. */
+  signerTier?: 'org' | 'contributor';
+}
+
+/**
+ * Who is asserting this entry's contents. 'advocate_attested' (the default,
+ * implicit when absent) is the CLI's original trust model: a named advocate
+ * vouching for someone else's account. 'self_attested_witness' is a
+ * contributor vouching for their own witnessed account — validateUnsigned()
+ * requires consent.advocateId to equal that contributor's own gateway
+ * pseudonym in that case, so a contributor can't claim third-party advocate
+ * authority they don't have. 'self_attested_personal' shares that same
+ * self-consent mechanism but is not a lower-trust crowd signal: it's an
+ * unhoused person publishing their own story/ask under their own
+ * contributor identity, with no advocate mediating, and it renders with
+ * full normal map-marker treatment rather than web/index.html's Street
+ * Pulse tier (which matches only 'self_attested_witness').
+ */
+export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness', 'self_attested_personal'] as const;
+export type SourceClass = (typeof SOURCE_CLASSES)[number];
+
+/** Escape hatch for future domain payloads that don't warrant their own typed
+ *  field the way shelterStatus does — canonicalize() treats it opaquely. */
+export interface DomainPayload {
+  kind: string;
+  data: Record<string, unknown>;
 }
 
 export interface Entry {
@@ -107,8 +133,10 @@ export interface Entry {
   ask: Ask;
   story: Story;
   consent: Consent;
+  sourceClass?: SourceClass;
   recovery?: Recovery;
   shelterStatus?: ShelterStatus;
+  domainPayload?: DomainPayload;
   status: Status;
   provenance: Provenance;
 }
@@ -150,6 +178,7 @@ export function canonicalize(entry: UnsignedEntry): string {
       method: entry.consent.method,
       timestampISO: entry.consent.timestampISO,
     },
+    ...(entry.sourceClass ? { sourceClass: entry.sourceClass } : {}),
     ...(entry.recovery ? { recovery: { scheme: entry.recovery.scheme, verifierTag: entry.recovery.verifierTag } } : {}),
     ...(entry.shelterStatus
       ? {
@@ -171,6 +200,9 @@ export function canonicalize(entry: UnsignedEntry): string {
             safetyVolatility: entry.shelterStatus.safetyVolatility,
           },
         }
+      : {}),
+    ...(entry.domainPayload
+      ? { domainPayload: { kind: entry.domainPayload.kind, data: entry.domainPayload.data } }
       : {}),
     status: entry.status,
   };
@@ -242,12 +274,22 @@ export function isSafetyLevel(v: string): v is SafetyLevel {
   return (SAFETY_LEVELS as readonly string[]).includes(v);
 }
 
+export function isSourceClass(v: string): v is SourceClass {
+  return (SOURCE_CLASSES as readonly string[]).includes(v);
+}
+
+export interface ValidateUnsignedContext {
+  /** The submitting contributor's own gateway pseudonym, when known — checked against
+   *  consent.advocateId for sourceClass: 'self_attested_witness' entries below. */
+  contributorPseudonym?: string;
+}
+
 /**
  * Validates an unsigned entry. Consent is the hard gate: an entry with no
  * advocate, no stated consent method, or no consent timestamp is refused
  * outright rather than written with a placeholder.
  */
-export function validateUnsigned(entry: UnsignedEntry): void {
+export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedContext = {}): void {
   assertNoPreciseLocation(entry);
 
   if (!entry.id || typeof entry.id !== 'string') fail('id is required');
@@ -284,6 +326,32 @@ export function validateUnsigned(entry: UnsignedEntry): void {
     fail('CONSENT REQUIRED: consent.timestampISO must be a valid ISO 8601 timestamp.');
   }
 
+  if (entry.sourceClass !== undefined && !isSourceClass(entry.sourceClass)) {
+    fail(`sourceClass must be one of: ${SOURCE_CLASSES.join(', ')}`);
+  }
+  // A contributor vouching for their own witnessed account can't also claim to be
+  // vouching for someone else — consent.advocateId must be their own pseudonym.
+  if (entry.sourceClass === 'self_attested_witness') {
+    const pseudonym = ctx.contributorPseudonym?.trim();
+    if (!pseudonym) {
+      fail('self_attested_witness entries require a contributor pseudonym from the gateway.');
+    }
+    if (entry.consent.advocateId.trim() !== pseudonym) {
+      fail('self_attested_witness entries must have consent.advocateId equal to the contributing pseudonym.');
+    }
+  }
+  // Same self-consent mechanism as self_attested_witness above, but for a person
+  // publishing their own story/ask rather than a third-party witness observation.
+  if (entry.sourceClass === 'self_attested_personal') {
+    const pseudonym = ctx.contributorPseudonym?.trim();
+    if (!pseudonym) {
+      fail('self_attested_personal entries require a contributor pseudonym from the gateway.');
+    }
+    if (entry.consent.advocateId.trim() !== pseudonym) {
+      fail('self_attested_personal entries must have consent.advocateId equal to the contributing pseudonym.');
+    }
+  }
+
   if (entry.shelterStatus) {
     if (entry.ask.category !== 'shelter_bed') {
       fail('shelterStatus is only valid when ask.category is "shelter_bed"');
@@ -303,6 +371,13 @@ export function validateUnsigned(entry: UnsignedEntry): void {
     }
     if (s.restrictions.curfewTime !== undefined && !s.restrictions.hasHardCurfew) {
       fail('shelterStatus.restrictions.curfewTime may only be set when hasHardCurfew is true');
+    }
+  }
+
+  if (entry.domainPayload) {
+    if (!entry.domainPayload.kind?.trim()) fail('domainPayload.kind is required');
+    if (entry.domainPayload.data === null || typeof entry.domainPayload.data !== 'object' || Array.isArray(entry.domainPayload.data)) {
+      fail('domainPayload.data must be an object');
     }
   }
 }

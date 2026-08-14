@@ -15,6 +15,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { stat } from 'node:fs/promises';
+import { createInterface } from 'node:readline/promises';
 
 import {
   ValidationError,
@@ -31,8 +32,13 @@ import { didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
 import { addEntry, AddEntryError, type AddEntryInput } from './add.js';
-import { withdrawEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
+import { promptInteractiveAdd, promptRawStory, type AskFn } from './interactive-add.js';
+import { signWithdrawRequest, withdrawEntry, withdrawSelfAttestedEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
 import { renderIntakeForm, renderIntakeSuccess, parseIntakeFields } from './intake-form.js';
+import { enqueueIntake } from './intake-queue.js';
+import { readBody } from './http-body.js';
+import { handleSmsWebhook, PENDING_REVIEW_PATH } from './gateway/sms.js';
+import { loadOrCreateContributorKeyPair } from './gateway/contributor-identity.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -154,44 +160,104 @@ async function readStdin(): Promise<string> {
 
 async function cmdAdd(args: Args): Promise<void> {
   const file = str(args, 'file');
-  const raw = (file ? await readFile(file, 'utf8') : await readStdin()).trim();
 
-  if (!raw) {
-    die(
-      'no raw story provided. Pipe it on stdin or pass --file <path>.\n' +
-        '  example: echo "he lost his ID..." | on-record add --zone "East Village" ...',
-    );
+  // Interactive prompt engine kicks in only when the essentials weren't already
+  // passed as flags and we're actually at a terminal — a piped/scripted
+  // invocation (seed.ts, CI, tests) never has stdin.isTTY true, so this branch
+  // is unreachable from any of those and the flag-only path below stays
+  // byte-identical to before.
+  const missingCore =
+    !str(args, 'zone') || !str(args, 'category') || !str(args, 'advocate') || !str(args, 'consent-method');
+  const interactive = !file && missingCore && process.stdin.isTTY === true;
+
+  let raw: string;
+  let interactiveFields: Awaited<ReturnType<typeof promptInteractiveAdd>> | undefined;
+
+  if (interactive) {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const ask: AskFn = (question) => rl.question(question);
+    try {
+      out();
+      rule(c.bold('ON RECORD — interactive add'));
+      raw = await promptRawStory(ask);
+      if (!raw) die('no raw story provided.');
+      // Any of zone/category/advocate/consent-method already given as a flag
+      // is used as-is and never re-prompted for.
+      interactiveFields = await promptInteractiveAdd(ask, {
+        prefill: {
+          zone: str(args, 'zone'),
+          category: str(args, 'category'),
+          summary: str(args, 'summary'),
+          amount: str(args, 'amount'),
+          advocateId: str(args, 'advocate'),
+          consentMethod: str(args, 'consent-method'),
+        },
+      });
+    } finally {
+      rl.close();
+    }
+  } else {
+    raw = (file ? await readFile(file, 'utf8') : await readStdin()).trim();
+    if (!raw) {
+      die(
+        'no raw story provided. Pipe it on stdin or pass --file <path>.\n' +
+          '  example: echo "he lost his ID..." | on-record add --zone "East Village" ...',
+      );
+    }
   }
 
-  const input: AddEntryInput = {
-    raw,
-    zone: required(args, 'zone', `One of: ${ZONES.join(', ')}`),
-    category: required(args, 'category', `One of: ${CATEGORIES.join(', ')}`),
-    status: str(args, 'status'),
-    summary: str(args, 'summary'),
-    amount: str(args, 'amount'),
-    advocateId: required(
-      args,
-      'advocate',
-      'Entries without a named advocate are refused — consent is not optional.',
-    ),
-    consentMethod: required(
-      args,
-      'consent-method',
-      'Record how consent was given, e.g. --consent-method "verbal, in person, witnessed".',
-    ),
-    consentAt: str(args, 'consent-at'),
-    orgClaimText: str(args, 'org-claim'),
-    orgClaimSource: str(args, 'source'),
-    recoveryPhrase: str(args, 'recovery-phrase'),
-    recoveryPin: str(args, 'recovery-pin'),
-    confirmedDob: str(args, 'confirm-dob'),
-    first3: str(args, 'first3'),
-    last3: str(args, 'last3'),
-    dob: str(args, 'dob'),
-    zip: str(args, 'zip'),
-    id: str(args, 'id'),
-  };
+  const input: AddEntryInput = interactiveFields
+    ? {
+        raw,
+        zone: interactiveFields.zone,
+        category: interactiveFields.category,
+        status: str(args, 'status'),
+        summary: interactiveFields.summary,
+        amount: interactiveFields.amount,
+        advocateId: interactiveFields.advocateId,
+        consentMethod: interactiveFields.consentMethod,
+        consentAt: str(args, 'consent-at'),
+        orgClaimText: str(args, 'org-claim'),
+        orgClaimSource: str(args, 'source'),
+        recoveryPhrase: str(args, 'recovery-phrase'),
+        recoveryPin: str(args, 'recovery-pin'),
+        confirmedDob: str(args, 'confirm-dob'),
+        first3: str(args, 'first3'),
+        last3: str(args, 'last3'),
+        dob: str(args, 'dob'),
+        zip: str(args, 'zip'),
+        id: str(args, 'id'),
+        domainPayload: interactiveFields.domainPayload,
+      }
+    : {
+        raw,
+        zone: required(args, 'zone', `One of: ${ZONES.join(', ')}`),
+        category: required(args, 'category', `One of: ${CATEGORIES.join(', ')}`),
+        status: str(args, 'status'),
+        summary: str(args, 'summary'),
+        amount: str(args, 'amount'),
+        advocateId: required(
+          args,
+          'advocate',
+          'Entries without a named advocate are refused — consent is not optional.',
+        ),
+        consentMethod: required(
+          args,
+          'consent-method',
+          'Record how consent was given, e.g. --consent-method "verbal, in person, witnessed".',
+        ),
+        consentAt: str(args, 'consent-at'),
+        orgClaimText: str(args, 'org-claim'),
+        orgClaimSource: str(args, 'source'),
+        recoveryPhrase: str(args, 'recovery-phrase'),
+        recoveryPin: str(args, 'recovery-pin'),
+        confirmedDob: str(args, 'confirm-dob'),
+        first3: str(args, 'first3'),
+        last3: str(args, 'last3'),
+        dob: str(args, 'dob'),
+        zip: str(args, 'zip'),
+        id: str(args, 'id'),
+      };
 
   let output;
   try {
@@ -282,12 +348,26 @@ async function cmdAdd(args: Args): Promise<void> {
 
 async function cmdWithdraw(args: Args): Promise<void> {
   const id = args.positional[0];
-  if (!id) die('usage: on-record withdraw <entry-id> [--reason <text>]');
+  if (!id) die('usage: on-record withdraw <entry-id> [--reason <text>] [--handle <contributor-handle>]');
   const reason = str(args, 'reason');
+  const handle = str(args, 'handle');
 
   let result;
   try {
-    result = await withdrawEntry(id, reason);
+    if (handle) {
+      // Self-attested entries (#14/#28) have no advocate mediating, so
+      // withdrawal is gated on a signature from the same contributor key
+      // that signed the entry, not the CLI operator's word alone. Note:
+      // loadOrCreateContributorKeyPair persists a new key file for a handle
+      // that has never been seen before, even one typo'd here — harmless
+      // (withdrawal below still correctly fails to verify), but it means a
+      // wrong --handle isn't a pure no-op against keys/contributors/.
+      const keys = await loadOrCreateContributorKeyPair(handle);
+      const signature = await signWithdrawRequest(id, keys);
+      result = await withdrawSelfAttestedEntry(id, signature, reason);
+    } else {
+      result = await withdrawEntry(id, reason);
+    }
   } catch (err) {
     if (err instanceof WithdrawError) die(err.message);
     throw err;
@@ -471,19 +551,6 @@ function isSameOrigin(req: import('node:http').IncomingMessage): boolean {
   }
 }
 
-const MAX_BODY_BYTES = 256 * 1024;
-
-async function readBody(req: import('node:http').IncomingMessage): Promise<string> {
-  const chunks: Buffer[] = [];
-  let total = 0;
-  for await (const chunk of req) {
-    total += chunk.length;
-    if (total > MAX_BODY_BYTES) throw new Error('request body too large');
-    chunks.push(Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks).toString('utf8');
-}
-
 function intakeInputFromFields(fields: Record<string, string>): AddEntryInput {
   return {
     raw: fields['raw'] ?? '',
@@ -497,10 +564,6 @@ function intakeInputFromFields(fields: Record<string, string>): AddEntryInput {
     orgClaimSource: fields['org_source'],
   };
 }
-
-// Chain that serializes addEntry() calls across concurrent /api/add requests. See
-// the comment at its use site in handleIntakeSubmit for why this exists.
-let intakeQueue: Promise<unknown> = Promise.resolve();
 
 // No pending-review gate here, unlike the browser demo's chat-based intake
 // flow (web/index.html's submitIntake() sets pendingReview:true). That's not
@@ -534,14 +597,11 @@ async function handleIntakeSubmit(req: import('node:http').IncomingMessage, res:
   // addEntry() does a read-modify-write on entries.json with a multi-second Claude
   // call in between. The form has no JS to disable the button mid-submit, so a
   // double-click must not let two requests read the same array and both append —
-  // one entry would silently disappear. Serialize actual submissions through a
-  // single chain; the CSRF check and body parsing above stay unserialized since
-  // they touch no shared state.
-  const task = intakeQueue.then(() => addEntry(intakeInputFromFields(fields)));
-  intakeQueue = task.then(
-    () => undefined,
-    () => undefined,
-  );
+  // one entry would silently disappear. Serialize actual submissions through the
+  // chain shared with every other intake surface (intake-queue.ts); the CSRF
+  // check and body parsing above stay unserialized since they touch no shared
+  // state.
+  const task = enqueueIntake(() => addEntry(intakeInputFromFields(fields)));
 
   try {
     const output = await task;
@@ -572,6 +632,10 @@ async function cmdServe(args: Args): Promise<void> {
         await handleIntakeSubmit(req, res);
         return;
       }
+      if (req.method === 'POST' && pathname === '/api/sms') {
+        await handleSmsWebhook(req, res);
+        return;
+      }
       if (req.method === 'GET' && pathname === '/add') {
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(renderIntakeForm());
         return;
@@ -589,6 +653,14 @@ async function cmdServe(args: Args): Promise<void> {
       // The withdrawal log is internal — id/zone/category/timestamp of entries
       // someone pulled from the public record. Never served, unlike entries.json.
       if (target === resolve(WITHDRAWN_LOG_PATH)) {
+        res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(`not found: ${pathname}`);
+        return;
+      }
+
+      // Held-for-review SMS submissions (gateway/sms.ts) are signed but not yet
+      // reviewed — the whole point of the queue is that they're not public yet.
+      // Never served, same as the withdrawal log above.
+      if (target === resolve(PENDING_REVIEW_PATH)) {
         res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end(`not found: ${pathname}`);
         return;
       }
@@ -636,9 +708,11 @@ ${c.bold('on-record')} — signed, provenance-wrapped entries for the On Record 
                   [--first3 <3 letters> --last3 <3 letters> --dob <flexible date>
                    --confirm-dob <YYYY-MM-DD> --zip <5 digits> --recovery-pin <4 digits>]
                   ${c.dim('raw story is read from stdin when --file is omitted; --confirm-dob only needed if --dob is ambiguous')}
+                  ${c.dim('run at a terminal with --zone/--category/--advocate/--consent-method omitted to prompt for them instead')}
 
-  ${c.bold('on-record withdraw')} <entry-id> [--reason <text>] [--json]
+  ${c.bold('on-record withdraw')} <entry-id> [--reason <text>] [--handle <contributor-handle>] [--json]
                   ${c.dim('remove an entry from the public record for good, at the requester\'s word alone')}
+                  ${c.dim('--handle withdraws a self-attested entry, signed by that same contributor\'s key')}
 
   ${c.bold('on-record verify')} [<file>] [--json]   ${c.dim(`defaults to ${ENTRIES_PATH}`)}
   ${c.bold('on-record c2pa')} <entry-id> --asset <path> --output <path>  ${c.dim('attach a C2PA manifest to a real asset')}

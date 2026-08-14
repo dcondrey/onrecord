@@ -200,10 +200,14 @@
     --panel:rgba(251,248,242,.95); --panel-solid:#fbf8f2; --panel-2:#f2ece1;
     --line:rgba(40,34,24,.13); --line-strong:rgba(40,34,24,.26);
     --ink:#1d1a14; --ink-2:#3b352a; --muted:#5c5545; --faint:#6f6759;
-    --amber:#a75f0c; --amber-2:#c07a19; --amber-dim:rgba(167,95,12,.13);
+    /* --amber and --ok are darkened from the brand's #a75f0c/#1f7a52 just enough to
+       clear WCAG AA 4.5:1 for normal text against --bg (the worst-case surface both
+       land on as text color in dozens of places — status pills, dollar amounts, the
+       docs link, banner button); see test/accessibility-statics.test.js. */
+    --amber:#9a580b; --amber-2:#c07a19; --amber-dim:rgba(167,95,12,.13);
     --teal:#1c6a7c; --teal-dim:rgba(28,106,124,.12);
     --seal:#a8402c; --broken:#bd2f1c; --broken-dim:rgba(189,47,28,.1);
-    --ok:#1f7a52; --ok-dim:rgba(31,122,82,.12);
+    --ok:#1e7650; --ok-dim:rgba(31,122,82,.12);
     --shadow:0 20px 48px -30px rgba(60,44,20,.55);
   }
 }
@@ -214,10 +218,10 @@
   --panel:rgba(251,248,242,.95); --panel-solid:#fbf8f2; --panel-2:#f2ece1;
   --line:rgba(40,34,24,.13); --line-strong:rgba(40,34,24,.26);
   --ink:#1d1a14; --ink-2:#3b352a; --muted:#5c5545; --faint:#6f6759;
-  --amber:#a75f0c; --amber-2:#c07a19; --amber-dim:rgba(167,95,12,.13);
+  --amber:#9a580b; --amber-2:#c07a19; --amber-dim:rgba(167,95,12,.13);
   --teal:#1c6a7c; --teal-dim:rgba(28,106,124,.12);
   --seal:#a8402c; --broken:#bd2f1c; --broken-dim:rgba(189,47,28,.1);
-  --ok:#1f7a52; --ok-dim:rgba(31,122,82,.12);
+  --ok:#1e7650; --ok-dim:rgba(31,122,82,.12);
   --shadow:0 20px 48px -30px rgba(60,44,20,.55);
 }
 *{box-sizing:border-box}
@@ -381,6 +385,14 @@ svg.map.dragging{cursor:grabbing}
 .pin.selected .ring,.pin:focus-visible .ring{opacity:1}
 .pin .plabel{font-size:13px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .pin .plabel{opacity:1}
+/* Street Pulse (sourceClass:self_attested_witness): a steady, always-visible dotted
+   ring in --muted, never the amber/ok/broken palette a status or seal state uses, so
+   it reads as "unreviewed contributor report" rather than any provenance verdict.
+   Declared before .pin.broken/.pin.pending so a witness pin that is ALSO broken or
+   pending still shows that more urgent state — same specificity, source order decides. */
+.pin.witness .core{fill:var(--muted)}
+.pin.witness .ring{stroke:var(--muted);stroke-dasharray:1.5 2.5;opacity:1}
+.pin.witness .halo{opacity:.5}
 .pin.broken .core{fill:var(--broken)}
 .pin.broken .halo{fill:url(#glowbad)}
 .pin.broken .ripple{fill:var(--broken);opacity:.32;animation-duration:1.1s}
@@ -388,6 +400,22 @@ svg.map.dragging{cursor:grabbing}
 .pin.st-answered .core{fill:var(--ok)}
 .pin.st-claimed .core{fill:var(--amber)}
 .pin.st-disputed .core{fill:var(--broken)}
+/* Layered zone visualizer (#23): shelter_bed entries carrying a shelterStatus render
+   this diamond "bed-<status>" indicator (see the ENTRIES.forEach markup below) instead
+   of the round text-bubble core every other category gets. Declared after .pin.st-* so
+   it wins that tie (same specificity, source order decides) — bed availability is the
+   more specific, more actionable signal for this one category. Still loses to
+   .pin.pending below (an unreviewed entry's pending state stays the visible one) and,
+   for .halo/.ripple, to .pin.broken above; .core here can still cover a broken pin's
+   red with green/yellow, but .broken's .ring/.halo stay red regardless, so a tampered
+   shelter entry never reads as clean. */
+.pin.bed-open .core{fill:var(--ok)}
+.pin.bed-open .ring{stroke:var(--ok);opacity:1}
+.pin.bed-full .core,.pin.bed-turning_away .core{fill:var(--broken)}
+.pin.bed-full .ring,.pin.bed-turning_away .ring{stroke:var(--broken);opacity:1}
+.pin.bed-full .halo,.pin.bed-turning_away .halo{fill:url(#glowbad)}
+.pin.bed-unknown .core{fill:var(--amber)}
+.pin.bed-unknown .ring{stroke:var(--amber);opacity:1}
 .pin.pending .ring{stroke:var(--teal);stroke-dasharray:2.5 2.5;opacity:1}
 .pin.pending .core{fill:var(--teal)}
 .pin.pending .halo{opacity:.6}
@@ -461,6 +489,39 @@ svg.map.dragging{cursor:grabbing}
 .panel.left{left:12px;top:60px;width:296px}
 .panel.right{right:12px;width:min(430px,44vw)}
 .panel.right.collapsed{display:none}
+
+/* Semantic metadata inspector (#24): a slide-in drawer independent of the right detail
+   panel, opened by clicking a shelter_bed pin's diamond status indicator (see the .pin
+   click wiring in buildMap). renderShelterInspector() reads e.shelterStatus and e.prov.ok
+   straight off the live in-memory entry, so a tampered record is visibly flagged here the
+   instant onVerify() flips e.prov.ok, never a separately re-derived check.
+   Docked like .chatdock (below the header, no scrim) rather than a viewport-spanning
+   fixed panel, so it never paints over #panelbtn or the top bar; and it picks up the
+   same .stage.panel-open right-shift .layers/.zoomctl already use, because the pin
+   handler that opens this also opens the right detail panel (to reach the Story tab's
+   tamper affordance) — without the shift the drawer would sit on top of that panel
+   instead of beside it. */
+.shelterinspector{position:absolute;right:12px;top:60px;width:min(340px,92vw);
+  max-height:calc(100% - 84px);
+  background:var(--panel-solid);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  transform:translateX(calc(100% + 24px));transition:transform .32s cubic-bezier(.22,.9,.32,1),right .3s;
+  z-index:50;display:flex;flex-direction:column;overflow:hidden}
+.shelterinspector[hidden]{display:none}
+.shelterinspector.open{transform:translateX(0)}
+.stage.panel-open .shelterinspector{right:calc(min(430px,44vw) + 24px)}
+.si-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);background:var(--panel-2);flex:none}
+.si-head h2{font-family:var(--serif);font-weight:400;font-size:18px;margin:0;line-height:1.2}
+.si-body{flex:1;overflow-y:auto;padding:16px}
+.si-badge{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border-radius:999px;padding:5px 11px;border:1px solid;margin-bottom:4px}
+.si-badge.bed-open{color:var(--ok);border-color:var(--ok);background:var(--ok-dim)}
+.si-badge.bed-full,.si-badge.bed-turning_away{color:var(--broken);border-color:var(--broken);background:var(--broken-dim)}
+.si-badge.bed-unknown{color:var(--amber);border-color:var(--amber);background:var(--amber-dim)}
+.si-fields.untrusted{opacity:.5}
+.si-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.si-row:last-child{border-bottom:0}
+.si-row .k{color:var(--muted)}
+.si-row .v{color:var(--ink);font-weight:600;text-align:right}
 .phead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border-bottom:1px solid var(--line);background:var(--panel-2)}
 .pbody{flex:1;overflow-y:auto;overscroll-behavior:contain}
 .pclose{background:none;border:1px solid var(--line);border-radius:8px;width:26px;height:26px;display:grid;place-items:center;color:var(--muted);font-size:14px}
@@ -674,6 +735,12 @@ textarea:focus{outline:none;background:var(--panel-2)}
 .disclaim{margin:11px 0 0;font-size:10.5px;color:var(--faint);line-height:1.6}
 .integrity{margin-top:14px;padding:10px 12px;border-radius:11px;font-size:11.5px;border:1px solid var(--ok);border:1px solid color-mix(in srgb,var(--ok) 34%,transparent);background:var(--ok-dim);color:var(--ok)}
 .integrity.bad{border-color:var(--broken);background:var(--broken-dim);color:var(--broken)}
+/* Street Pulse badge: deliberately its own class, own palette (--muted, never --ok/
+   --broken), own icon (pulseGlyph, not sealGlyph) — shares nothing with .sealchip, the
+   cryptographic-seal indicator, so the two can never be mistaken for one another. */
+.pulsebadge{display:flex;align-items:center;gap:10px;margin-top:0;margin-bottom:12px;padding:9px 12px;border-radius:11px;border:1px solid var(--muted);border-color:color-mix(in srgb,var(--muted) 34%,transparent);background:color-mix(in srgb,var(--muted) 10%,transparent)}
+.pulsebadge .picon{width:24px;height:24px;flex:none}
+.pulsebadge .txt{font-size:11.5px;font-weight:650;color:var(--ink-2)}
 .footnote{margin-top:14px;font-size:10.5px;color:var(--faint);line-height:1.65}
 .footnote b{color:var(--muted)}
 
@@ -740,6 +807,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
   .topbar{height:auto;padding:10px 12px;flex-wrap:wrap}
   .impact-badge{font-size:9px;padding:3px 7px}
   .stage.panel-open .zoomctl,.stage.panel-open .layers{right:12px}
+  .stage.panel-open .shelterinspector{right:12px}
   body{overflow-y:auto}
 
   /* Someone on a cheap phone or a library computer is here to file a request, check
@@ -920,6 +988,10 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
       <div id="panel-trends" role="tabpanel" aria-labelledby="tab-trends" tabindex="0"></div>
     </div>
   </aside>
+
+  <!-- Semantic metadata inspector (#24): populated entirely by renderShelterInspector();
+       kept empty here so there is no stale markup to reconcile with the live entry. -->
+  <aside class="shelterinspector" id="shelterinspector" aria-label="Shelter status inspector" hidden></aside>
 </main>
 
 <div class="modal" id="claimmodal" hidden role="dialog" aria-modal="true" aria-labelledby="claimtitle">
@@ -1180,6 +1252,15 @@ const CATEGORY_LABEL = {id_documents:"Identity documents", shelter_bed:"Shelter 
   work_docs:"Work documents", phone:"Phone / callback", transit:"Transit", childcare:"Childcare"};
 const CATEGORY_SHORT = {id_documents:"ID docs", shelter_bed:"Shelter", medical:"Medical",
   work_docs:"Work docs", phone:"Phone", transit:"Transit", childcare:"Childcare"};
+/* Labels for shelterStatus.bedStatus — only meaningful on ask.category === "shelter_bed"
+   entries that carry a shelterStatus (src/schema.ts). Drives the layered zone-visualizer
+   status indicator's text and its "bed-<status>" color class below. */
+const BED_STATUS_LABEL = {open:"Open", full:"Full", turning_away:"Turning away", unknown:"Status unknown"};
+/* Labels for the rest of ShelterStatus (src/schema.ts) — storagePolicy and
+   safetyVolatility — rendered by the semantic metadata inspector (#24). */
+const STORAGE_POLICY_LABEL = {none:"No storage offered", backpack_only:"Backpack only",
+  cart_allowed:"Carts allowed", secure_lockers:"Secure lockers"};
+const SAFETY_LEVEL_LABEL = {low:"Low", moderate:"Moderate", high:"High"};
 
 /* =========================================================
    3. SEED STORIES (composite; no real individuals)
@@ -1594,7 +1675,7 @@ const CATEGORY_TO_SERVICE = {
 function hasConsent(e){ return !!(e.consent && e.consent.advocateId && e.consent.method && e.consent.timestamp); }
 /* Generated by `npm run web:sync` from data/entries.json. The fallback keeps
    the standalone composite demo usable when no signed dataset is present. */
-const V2_ENTRIES = /* ONRECORD_V2_DATA_START */ [{"id":"or_seed_01","zone":"East Village","ask":{"category":"id_documents","summary":"replacement CA state ID","amountUsd":39},"story":{"raw":"[COMPOSITE — not a real individual] wallet taken while he slept, back in march. says he cant get the ID without the birth certificate and cant get the birth certificate without the ID. been in that loop 5 months. hes tired of explaining it to people. was a line cook before.","shaped":"My wallet was taken while I was sleeping back in March. To replace my ID I need my birth certificate, and to get the birth certificate I need my ID. I have been going in that circle for five months. I used to work as a line cook. I am tired of explaining this to people. (Composite illustration.)"},"consent":{"advocateId":"adv_ecv_014","method":"verbal, in person, witnessed by outreach partner","timestampISO":"2026-07-14T18:22:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.619Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAxY2Fza6Nnc3VtbWFyeXdyZXBsYWNlbWVudCBDQSBzdGF0ZSBJRGhjYXRlZ29yeWxpZF9kb2N1bWVudHNpYW1vdW50VXNkGCdkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3kBFFtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gd2FsbGV0IHRha2VuIHdoaWxlIGhlIHNsZXB0LCBiYWNrIGluIG1hcmNoLiBzYXlzIGhlIGNhbnQgZ2V0IHRoZSBJRCB3aXRob3V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBhbmQgY2FudCBnZXQgdGhlIGJpcnRoIGNlcnRpZmljYXRlIHdpdGhvdXQgdGhlIElELiBiZWVuIGluIHRoYXQgbG9vcCA1IG1vbnRocy4gaGVzIHRpcmVkIG9mIGV4cGxhaW5pbmcgaXQgdG8gcGVvcGxlLiB3YXMgYSBsaW5lIGNvb2sgYmVmb3JlLmZzaGFwZWR5AShNeSB3YWxsZXQgd2FzIHRha2VuIHdoaWxlIEkgd2FzIHNsZWVwaW5nIGJhY2sgaW4gTWFyY2guIFRvIHJlcGxhY2UgbXkgSUQgSSBuZWVkIG15IGJpcnRoIGNlcnRpZmljYXRlLCBhbmQgdG8gZ2V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBJIG5lZWQgbXkgSUQuIEkgaGF2ZSBiZWVuIGdvaW5nIGluIHRoYXQgY2lyY2xlIGZvciBmaXZlIG1vbnRocy4gSSB1c2VkIHRvIHdvcmsgYXMgYSBsaW5lIGNvb2suIEkgYW0gdGlyZWQgb2YgZXhwbGFpbmluZyB0aGlzIHRvIHBlb3BsZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNpcmVxdWVzdGVkZ2NvbnNlbnSjZm1ldGhvZHgwdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCBwYXJ0bmVyamFkdm9jYXRlSWRrYWR2X2Vjdl8wMTRsdGltZXN0YW1wSVNPdDIwMjYtMDctMTRUMTg6MjI6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnfqHPhRRUz4348N47SCPHYGq7Gd+sSEkdhPz1oLMAi5zK4iB5qeXKABA3ZalxeIQWSCVtyigWL0X3I6t4+RzmA=="}},{"id":"or_seed_02","zone":"Ocean Beach","ask":{"category":"transit","summary":"monthly transit pass to reach a job site in Kearny Mesa"},"story":{"raw":"[COMPOSITE — not a real individual] got hired on at a warehouse in kearny mesa, starts in two weeks. the commute is the problem — two buses each way and she cant cover the pass until the first check clears. she was very matter of fact about it, no drama.","shaped":"I have been hired at a warehouse in Kearny Mesa and I start in two weeks. The problem is getting there: it is two buses each way, and I cannot cover a pass until my first check clears. (Composite illustration.)"},"consent":{"advocateId":"adv_ob_003","method":"written, signed intake form","timestampISO":"2026-06-30T15:05:00Z"},"status":"answered","provenance":{"alg":"COSE-ES256","contentHash":"1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.627Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAyY2Fza6Jnc3VtbWFyeXg3bW9udGhseSB0cmFuc2l0IHBhc3MgdG8gcmVhY2ggYSBqb2Igc2l0ZSBpbiBLZWFybnkgTWVzYWhjYXRlZ29yeWd0cmFuc2l0ZHpvbmVrT2NlYW4gQmVhY2hlc3RvcnmiY3Jhd3kBAltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IGhpcmVkIG9uIGF0IGEgd2FyZWhvdXNlIGluIGtlYXJueSBtZXNhLCBzdGFydHMgaW4gdHdvIHdlZWtzLiB0aGUgY29tbXV0ZSBpcyB0aGUgcHJvYmxlbSDigJQgdHdvIGJ1c2VzIGVhY2ggd2F5IGFuZCBzaGUgY2FudCBjb3ZlciB0aGUgcGFzcyB1bnRpbCB0aGUgZmlyc3QgY2hlY2sgY2xlYXJzLiBzaGUgd2FzIHZlcnkgbWF0dGVyIG9mIGZhY3QgYWJvdXQgaXQsIG5vIGRyYW1hLmZzaGFwZWR40kkgaGF2ZSBiZWVuIGhpcmVkIGF0IGEgd2FyZWhvdXNlIGluIEtlYXJueSBNZXNhIGFuZCBJIHN0YXJ0IGluIHR3byB3ZWVrcy4gVGhlIHByb2JsZW0gaXMgZ2V0dGluZyB0aGVyZTogaXQgaXMgdHdvIGJ1c2VzIGVhY2ggd2F5LCBhbmQgSSBjYW5ub3QgY292ZXIgYSBwYXNzIHVudGlsIG15IGZpcnN0IGNoZWNrIGNsZWFycy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNoYW5zd2VyZWRnY29uc2VudKNmbWV0aG9keBt3cml0dGVuLCBzaWduZWQgaW50YWtlIGZvcm1qYWR2b2NhdGVJZGphZHZfb2JfMDAzbHRpbWVzdGFtcElTT3QyMDI2LTA2LTMwVDE1OjA1OjAwWg==","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAgqM38i+QOmXxs\/ib10M3B2EceQOqunb1iSS3Ioh0sLv7X6zGzNlx9Bi3Hn\/MJnhzVHEffd119IbKLIVZ0l2bFA=="}},{"id":"or_seed_03","zone":"Downtown","ask":{"category":"shelter_bed","summary":"shelter bed, ground floor if possible"},"story":{"raw":"[COMPOSITE — not a real individual] turned away twice now, says the beds were full both times. knee is bad so stairs are hard, hes asking for ground floor if theres any. been sleeping behind a store off broadway. no one has followed up with him since may.","shaped":"I have been turned away twice; both times I was told the beds were full. My knee is bad, so stairs are hard — I am asking for a ground floor bed if there is one. I have been sleeping behind a store off Broadway. No one has followed up with me since May. (Composite illustration.)"},"consent":{"advocateId":"adv_dtn_027","method":"verbal, recorded with permission","timestampISO":"2026-05-19T20:41:00Z"},"shelterStatus":{"bedStatus":"turning_away","estimatedOpenings":0,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":false,"requiresCleanScreen":true,"hasHardCurfew":true,"curfewTime":"19:00"},"storagePolicy":"backpack_only","safetyVolatility":"moderate"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"1f5a7923749c7f1a2d9ffc73f3e6f9a6bd1869d31cb5ac3885fc3c344df85bfa","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.628Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"p2JpZGpvcl9zZWVkXzAzY2Fza6Jnc3VtbWFyeXglc2hlbHRlciBiZWQsIGdyb3VuZCBmbG9vciBpZiBwb3NzaWJsZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25laERvd250b3duZXN0b3J5omNyYXd5AQFbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIHR1cm5lZCBhd2F5IHR3aWNlIG5vdywgc2F5cyB0aGUgYmVkcyB3ZXJlIGZ1bGwgYm90aCB0aW1lcy4ga25lZSBpcyBiYWQgc28gc3RhaXJzIGFyZSBoYXJkLCBoZXMgYXNraW5nIGZvciBncm91bmQgZmxvb3IgaWYgdGhlcmVzIGFueS4gYmVlbiBzbGVlcGluZyBiZWhpbmQgYSBzdG9yZSBvZmYgYnJvYWR3YXkuIG5vIG9uZSBoYXMgZm9sbG93ZWQgdXAgd2l0aCBoaW0gc2luY2UgbWF5LmZzaGFwZWR5ARlJIGhhdmUgYmVlbiB0dXJuZWQgYXdheSB0d2ljZTsgYm90aCB0aW1lcyBJIHdhcyB0b2xkIHRoZSBiZWRzIHdlcmUgZnVsbC4gTXkga25lZSBpcyBiYWQsIHNvIHN0YWlycyBhcmUgaGFyZCDigJQgSSBhbSBhc2tpbmcgZm9yIGEgZ3JvdW5kIGZsb29yIGJlZCBpZiB0aGVyZSBpcyBvbmUuIEkgaGF2ZSBiZWVuIHNsZWVwaW5nIGJlaGluZCBhIHN0b3JlIG9mZiBCcm9hZHdheS4gTm8gb25lIGhhcyBmb2xsb3dlZCB1cCB3aXRoIG1lIHNpbmNlIE1heS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRrYWR2X2R0bl8wMjdsdGltZXN0YW1wSVNPdDIwMjYtMDUtMTlUMjA6NDE6MDBabXNoZWx0ZXJTdGF0dXOlaWJlZFN0YXR1c2x0dXJuaW5nX2F3YXlscmVzdHJpY3Rpb25zpWpjdXJmZXdUaW1lZTE5OjAwbWFsbG93c0NhbmluZXP0bWhhc0hhcmRDdXJmZXf1c3JlcXVpcmVzQ2xlYW5TY3JlZW71dGFsbG93c1dlYXBvbnNTdG9yYWdl9G1zdG9yYWdlUG9saWN5bWJhY2twYWNrX29ubHlwc2FmZXR5Vm9sYXRpbGl0eWhtb2RlcmF0ZXFlc3RpbWF0ZWRPcGVuaW5ncwA=","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAXpfzAXI\/tFjJVzoy6\/aQF\/Cv30hM\/sgHvf6GIePpVTiblQ2iNIcKj\/aD7Arw4TRnHcQdrV0HhOnDW5n2P31LUQ=="}},{"id":"or_seed_04","zone":"Balboa Park","ask":{"category":"medical","summary":"refill of an existing blood pressure prescription"},"story":{"raw":"[COMPOSITE — not a real individual] blood pressure meds ran out three weeks ago, been getting dizzy standing up fast. went to the free clinic near the park twice, both times the wait list was full for new patients. says he just needs someone to see him once and write the same prescription again.","shaped":"My blood pressure medication ran out three weeks ago, and I've been getting dizzy when I stand up quickly. I went to the free clinic near the park twice, and both times the new-patient waitlist was full. I don't need anything new — just someone to see me once and refill the same prescription. (Composite illustration.)"},"consent":{"advocateId":"adv_bp_009","method":"verbal, in person, witnessed by clinic outreach worker","timestampISO":"2026-07-01T10:15:00Z"},"status":"acknowledged","provenance":{"alg":"COSE-ES256","contentHash":"370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.631Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA0Y2Fza6Jnc3VtbWFyeXgxcmVmaWxsIG9mIGFuIGV4aXN0aW5nIGJsb29kIHByZXNzdXJlIHByZXNjcmlwdGlvbmhjYXRlZ29yeWdtZWRpY2FsZHpvbmVrQmFsYm9hIFBhcmtlc3RvcnmiY3Jhd3kBKltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gYmxvb2QgcHJlc3N1cmUgbWVkcyByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYmVlbiBnZXR0aW5nIGRpenp5IHN0YW5kaW5nIHVwIGZhc3QuIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGJvdGggdGltZXMgdGhlIHdhaXQgbGlzdCB3YXMgZnVsbCBmb3IgbmV3IHBhdGllbnRzLiBzYXlzIGhlIGp1c3QgbmVlZHMgc29tZW9uZSB0byBzZWUgaGltIG9uY2UgYW5kIHdyaXRlIHRoZSBzYW1lIHByZXNjcmlwdGlvbiBhZ2Fpbi5mc2hhcGVkeQFBTXkgYmxvb2QgcHJlc3N1cmUgbWVkaWNhdGlvbiByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYW5kIEkndmUgYmVlbiBnZXR0aW5nIGRpenp5IHdoZW4gSSBzdGFuZCB1cCBxdWlja2x5LiBJIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGFuZCBib3RoIHRpbWVzIHRoZSBuZXctcGF0aWVudCB3YWl0bGlzdCB3YXMgZnVsbC4gSSBkb24ndCBuZWVkIGFueXRoaW5nIG5ldyDigJQganVzdCBzb21lb25lIHRvIHNlZSBtZSBvbmNlIGFuZCByZWZpbGwgdGhlIHNhbWUgcHJlc2NyaXB0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2xhY2tub3dsZWRnZWRnY29uc2VudKNmbWV0aG9keDZ2ZXJiYWwsIGluIHBlcnNvbiwgd2l0bmVzc2VkIGJ5IGNsaW5pYyBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfYnBfMDA5bHRpbWVzdGFtcElTT3QyMDI2LTA3LTAxVDEwOjE1OjAwWg==","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhANcXRdG1sa3pKs1dF98ZdQpk1CQU2U4BjxmNDny7AqUBMypBguFMoiuiob\/OC+GGC27Q+LP1dKErUuzGWjpOxfg=="}},{"id":"or_seed_05","zone":"Hillcrest","ask":{"category":"work_docs","summary":"food handler card before a Monday restaurant shift","amountUsd":11},"story":{"raw":"[COMPOSITE — not a real individual] got offered a job at a restaurant on university ave, they need a food handler card before her first shift monday. says she has the ten dollars but not a way to get online long enough to finish the course and print the card.","shaped":"I was offered a job at a restaurant on University Avenue, and I need a food handler card before my first shift on Monday. I have the ten dollars for the course, but not reliable enough internet access to finish it and print the card in time. (Composite illustration.)"},"consent":{"advocateId":"adv_hc_042","method":"written, signed intake form","timestampISO":"2026-07-22T09:40:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.635Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA1Y2Fza6Nnc3VtbWFyeXgyZm9vZCBoYW5kbGVyIGNhcmQgYmVmb3JlIGEgTW9uZGF5IHJlc3RhdXJhbnQgc2hpZnRoY2F0ZWdvcnlpd29ya19kb2NzaWFtb3VudFVzZAtkem9uZWlIaWxsY3Jlc3Rlc3RvcnmiY3Jhd3kBBVtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IG9mZmVyZWQgYSBqb2IgYXQgYSByZXN0YXVyYW50IG9uIHVuaXZlcnNpdHkgYXZlLCB0aGV5IG5lZWQgYSBmb29kIGhhbmRsZXIgY2FyZCBiZWZvcmUgaGVyIGZpcnN0IHNoaWZ0IG1vbmRheS4gc2F5cyBzaGUgaGFzIHRoZSB0ZW4gZG9sbGFycyBidXQgbm90IGEgd2F5IHRvIGdldCBvbmxpbmUgbG9uZyBlbm91Z2ggdG8gZmluaXNoIHRoZSBjb3Vyc2UgYW5kIHByaW50IHRoZSBjYXJkLmZzaGFwZWR5AQtJIHdhcyBvZmZlcmVkIGEgam9iIGF0IGEgcmVzdGF1cmFudCBvbiBVbml2ZXJzaXR5IEF2ZW51ZSwgYW5kIEkgbmVlZCBhIGZvb2QgaGFuZGxlciBjYXJkIGJlZm9yZSBteSBmaXJzdCBzaGlmdCBvbiBNb25kYXkuIEkgaGF2ZSB0aGUgdGVuIGRvbGxhcnMgZm9yIHRoZSBjb3Vyc2UsIGJ1dCBub3QgcmVsaWFibGUgZW5vdWdoIGludGVybmV0IGFjY2VzcyB0byBmaW5pc2ggaXQgYW5kIHByaW50IHRoZSBjYXJkIGluIHRpbWUuIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4G3dyaXR0ZW4sIHNpZ25lZCBpbnRha2UgZm9ybWphZHZvY2F0ZUlkamFkdl9oY18wNDJsdGltZXN0YW1wSVNPdDIwMjYtMDctMjJUMDk6NDA6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAt1uSIijyKaUc66FebIlYyODwqU3194lH8nw1p\/Ix1o99nYIg3bRkCiR0jlAV6FfrijFUOlcoW0ab75578JslWA=="}},{"id":"or_seed_06","zone":"Chula Vista","ask":{"category":"phone","summary":"a phone to reach a case worker about a housing voucher"},"story":{"raw":"[COMPOSITE — not a real individual] phone got taken in a fight at the shelter, cant call the case worker back or check on the housing voucher application. says he missed one callback already because there was no way to reach him.","shaped":"My phone was taken in a fight at the shelter. I can't call my case worker back or check on my housing voucher application, and I already missed one callback because there was no way to reach me. (Composite illustration.)"},"consent":{"advocateId":"adv_cv_018","method":"verbal, in person, witnessed by shelter staff","timestampISO":"2026-06-11T16:50:00Z"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"13c67d22073e54bf9eb09c2bd14f0639a92204b1d10a927fd514264b98ecceba","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.643Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA2Y2Fza6Jnc3VtbWFyeXg2YSBwaG9uZSB0byByZWFjaCBhIGNhc2Ugd29ya2VyIGFib3V0IGEgaG91c2luZyB2b3VjaGVyaGNhdGVnb3J5ZXBob25lZHpvbmVrQ2h1bGEgVmlzdGFlc3RvcnmiY3Jhd3jnW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBwaG9uZSBnb3QgdGFrZW4gaW4gYSBmaWdodCBhdCB0aGUgc2hlbHRlciwgY2FudCBjYWxsIHRoZSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIHRoZSBob3VzaW5nIHZvdWNoZXIgYXBwbGljYXRpb24uIHNheXMgaGUgbWlzc2VkIG9uZSBjYWxsYmFjayBhbHJlYWR5IGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBoaW0uZnNoYXBlZHjcTXkgcGhvbmUgd2FzIHRha2VuIGluIGEgZmlnaHQgYXQgdGhlIHNoZWx0ZXIuIEkgY2FuJ3QgY2FsbCBteSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIG15IGhvdXNpbmcgdm91Y2hlciBhcHBsaWNhdGlvbiwgYW5kIEkgYWxyZWFkeSBtaXNzZWQgb25lIGNhbGxiYWNrIGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBtZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4LXZlcmJhbCwgaW4gcGVyc29uLCB3aXRuZXNzZWQgYnkgc2hlbHRlciBzdGFmZmphZHZvY2F0ZUlkamFkdl9jdl8wMThsdGltZXN0YW1wSVNPdDIwMjYtMDYtMTFUMTY6NTA6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAOrgknA\/AmGf88rCmd26GW02H4P58r87KV1y1VxePZINP9BrgEWTaYqOUCSUrGK0yrZoL\/PlWlXEf34Aux\/CwqA=="}},{"id":"or_seed_07","zone":"El Cajon","ask":{"category":"childcare","summary":"childcare for the morning of a warehouse job interview"},"story":{"raw":"[COMPOSITE — not a real individual] has an interview lined up at a warehouse but no one to watch her three year old that morning, says her sister used to help but moved to arizona in the spring. missing the interview means waiting another month for the next opening.","shaped":"I have a job interview lined up at a warehouse, but no one to watch my three-year-old that morning. My sister used to help, but she moved to Arizona this spring. If I miss the interview, the next opening isn't for another month. (Composite illustration.)"},"consent":{"advocateId":"adv_ec_031","method":"verbal, recorded with permission","timestampISO":"2026-07-30T08:05:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"d15c06d9b3039f5173e2ce41901a788e68ee9b879ef5d635ac3f2463d16fe580","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.646Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA3Y2Fza6Jnc3VtbWFyeXg2Y2hpbGRjYXJlIGZvciB0aGUgbW9ybmluZyBvZiBhIHdhcmVob3VzZSBqb2IgaW50ZXJ2aWV3aGNhdGVnb3J5aWNoaWxkY2FyZWR6b25laEVsIENham9uZXN0b3J5omNyYXd5AQxbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIGhhcyBhbiBpbnRlcnZpZXcgbGluZWQgdXAgYXQgYSB3YXJlaG91c2UgYnV0IG5vIG9uZSB0byB3YXRjaCBoZXIgdGhyZWUgeWVhciBvbGQgdGhhdCBtb3JuaW5nLCBzYXlzIGhlciBzaXN0ZXIgdXNlZCB0byBoZWxwIGJ1dCBtb3ZlZCB0byBhcml6b25hIGluIHRoZSBzcHJpbmcuIG1pc3NpbmcgdGhlIGludGVydmlldyBtZWFucyB3YWl0aW5nIGFub3RoZXIgbW9udGggZm9yIHRoZSBuZXh0IG9wZW5pbmcuZnNoYXBlZHj+SSBoYXZlIGEgam9iIGludGVydmlldyBsaW5lZCB1cCBhdCBhIHdhcmVob3VzZSwgYnV0IG5vIG9uZSB0byB3YXRjaCBteSB0aHJlZS15ZWFyLW9sZCB0aGF0IG1vcm5pbmcuIE15IHNpc3RlciB1c2VkIHRvIGhlbHAsIGJ1dCBzaGUgbW92ZWQgdG8gQXJpem9uYSB0aGlzIHNwcmluZy4gSWYgSSBtaXNzIHRoZSBpbnRlcnZpZXcsIHRoZSBuZXh0IG9wZW5pbmcgaXNuJ3QgZm9yIGFub3RoZXIgbW9udGguIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRqYWR2X2VjXzAzMWx0aW1lc3RhbXBJU090MjAyNi0wNy0zMFQwODowNTowMFo=","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAo2a4twxpT0IMFNRVvnLOpEJn70qSVuu1Cd366WM0b979rI0VqNlyT9YvcA77OaLiqnlGD8IuwJIop00UUFd4Iw=="}},{"id":"or_seed_08","zone":"La Mesa","ask":{"category":"shelter_bed","summary":"any available shelter bed, no location preference"},"story":{"raw":"[COMPOSITE — not a real individual] been on the coordinated entry list since february, keeps getting told hes close but nothing opens up. cold at night now, says he'd take anything with four walls at this point, doesnt care about location.","shaped":"I have been on the coordinated entry list since February. I keep getting told I'm close, but nothing opens up. It's cold at night now — I would take anything with four walls at this point; I don't care about location. (Composite illustration.)"},"consent":{"advocateId":"adv_lm_006","method":"written, signed intake form","timestampISO":"2026-04-28T19:30:00Z"},"shelterStatus":{"bedStatus":"full","estimatedOpenings":0,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":true,"requiresCleanScreen":false,"hasHardCurfew":false},"storagePolicy":"cart_allowed","safetyVolatility":"low"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"544e93139a49d366c154a70235a69a75d6e1b2d40ccd51600ca8021307176b37","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.648Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"p2JpZGpvcl9zZWVkXzA4Y2Fza6Jnc3VtbWFyeXgxYW55IGF2YWlsYWJsZSBzaGVsdGVyIGJlZCwgbm8gbG9jYXRpb24gcHJlZmVyZW5jZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25lZ0xhIE1lc2Flc3RvcnmiY3Jhd3jxW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIGZlYnJ1YXJ5LCBrZWVwcyBnZXR0aW5nIHRvbGQgaGVzIGNsb3NlIGJ1dCBub3RoaW5nIG9wZW5zIHVwLiBjb2xkIGF0IG5pZ2h0IG5vdywgc2F5cyBoZSdkIHRha2UgYW55dGhpbmcgd2l0aCBmb3VyIHdhbGxzIGF0IHRoaXMgcG9pbnQsIGRvZXNudCBjYXJlIGFib3V0IGxvY2F0aW9uLmZzaGFwZWR49UkgaGF2ZSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIEZlYnJ1YXJ5LiBJIGtlZXAgZ2V0dGluZyB0b2xkIEknbSBjbG9zZSwgYnV0IG5vdGhpbmcgb3BlbnMgdXAuIEl0J3MgY29sZCBhdCBuaWdodCBub3cg4oCUIEkgd291bGQgdGFrZSBhbnl0aGluZyB3aXRoIGZvdXIgd2FsbHMgYXQgdGhpcyBwb2ludDsgSSBkb24ndCBjYXJlIGFib3V0IGxvY2F0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2p1bmFuc3dlcmVkZ2NvbnNlbnSjZm1ldGhvZHgbd3JpdHRlbiwgc2lnbmVkIGludGFrZSBmb3JtamFkdm9jYXRlSWRqYWR2X2xtXzAwNmx0aW1lc3RhbXBJU090MjAyNi0wNC0yOFQxOTozMDowMFptc2hlbHRlclN0YXR1c6VpYmVkU3RhdHVzZGZ1bGxscmVzdHJpY3Rpb25zpG1hbGxvd3NDYW5pbmVz9G1oYXNIYXJkQ3VyZmV39HNyZXF1aXJlc0NsZWFuU2NyZWVu9HRhbGxvd3NXZWFwb25zU3RvcmFnZfVtc3RvcmFnZVBvbGljeWxjYXJ0X2FsbG93ZWRwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MA","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAinLxjUXC20WMildKzHmbWG28wvJYlJq3cuyd1cNnFNkTyGcLxSgkWenY3ID2o1QaI9NqKE3luZztI9kesjlFiQ=="}},{"id":"or_seed_09","zone":"East Village","ask":{"category":"shelter_bed","summary":"an open bed reported for tonight, first-come basis"},"story":{"raw":"[COMPOSITE — not a real individual] outreach worker called ahead and confirmed two beds open tonight, no waitlist right now. says the front desk stops taking new intakes at 9, and they do a breathalyzer at the door, no exceptions.","shaped":"An outreach worker called ahead and confirmed two beds are open tonight, with no waitlist right now. The front desk stops taking new intakes at 9pm, and there is a breathalyzer check at the door with no exceptions. (Composite illustration.)"},"consent":{"advocateId":"adv_ev_051","method":"verbal, in person, witnessed by outreach worker","timestampISO":"2026-08-02T21:10:00Z"},"shelterStatus":{"bedStatus":"open","estimatedOpenings":2,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":false,"requiresCleanScreen":true,"hasHardCurfew":true,"curfewTime":"21:00"},"storagePolicy":"secure_lockers","safetyVolatility":"low"},"status":"acknowledged","provenance":{"alg":"COSE-ES256","contentHash":"41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.1","signedAtISO":"2026-08-14T19:34:59.650Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"p2JpZGpvcl9zZWVkXzA5Y2Fza6Jnc3VtbWFyeXgyYW4gb3BlbiBiZWQgcmVwb3J0ZWQgZm9yIHRvbmlnaHQsIGZpcnN0LWNvbWUgYmFzaXNoY2F0ZWdvcnlrc2hlbHRlcl9iZWRkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3joW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBvdXRyZWFjaCB3b3JrZXIgY2FsbGVkIGFoZWFkIGFuZCBjb25maXJtZWQgdHdvIGJlZHMgb3BlbiB0b25pZ2h0LCBubyB3YWl0bGlzdCByaWdodCBub3cuIHNheXMgdGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDksIGFuZCB0aGV5IGRvIGEgYnJlYXRoYWx5emVyIGF0IHRoZSBkb29yLCBubyBleGNlcHRpb25zLmZzaGFwZWR48EFuIG91dHJlYWNoIHdvcmtlciBjYWxsZWQgYWhlYWQgYW5kIGNvbmZpcm1lZCB0d28gYmVkcyBhcmUgb3BlbiB0b25pZ2h0LCB3aXRoIG5vIHdhaXRsaXN0IHJpZ2h0IG5vdy4gVGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDlwbSwgYW5kIHRoZXJlIGlzIGEgYnJlYXRoYWx5emVyIGNoZWNrIGF0IHRoZSBkb29yIHdpdGggbm8gZXhjZXB0aW9ucy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNsYWNrbm93bGVkZ2VkZ2NvbnNlbnSjZm1ldGhvZHgvdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfZXZfMDUxbHRpbWVzdGFtcElTT3QyMDI2LTA4LTAyVDIxOjEwOjAwWm1zaGVsdGVyU3RhdHVzpWliZWRTdGF0dXNkb3BlbmxyZXN0cmljdGlvbnOlamN1cmZld1RpbWVlMjE6MDBtYWxsb3dzQ2FuaW5lc\/RtaGFzSGFyZEN1cmZld\/VzcmVxdWlyZXNDbGVhblNjcmVlbvV0YWxsb3dzV2VhcG9uc1N0b3JhZ2X0bXN0b3JhZ2VQb2xpY3luc2VjdXJlX2xvY2tlcnNwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MC","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAdtu59DIL2qJeChSy6QltW1VtKA3Qk20zpvZu5OodMNH2MiWXXAZkfTeSTvX\/qoL66CX6iuwF+k3LV7IBsewu3w=="}}] /* ONRECORD_V2_DATA_END */;
+const V2_ENTRIES = /* ONRECORD_V2_DATA_START */ [{"id":"or_seed_01","zone":"East Village","ask":{"category":"id_documents","summary":"replacement CA state ID","amountUsd":39},"story":{"raw":"[COMPOSITE — not a real individual] wallet taken while he slept, back in march. says he cant get the ID without the birth certificate and cant get the birth certificate without the ID. been in that loop 5 months. hes tired of explaining it to people. was a line cook before.","shaped":"My wallet was taken while I was sleeping back in March. To replace my ID I need my birth certificate, and to get the birth certificate I need my ID. I have been going in that circle for five months. I used to work as a line cook. I am tired of explaining this to people. (Composite illustration.)"},"consent":{"advocateId":"adv_ecv_014","method":"verbal, in person, witnessed by outreach partner","timestampISO":"2026-07-14T18:22:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.397Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAxY2Fza6Nnc3VtbWFyeXdyZXBsYWNlbWVudCBDQSBzdGF0ZSBJRGhjYXRlZ29yeWxpZF9kb2N1bWVudHNpYW1vdW50VXNkGCdkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3kBFFtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gd2FsbGV0IHRha2VuIHdoaWxlIGhlIHNsZXB0LCBiYWNrIGluIG1hcmNoLiBzYXlzIGhlIGNhbnQgZ2V0IHRoZSBJRCB3aXRob3V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBhbmQgY2FudCBnZXQgdGhlIGJpcnRoIGNlcnRpZmljYXRlIHdpdGhvdXQgdGhlIElELiBiZWVuIGluIHRoYXQgbG9vcCA1IG1vbnRocy4gaGVzIHRpcmVkIG9mIGV4cGxhaW5pbmcgaXQgdG8gcGVvcGxlLiB3YXMgYSBsaW5lIGNvb2sgYmVmb3JlLmZzaGFwZWR5AShNeSB3YWxsZXQgd2FzIHRha2VuIHdoaWxlIEkgd2FzIHNsZWVwaW5nIGJhY2sgaW4gTWFyY2guIFRvIHJlcGxhY2UgbXkgSUQgSSBuZWVkIG15IGJpcnRoIGNlcnRpZmljYXRlLCBhbmQgdG8gZ2V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBJIG5lZWQgbXkgSUQuIEkgaGF2ZSBiZWVuIGdvaW5nIGluIHRoYXQgY2lyY2xlIGZvciBmaXZlIG1vbnRocy4gSSB1c2VkIHRvIHdvcmsgYXMgYSBsaW5lIGNvb2suIEkgYW0gdGlyZWQgb2YgZXhwbGFpbmluZyB0aGlzIHRvIHBlb3BsZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNpcmVxdWVzdGVkZ2NvbnNlbnSjZm1ldGhvZHgwdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCBwYXJ0bmVyamFkdm9jYXRlSWRrYWR2X2Vjdl8wMTRsdGltZXN0YW1wSVNPdDIwMjYtMDctMTRUMTg6MjI6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAdFU1D4Nz7RmFS9WREhw60UFP1Dq9HMZ4gBLgYuyEMkfJ39QAmurMTTCIjvYWEgvZkQWF7r45fMhD7WsJ13UmgQ=="}},{"id":"or_seed_02","zone":"Ocean Beach","ask":{"category":"transit","summary":"monthly transit pass to reach a job site in Kearny Mesa"},"story":{"raw":"[COMPOSITE — not a real individual] got hired on at a warehouse in kearny mesa, starts in two weeks. the commute is the problem — two buses each way and she cant cover the pass until the first check clears. she was very matter of fact about it, no drama.","shaped":"I have been hired at a warehouse in Kearny Mesa and I start in two weeks. The problem is getting there: it is two buses each way, and I cannot cover a pass until my first check clears. (Composite illustration.)"},"consent":{"advocateId":"adv_ob_003","method":"written, signed intake form","timestampISO":"2026-06-30T15:05:00Z"},"status":"answered","provenance":{"alg":"COSE-ES256","contentHash":"1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.398Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzAyY2Fza6Jnc3VtbWFyeXg3bW9udGhseSB0cmFuc2l0IHBhc3MgdG8gcmVhY2ggYSBqb2Igc2l0ZSBpbiBLZWFybnkgTWVzYWhjYXRlZ29yeWd0cmFuc2l0ZHpvbmVrT2NlYW4gQmVhY2hlc3RvcnmiY3Jhd3kBAltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IGhpcmVkIG9uIGF0IGEgd2FyZWhvdXNlIGluIGtlYXJueSBtZXNhLCBzdGFydHMgaW4gdHdvIHdlZWtzLiB0aGUgY29tbXV0ZSBpcyB0aGUgcHJvYmxlbSDigJQgdHdvIGJ1c2VzIGVhY2ggd2F5IGFuZCBzaGUgY2FudCBjb3ZlciB0aGUgcGFzcyB1bnRpbCB0aGUgZmlyc3QgY2hlY2sgY2xlYXJzLiBzaGUgd2FzIHZlcnkgbWF0dGVyIG9mIGZhY3QgYWJvdXQgaXQsIG5vIGRyYW1hLmZzaGFwZWR40kkgaGF2ZSBiZWVuIGhpcmVkIGF0IGEgd2FyZWhvdXNlIGluIEtlYXJueSBNZXNhIGFuZCBJIHN0YXJ0IGluIHR3byB3ZWVrcy4gVGhlIHByb2JsZW0gaXMgZ2V0dGluZyB0aGVyZTogaXQgaXMgdHdvIGJ1c2VzIGVhY2ggd2F5LCBhbmQgSSBjYW5ub3QgY292ZXIgYSBwYXNzIHVudGlsIG15IGZpcnN0IGNoZWNrIGNsZWFycy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNoYW5zd2VyZWRnY29uc2VudKNmbWV0aG9keBt3cml0dGVuLCBzaWduZWQgaW50YWtlIGZvcm1qYWR2b2NhdGVJZGphZHZfb2JfMDAzbHRpbWVzdGFtcElTT3QyMDI2LTA2LTMwVDE1OjA1OjAwWg==","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhACyBX5Q603qcEVs0lzeElKcIZdmdJQJkiF8xWMnrH39TDYXH9kHwAd776DnHarTZcMM7UAPoeDbe3LpDx8xoTwQ=="}},{"id":"or_seed_03","zone":"Downtown","ask":{"category":"shelter_bed","summary":"shelter bed, ground floor if possible"},"story":{"raw":"[COMPOSITE — not a real individual] turned away twice now, says the beds were full both times. knee is bad so stairs are hard, hes asking for ground floor if theres any. been sleeping behind a store off broadway. no one has followed up with him since may.","shaped":"I have been turned away twice; both times I was told the beds were full. My knee is bad, so stairs are hard — I am asking for a ground floor bed if there is one. I have been sleeping behind a store off Broadway. No one has followed up with me since May. (Composite illustration.)"},"consent":{"advocateId":"adv_dtn_027","method":"verbal, recorded with permission","timestampISO":"2026-05-19T20:41:00Z"},"shelterStatus":{"bedStatus":"turning_away","estimatedOpenings":0,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":false,"requiresCleanScreen":true,"hasHardCurfew":true,"curfewTime":"19:00"},"storagePolicy":"backpack_only","safetyVolatility":"moderate"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"1f5a7923749c7f1a2d9ffc73f3e6f9a6bd1869d31cb5ac3885fc3c344df85bfa","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.399Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"p2JpZGpvcl9zZWVkXzAzY2Fza6Jnc3VtbWFyeXglc2hlbHRlciBiZWQsIGdyb3VuZCBmbG9vciBpZiBwb3NzaWJsZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25laERvd250b3duZXN0b3J5omNyYXd5AQFbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIHR1cm5lZCBhd2F5IHR3aWNlIG5vdywgc2F5cyB0aGUgYmVkcyB3ZXJlIGZ1bGwgYm90aCB0aW1lcy4ga25lZSBpcyBiYWQgc28gc3RhaXJzIGFyZSBoYXJkLCBoZXMgYXNraW5nIGZvciBncm91bmQgZmxvb3IgaWYgdGhlcmVzIGFueS4gYmVlbiBzbGVlcGluZyBiZWhpbmQgYSBzdG9yZSBvZmYgYnJvYWR3YXkuIG5vIG9uZSBoYXMgZm9sbG93ZWQgdXAgd2l0aCBoaW0gc2luY2UgbWF5LmZzaGFwZWR5ARlJIGhhdmUgYmVlbiB0dXJuZWQgYXdheSB0d2ljZTsgYm90aCB0aW1lcyBJIHdhcyB0b2xkIHRoZSBiZWRzIHdlcmUgZnVsbC4gTXkga25lZSBpcyBiYWQsIHNvIHN0YWlycyBhcmUgaGFyZCDigJQgSSBhbSBhc2tpbmcgZm9yIGEgZ3JvdW5kIGZsb29yIGJlZCBpZiB0aGVyZSBpcyBvbmUuIEkgaGF2ZSBiZWVuIHNsZWVwaW5nIGJlaGluZCBhIHN0b3JlIG9mZiBCcm9hZHdheS4gTm8gb25lIGhhcyBmb2xsb3dlZCB1cCB3aXRoIG1lIHNpbmNlIE1heS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRrYWR2X2R0bl8wMjdsdGltZXN0YW1wSVNPdDIwMjYtMDUtMTlUMjA6NDE6MDBabXNoZWx0ZXJTdGF0dXOlaWJlZFN0YXR1c2x0dXJuaW5nX2F3YXlscmVzdHJpY3Rpb25zpWpjdXJmZXdUaW1lZTE5OjAwbWFsbG93c0NhbmluZXP0bWhhc0hhcmRDdXJmZXf1c3JlcXVpcmVzQ2xlYW5TY3JlZW71dGFsbG93c1dlYXBvbnNTdG9yYWdl9G1zdG9yYWdlUG9saWN5bWJhY2twYWNrX29ubHlwc2FmZXR5Vm9sYXRpbGl0eWhtb2RlcmF0ZXFlc3RpbWF0ZWRPcGVuaW5ncwA=","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAJhVcNy8c2JK2bO9Gel01Q66Y+EItqrF16BAofjFOVyFtNvH+7wHGDsXhVCbMHHAw4c5Ar3ZfNgdYy21j1gEVdA=="}},{"id":"or_seed_04","zone":"Balboa Park","ask":{"category":"medical","summary":"refill of an existing blood pressure prescription"},"story":{"raw":"[COMPOSITE — not a real individual] blood pressure meds ran out three weeks ago, been getting dizzy standing up fast. went to the free clinic near the park twice, both times the wait list was full for new patients. says he just needs someone to see him once and write the same prescription again.","shaped":"My blood pressure medication ran out three weeks ago, and I've been getting dizzy when I stand up quickly. I went to the free clinic near the park twice, and both times the new-patient waitlist was full. I don't need anything new — just someone to see me once and refill the same prescription. (Composite illustration.)"},"consent":{"advocateId":"adv_bp_009","method":"verbal, in person, witnessed by clinic outreach worker","timestampISO":"2026-07-01T10:15:00Z"},"status":"acknowledged","provenance":{"alg":"COSE-ES256","contentHash":"370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.399Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA0Y2Fza6Jnc3VtbWFyeXgxcmVmaWxsIG9mIGFuIGV4aXN0aW5nIGJsb29kIHByZXNzdXJlIHByZXNjcmlwdGlvbmhjYXRlZ29yeWdtZWRpY2FsZHpvbmVrQmFsYm9hIFBhcmtlc3RvcnmiY3Jhd3kBKltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gYmxvb2QgcHJlc3N1cmUgbWVkcyByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYmVlbiBnZXR0aW5nIGRpenp5IHN0YW5kaW5nIHVwIGZhc3QuIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGJvdGggdGltZXMgdGhlIHdhaXQgbGlzdCB3YXMgZnVsbCBmb3IgbmV3IHBhdGllbnRzLiBzYXlzIGhlIGp1c3QgbmVlZHMgc29tZW9uZSB0byBzZWUgaGltIG9uY2UgYW5kIHdyaXRlIHRoZSBzYW1lIHByZXNjcmlwdGlvbiBhZ2Fpbi5mc2hhcGVkeQFBTXkgYmxvb2QgcHJlc3N1cmUgbWVkaWNhdGlvbiByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYW5kIEkndmUgYmVlbiBnZXR0aW5nIGRpenp5IHdoZW4gSSBzdGFuZCB1cCBxdWlja2x5LiBJIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGFuZCBib3RoIHRpbWVzIHRoZSBuZXctcGF0aWVudCB3YWl0bGlzdCB3YXMgZnVsbC4gSSBkb24ndCBuZWVkIGFueXRoaW5nIG5ldyDigJQganVzdCBzb21lb25lIHRvIHNlZSBtZSBvbmNlIGFuZCByZWZpbGwgdGhlIHNhbWUgcHJlc2NyaXB0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2xhY2tub3dsZWRnZWRnY29uc2VudKNmbWV0aG9keDZ2ZXJiYWwsIGluIHBlcnNvbiwgd2l0bmVzc2VkIGJ5IGNsaW5pYyBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfYnBfMDA5bHRpbWVzdGFtcElTT3QyMDI2LTA3LTAxVDEwOjE1OjAwWg==","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnrYsX1U1iLbj62ndluVeGSsSmLwFvhWVBMD7NH24agCOonFeYXzFo\/obiYje781KAmDYm7j5HUV3ADM8i13Bzw=="}},{"id":"or_seed_05","zone":"Hillcrest","ask":{"category":"work_docs","summary":"food handler card before a Monday restaurant shift","amountUsd":11},"story":{"raw":"[COMPOSITE — not a real individual] got offered a job at a restaurant on university ave, they need a food handler card before her first shift monday. says she has the ten dollars but not a way to get online long enough to finish the course and print the card.","shaped":"I was offered a job at a restaurant on University Avenue, and I need a food handler card before my first shift on Monday. I have the ten dollars for the course, but not reliable enough internet access to finish it and print the card in time. (Composite illustration.)"},"consent":{"advocateId":"adv_hc_042","method":"written, signed intake form","timestampISO":"2026-07-22T09:40:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.400Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA1Y2Fza6Nnc3VtbWFyeXgyZm9vZCBoYW5kbGVyIGNhcmQgYmVmb3JlIGEgTW9uZGF5IHJlc3RhdXJhbnQgc2hpZnRoY2F0ZWdvcnlpd29ya19kb2NzaWFtb3VudFVzZAtkem9uZWlIaWxsY3Jlc3Rlc3RvcnmiY3Jhd3kBBVtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IG9mZmVyZWQgYSBqb2IgYXQgYSByZXN0YXVyYW50IG9uIHVuaXZlcnNpdHkgYXZlLCB0aGV5IG5lZWQgYSBmb29kIGhhbmRsZXIgY2FyZCBiZWZvcmUgaGVyIGZpcnN0IHNoaWZ0IG1vbmRheS4gc2F5cyBzaGUgaGFzIHRoZSB0ZW4gZG9sbGFycyBidXQgbm90IGEgd2F5IHRvIGdldCBvbmxpbmUgbG9uZyBlbm91Z2ggdG8gZmluaXNoIHRoZSBjb3Vyc2UgYW5kIHByaW50IHRoZSBjYXJkLmZzaGFwZWR5AQtJIHdhcyBvZmZlcmVkIGEgam9iIGF0IGEgcmVzdGF1cmFudCBvbiBVbml2ZXJzaXR5IEF2ZW51ZSwgYW5kIEkgbmVlZCBhIGZvb2QgaGFuZGxlciBjYXJkIGJlZm9yZSBteSBmaXJzdCBzaGlmdCBvbiBNb25kYXkuIEkgaGF2ZSB0aGUgdGVuIGRvbGxhcnMgZm9yIHRoZSBjb3Vyc2UsIGJ1dCBub3QgcmVsaWFibGUgZW5vdWdoIGludGVybmV0IGFjY2VzcyB0byBmaW5pc2ggaXQgYW5kIHByaW50IHRoZSBjYXJkIGluIHRpbWUuIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4G3dyaXR0ZW4sIHNpZ25lZCBpbnRha2UgZm9ybWphZHZvY2F0ZUlkamFkdl9oY18wNDJsdGltZXN0YW1wSVNPdDIwMjYtMDctMjJUMDk6NDA6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAGIm0pwYJ1GlCwa17oeSwGxWTNCRF7gX2PlXj6HTkG73tu+THDhJwQbL9uIaBLWqdn7SQSxcvAK1RFRUq1dbndQ=="}},{"id":"or_seed_06","zone":"Chula Vista","ask":{"category":"phone","summary":"a phone to reach a case worker about a housing voucher"},"story":{"raw":"[COMPOSITE — not a real individual] phone got taken in a fight at the shelter, cant call the case worker back or check on the housing voucher application. says he missed one callback already because there was no way to reach him.","shaped":"My phone was taken in a fight at the shelter. I can't call my case worker back or check on my housing voucher application, and I already missed one callback because there was no way to reach me. (Composite illustration.)"},"consent":{"advocateId":"adv_cv_018","method":"verbal, in person, witnessed by shelter staff","timestampISO":"2026-06-11T16:50:00Z"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"13c67d22073e54bf9eb09c2bd14f0639a92204b1d10a927fd514264b98ecceba","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.400Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA2Y2Fza6Jnc3VtbWFyeXg2YSBwaG9uZSB0byByZWFjaCBhIGNhc2Ugd29ya2VyIGFib3V0IGEgaG91c2luZyB2b3VjaGVyaGNhdGVnb3J5ZXBob25lZHpvbmVrQ2h1bGEgVmlzdGFlc3RvcnmiY3Jhd3jnW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBwaG9uZSBnb3QgdGFrZW4gaW4gYSBmaWdodCBhdCB0aGUgc2hlbHRlciwgY2FudCBjYWxsIHRoZSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIHRoZSBob3VzaW5nIHZvdWNoZXIgYXBwbGljYXRpb24uIHNheXMgaGUgbWlzc2VkIG9uZSBjYWxsYmFjayBhbHJlYWR5IGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBoaW0uZnNoYXBlZHjcTXkgcGhvbmUgd2FzIHRha2VuIGluIGEgZmlnaHQgYXQgdGhlIHNoZWx0ZXIuIEkgY2FuJ3QgY2FsbCBteSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIG15IGhvdXNpbmcgdm91Y2hlciBhcHBsaWNhdGlvbiwgYW5kIEkgYWxyZWFkeSBtaXNzZWQgb25lIGNhbGxiYWNrIGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBtZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4LXZlcmJhbCwgaW4gcGVyc29uLCB3aXRuZXNzZWQgYnkgc2hlbHRlciBzdGFmZmphZHZvY2F0ZUlkamFkdl9jdl8wMThsdGltZXN0YW1wSVNPdDIwMjYtMDYtMTFUMTY6NTA6MDBa","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAVgthlqtN4cO4Nw8\/Y7b44JokTpkmb3F53GMZ9oKqn\/GzWEYZbbig62u3YC62qEWheRFJRU19SJ3khQUfqLf9ow=="}},{"id":"or_seed_07","zone":"El Cajon","ask":{"category":"childcare","summary":"childcare for the morning of a warehouse job interview"},"story":{"raw":"[COMPOSITE — not a real individual] has an interview lined up at a warehouse but no one to watch her three year old that morning, says her sister used to help but moved to arizona in the spring. missing the interview means waiting another month for the next opening.","shaped":"I have a job interview lined up at a warehouse, but no one to watch my three-year-old that morning. My sister used to help, but she moved to Arizona this spring. If I miss the interview, the next opening isn't for another month. (Composite illustration.)"},"consent":{"advocateId":"adv_ec_031","method":"verbal, recorded with permission","timestampISO":"2026-07-30T08:05:00Z"},"status":"requested","provenance":{"alg":"COSE-ES256","contentHash":"d15c06d9b3039f5173e2ce41901a788e68ee9b879ef5d635ac3f2463d16fe580","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.400Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"pmJpZGpvcl9zZWVkXzA3Y2Fza6Jnc3VtbWFyeXg2Y2hpbGRjYXJlIGZvciB0aGUgbW9ybmluZyBvZiBhIHdhcmVob3VzZSBqb2IgaW50ZXJ2aWV3aGNhdGVnb3J5aWNoaWxkY2FyZWR6b25laEVsIENham9uZXN0b3J5omNyYXd5AQxbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIGhhcyBhbiBpbnRlcnZpZXcgbGluZWQgdXAgYXQgYSB3YXJlaG91c2UgYnV0IG5vIG9uZSB0byB3YXRjaCBoZXIgdGhyZWUgeWVhciBvbGQgdGhhdCBtb3JuaW5nLCBzYXlzIGhlciBzaXN0ZXIgdXNlZCB0byBoZWxwIGJ1dCBtb3ZlZCB0byBhcml6b25hIGluIHRoZSBzcHJpbmcuIG1pc3NpbmcgdGhlIGludGVydmlldyBtZWFucyB3YWl0aW5nIGFub3RoZXIgbW9udGggZm9yIHRoZSBuZXh0IG9wZW5pbmcuZnNoYXBlZHj+SSBoYXZlIGEgam9iIGludGVydmlldyBsaW5lZCB1cCBhdCBhIHdhcmVob3VzZSwgYnV0IG5vIG9uZSB0byB3YXRjaCBteSB0aHJlZS15ZWFyLW9sZCB0aGF0IG1vcm5pbmcuIE15IHNpc3RlciB1c2VkIHRvIGhlbHAsIGJ1dCBzaGUgbW92ZWQgdG8gQXJpem9uYSB0aGlzIHNwcmluZy4gSWYgSSBtaXNzIHRoZSBpbnRlcnZpZXcsIHRoZSBuZXh0IG9wZW5pbmcgaXNuJ3QgZm9yIGFub3RoZXIgbW9udGguIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRqYWR2X2VjXzAzMWx0aW1lc3RhbXBJU090MjAyNi0wNy0zMFQwODowNTowMFo=","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAwsT2KSdJx2y7OztY2nvljAyXV4SS0rI2UT4mKrrsFFOWzHhPEZicrGgB+fCrnVGpwCxzFFz3W7dykTHO78jSzg=="}},{"id":"or_seed_08","zone":"La Mesa","ask":{"category":"shelter_bed","summary":"any available shelter bed, no location preference"},"story":{"raw":"[COMPOSITE — not a real individual] been on the coordinated entry list since february, keeps getting told hes close but nothing opens up. cold at night now, says he'd take anything with four walls at this point, doesnt care about location.","shaped":"I have been on the coordinated entry list since February. I keep getting told I'm close, but nothing opens up. It's cold at night now — I would take anything with four walls at this point; I don't care about location. (Composite illustration.)"},"consent":{"advocateId":"adv_lm_006","method":"written, signed intake form","timestampISO":"2026-04-28T19:30:00Z"},"shelterStatus":{"bedStatus":"full","estimatedOpenings":0,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":true,"requiresCleanScreen":false,"hasHardCurfew":false},"storagePolicy":"cart_allowed","safetyVolatility":"low"},"status":"unanswered","provenance":{"alg":"COSE-ES256","contentHash":"544e93139a49d366c154a70235a69a75d6e1b2d40ccd51600ca8021307176b37","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.401Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"p2JpZGpvcl9zZWVkXzA4Y2Fza6Jnc3VtbWFyeXgxYW55IGF2YWlsYWJsZSBzaGVsdGVyIGJlZCwgbm8gbG9jYXRpb24gcHJlZmVyZW5jZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25lZ0xhIE1lc2Flc3RvcnmiY3Jhd3jxW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIGZlYnJ1YXJ5LCBrZWVwcyBnZXR0aW5nIHRvbGQgaGVzIGNsb3NlIGJ1dCBub3RoaW5nIG9wZW5zIHVwLiBjb2xkIGF0IG5pZ2h0IG5vdywgc2F5cyBoZSdkIHRha2UgYW55dGhpbmcgd2l0aCBmb3VyIHdhbGxzIGF0IHRoaXMgcG9pbnQsIGRvZXNudCBjYXJlIGFib3V0IGxvY2F0aW9uLmZzaGFwZWR49UkgaGF2ZSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIEZlYnJ1YXJ5LiBJIGtlZXAgZ2V0dGluZyB0b2xkIEknbSBjbG9zZSwgYnV0IG5vdGhpbmcgb3BlbnMgdXAuIEl0J3MgY29sZCBhdCBuaWdodCBub3cg4oCUIEkgd291bGQgdGFrZSBhbnl0aGluZyB3aXRoIGZvdXIgd2FsbHMgYXQgdGhpcyBwb2ludDsgSSBkb24ndCBjYXJlIGFib3V0IGxvY2F0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2p1bmFuc3dlcmVkZ2NvbnNlbnSjZm1ldGhvZHgbd3JpdHRlbiwgc2lnbmVkIGludGFrZSBmb3JtamFkdm9jYXRlSWRqYWR2X2xtXzAwNmx0aW1lc3RhbXBJU090MjAyNi0wNC0yOFQxOTozMDowMFptc2hlbHRlclN0YXR1c6VpYmVkU3RhdHVzZGZ1bGxscmVzdHJpY3Rpb25zpG1hbGxvd3NDYW5pbmVz9G1oYXNIYXJkQ3VyZmV39HNyZXF1aXJlc0NsZWFuU2NyZWVu9HRhbGxvd3NXZWFwb25zU3RvcmFnZfVtc3RvcmFnZVBvbGljeWxjYXJ0X2FsbG93ZWRwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MA","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAG0hSA8tL8gqhQW2rpUZCWShdeeeTSMNkC\/vgaSiMBssxAU\/qTeq33xylSypHIW8aPGYP4ueD1W0Qer6Tluqwlw=="}},{"id":"or_seed_09","zone":"East Village","ask":{"category":"shelter_bed","summary":"an open bed reported for tonight, first-come basis"},"story":{"raw":"[COMPOSITE — not a real individual] outreach worker called ahead and confirmed two beds open tonight, no waitlist right now. says the front desk stops taking new intakes at 9, and they do a breathalyzer at the door, no exceptions.","shaped":"An outreach worker called ahead and confirmed two beds are open tonight, with no waitlist right now. The front desk stops taking new intakes at 9pm, and there is a breathalyzer check at the door with no exceptions. (Composite illustration.)"},"consent":{"advocateId":"adv_ev_051","method":"verbal, in person, witnessed by outreach worker","timestampISO":"2026-08-02T21:10:00Z"},"shelterStatus":{"bedStatus":"open","estimatedOpenings":2,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":false,"requiresCleanScreen":true,"hasHardCurfew":true,"curfewTime":"21:00"},"storagePolicy":"secure_lockers","safetyVolatility":"low"},"status":"acknowledged","provenance":{"alg":"COSE-ES256","contentHash":"41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14","pubKey":"MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY\/sAGRJRCQ7sKlL4zJhw==","manifestVersion":"1.2","signedAtISO":"2026-08-14T21:00:52.401Z","protocolVersion":"2.0","issuer":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN","verificationMethod":"did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1","cborPayload":"p2JpZGpvcl9zZWVkXzA5Y2Fza6Jnc3VtbWFyeXgyYW4gb3BlbiBiZWQgcmVwb3J0ZWQgZm9yIHRvbmlnaHQsIGZpcnN0LWNvbWUgYmFzaXNoY2F0ZWdvcnlrc2hlbHRlcl9iZWRkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3joW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBvdXRyZWFjaCB3b3JrZXIgY2FsbGVkIGFoZWFkIGFuZCBjb25maXJtZWQgdHdvIGJlZHMgb3BlbiB0b25pZ2h0LCBubyB3YWl0bGlzdCByaWdodCBub3cuIHNheXMgdGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDksIGFuZCB0aGV5IGRvIGEgYnJlYXRoYWx5emVyIGF0IHRoZSBkb29yLCBubyBleGNlcHRpb25zLmZzaGFwZWR48EFuIG91dHJlYWNoIHdvcmtlciBjYWxsZWQgYWhlYWQgYW5kIGNvbmZpcm1lZCB0d28gYmVkcyBhcmUgb3BlbiB0b25pZ2h0LCB3aXRoIG5vIHdhaXRsaXN0IHJpZ2h0IG5vdy4gVGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDlwbSwgYW5kIHRoZXJlIGlzIGEgYnJlYXRoYWx5emVyIGNoZWNrIGF0IHRoZSBkb29yIHdpdGggbm8gZXhjZXB0aW9ucy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNsYWNrbm93bGVkZ2VkZ2NvbnNlbnSjZm1ldGhvZHgvdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfZXZfMDUxbHRpbWVzdGFtcElTT3QyMDI2LTA4LTAyVDIxOjEwOjAwWm1zaGVsdGVyU3RhdHVzpWliZWRTdGF0dXNkb3BlbmxyZXN0cmljdGlvbnOlamN1cmZld1RpbWVlMjE6MDBtYWxsb3dzQ2FuaW5lc\/RtaGFzSGFyZEN1cmZld\/VzcmVxdWlyZXNDbGVhblNjcmVlbvV0YWxsb3dzV2VhcG9uc1N0b3JhZ2X0bXN0b3JhZ2VQb2xpY3luc2VjdXJlX2xvY2tlcnNwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MC","coseSign1":"0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA5I0LvwnzbEqF2Iw1SDsAolRqC+eyvooWKM91mgsgoB5LbWsmJzn0y4X59ZFhDiWUOPVlJXq+xKjL\/QNi8a65Yg=="}}] /* ONRECORD_V2_DATA_END */;
 /* Community-plan boundaries change over time (e.g. real CPA data superseded the
    hand-drawn "East Village" polygon by folding it into "Downtown"). A signed
    record's zone is part of its hashed payload and must never be edited after
@@ -1606,8 +1687,13 @@ function projectV2(e){
   return {id:e.id, zone:ZONE_ALIASES[slug] || slug, status:e.status,
     ask:{category:e.ask.category, summary:e.ask.summary, amountUsd:e.ask.amountUsd ?? null},
     story:e.story, facts:[], consent:{advocateId:consent.advocateId, method:consent.method, timestamp:consent.timestampISO},
-    provenance:e.provenance, recovery:e.recovery, shelterStatus:e.shelterStatus, __v2Zone:e.zone, __v2ConsentTimestamp:consent.timestampISO};
+    provenance:e.provenance, recovery:e.recovery, shelterStatus:e.shelterStatus, domainPayload:e.domainPayload, sourceClass:e.sourceClass,
+    __v2Zone:e.zone, __v2ConsentTimestamp:consent.timestampISO};
 }
+/* sourceClass must survive projectV2: v2Unsigned() (below) conditionally includes it
+   in the bytes that get hashed and verified, keyed off this same projected object —
+   drop it here and a legitimate self_attested_witness entry's re-derived digest would
+   no longer match its signed contentHash, rendering a valid entry as SEAL BROKEN. */
 /* projectV2 tolerates a missing/incomplete consent object (falls back to {}) precisely
    so a bad record can't throw here and blank the whole page — instead it fails
    hasConsent below and is withheld, the same "consent or nothing" gate the SEED branch
@@ -1688,7 +1774,7 @@ function cbor(v){
 function cborRead(b,s={i:0}){const h=b[s.i++],m=h>>5,a=h&31;const len=()=>a<24?a:a===24?b[s.i++]:a===25?((b[s.i++]<<8)|b[s.i++]):(()=>{const n=new DataView(b.buffer,b.byteOffset+s.i,4).getUint32(0);s.i+=4;return n;})();if(m===6){len();return cborRead(b,s);}if(m===0)return len();if(m===1)return -1-len();if(m===2){const n=len(),x=b.slice(s.i,s.i+n);s.i+=n;return x;}if(m===3){const n=len(),x=DEC.decode(b.slice(s.i,s.i+n));s.i+=n;return x;}if(m===4){const n=len(),x=[];for(let i=0;i<n;i++)x.push(cborRead(b,s));return x;}if(m===5){const n=len(),x=new Map();for(let i=0;i<n;i++)x.set(cborRead(b,s),cborRead(b,s));return x;}if(m===7&&a===20)return false;if(m===7&&a===21)return true;if(m===7&&a===22)return null;if(m===7&&a===27){const x=new DataView(b.buffer,b.byteOffset+s.i,8).getFloat64(0);s.i+=8;return x;}throw Error("unsupported CBOR");}
 function b64bytes(v){const s=atob(v),o=new Uint8Array(s.length);for(let i=0;i<s.length;i++)o[i]=s.charCodeAt(i);return o;}
 function hexBytes(v){return Array.from(new Uint8Array(v)).map(x=>x.toString(16).padStart(2,"0")).join("");}
-function v2Unsigned(e){const o={id:e.id,zone:e.__v2Zone||e.zone,ask:{category:e.ask.category,summary:e.ask.summary},story:{raw:e.story.raw,shaped:e.story.shaped},consent:{advocateId:e.consent.advocateId,method:e.consent.method,timestampISO:e.__v2ConsentTimestamp||e.consent.timestamp},status:e.status};if(e.recovery)o.recovery={scheme:e.recovery.scheme,verifierTag:e.recovery.verifierTag};if(e.shelterStatus){const s=e.shelterStatus;o.shelterStatus={bedStatus:s.bedStatus,restrictions:{allowsCanines:s.restrictions.allowsCanines,allowsWeaponsStorage:s.restrictions.allowsWeaponsStorage,requiresCleanScreen:s.restrictions.requiresCleanScreen,hasHardCurfew:s.restrictions.hasHardCurfew},storagePolicy:s.storagePolicy,safetyVolatility:s.safetyVolatility};if(s.estimatedOpenings!==undefined&&s.estimatedOpenings!==null)o.shelterStatus.estimatedOpenings=s.estimatedOpenings;if(s.restrictions.curfewTime!==undefined&&s.restrictions.curfewTime!==null)o.shelterStatus.restrictions.curfewTime=s.restrictions.curfewTime;}if(e.ask.amountUsd!==null&&e.ask.amountUsd!==undefined)o.ask.amountUsd=e.ask.amountUsd;return o;}
+function v2Unsigned(e){const o={id:e.id,zone:e.__v2Zone||e.zone,ask:{category:e.ask.category,summary:e.ask.summary},story:{raw:e.story.raw,shaped:e.story.shaped},consent:{advocateId:e.consent.advocateId,method:e.consent.method,timestampISO:e.__v2ConsentTimestamp||e.consent.timestamp},status:e.status};if(e.sourceClass)o.sourceClass=e.sourceClass;if(e.recovery)o.recovery={scheme:e.recovery.scheme,verifierTag:e.recovery.verifierTag};if(e.shelterStatus){const s=e.shelterStatus;o.shelterStatus={bedStatus:s.bedStatus,restrictions:{allowsCanines:s.restrictions.allowsCanines,allowsWeaponsStorage:s.restrictions.allowsWeaponsStorage,requiresCleanScreen:s.restrictions.requiresCleanScreen,hasHardCurfew:s.restrictions.hasHardCurfew},storagePolicy:s.storagePolicy,safetyVolatility:s.safetyVolatility};if(s.estimatedOpenings!==undefined&&s.estimatedOpenings!==null)o.shelterStatus.estimatedOpenings=s.estimatedOpenings;if(s.restrictions.curfewTime!==undefined&&s.restrictions.curfewTime!==null)o.shelterStatus.restrictions.curfewTime=s.restrictions.curfewTime;}if(e.domainPayload)o.domainPayload={kind:e.domainPayload.kind,data:e.domainPayload.data};if(e.ask.amountUsd!==null&&e.ask.amountUsd!==undefined)o.ask.amountUsd=e.ask.amountUsd;return o;}
 /* Ported from src/did.ts so the browser can run the SAME issuer self-consistency
    check verifyCoseEntry() (src/sign.ts) requires — re-derive did:key from the
    entry's own pubKey and confirm it matches the stated issuer/verificationMethod.
@@ -1719,11 +1805,13 @@ async function verifyV2(e){
   return {ok:hashMatch&&sigOk,hashMatch,sigOk,byteLen:payload.length,digest};
 }
 function canonEntry(e){
-  return JSON.stringify({id:e.id, zone:e.zone, status:e.status, ask_category:e.ask.category,
+  const o={id:e.id, zone:e.zone, status:e.status, ask_category:e.ask.category,
     ask_summary:e.ask.summary, ask_amount_usd:(e.ask.amountUsd==null?null:e.ask.amountUsd),
     story_raw:e.story.raw, story_shaped:e.story.shaped, consent_advocate_id:e.consent.advocateId,
     consent_method:e.consent.method, consent_timestamp:e.consent.timestamp,
-    geo_precision:"neighborhood_centroid", composite:true});
+    geo_precision:"neighborhood_centroid", composite:true};
+  if(e.sourceClass)o.source_class=e.sourceClass;
+  return JSON.stringify(o);
 }
 function canonMsg(spotId, m, seq){
   return JSON.stringify({spot_id:spotId, seq:seq, side:m.side, text:m.text, posted:m.ts,
@@ -1922,7 +2010,8 @@ function zoomBy(f){ flyTo((VBW/2-view.x)/view.k, (VBH/2-view.y)/view.k, view.k*f
    ========================================================= */
 const state = {selected:null, spot:null, focusedZone:null, view:"shaped", manifestOpen:false,
   tab:"trends", leftTab:"asks", status:"all", category:"all", panelOpen:true,
-  layers:{asks:true, spots:true, heat:true, svc:true}, needs:new Set(), svc:null};
+  layers:{asks:true, spots:true, heat:true, svc:true}, needs:new Set(), svc:null,
+  shelterEntry:null};
 const STEPS = [{k:"map",t:"Explore"},{k:"zone",t:"Drill in"},{k:"story",t:"Open a story"},
   {k:"words",t:"Their words / AI"},{k:"prov",t:"Provenance"},{k:"tamper",t:"Tamper"},
   {k:"cg",t:"Common ground"},{k:"post",t:"Post to a place"},{k:"author",t:"Open with a card"},{k:"offer",t:"Answer an ask"},{k:"claim",t:"Claim card"},{k:"chat",t:"File a request"},{k:"dash",t:"Non-response"}];
@@ -2076,11 +2165,36 @@ function buildMap(){
   }
 
   ENTRIES.forEach(e => {
-    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status)+'">'
+    /* self_attested_witness is a contributor's own unreviewed report, signed with a
+       pseudonymous contributor key (src/gateway/contributor-identity.ts) — never the
+       advocate-mediated intake this map otherwise shows. It must read as visually
+       distinct from the seal-verified indicator (e.prov.ok, drawn via .broken/sealGlyph
+       elsewhere) and must never claim "verified": the pin below only ever says "Street
+       Pulse", and .pin.witness below shares no class or icon with .pin.broken/.sealchip. */
+    const witness = e.sourceClass === "self_attested_witness";
+    /* Layered zone visualizer (#23): a shelter_bed ask that carries a shelterStatus
+       report gets a diamond bed-status indicator (red = full/turning_away, yellow =
+       unknown, green = open — see the .pin.bed-* rules above) in place of the round
+       text-bubble every other category renders. It is positioned at this entry's
+       existing e._x/e._y, itself derived from DISTRICTS[e.zone].cx/cy/w/h in "LAYOUT
+       OF MARKERS" above — the zone's real polygon geometry, not a new coordinate
+       field on the entry. Non-shelter asks (and shelter_bed asks with no reported
+       status) fall through to the unchanged text-bubble rendering. */
+    const bed = e.ask.category === "shelter_bed" && e.shelterStatus ? e.shelterStatus.bedStatus : null;
+    /* #30: a self_reported_count witness pin shows its headcount right on the
+       label — still under the "Street Pulse" name, never blended with bed
+       status or an ask category, and never read as the DOWNTOWN_UNSHELTERED
+       survey figure it sits next to on the Trends tab. */
+    const selfCount = witness && e.domainPayload && e.domainPayload.kind === "self_reported_count" ? e.domainPayload.data.count : null;
+    const plabel = selfCount != null ? "Street Pulse · "+esc(String(selfCount)) : witness ? "Street Pulse" : bed ? BED_STATUS_LABEL[bed] : CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"");
+    const ariaTail = (witness?', Street Pulse — unreviewed street report':'')+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status);
+    const core = bed
+      ? '<rect class="core" x="-5.6" y="-5.6" width="11.2" height="11.2" transform="rotate(45)"/>'
+      : '<circle class="core" cx="0" cy="0" r="6.5"/><circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>';
+    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+(witness?" witness":"")+(bed?" bed-"+bed:"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+ariaTail+'">'
        + '<circle class="ripple" cx="0" cy="0" r="9"/><circle class="halo" cx="0" cy="0" r="26"/>'
-       + '<circle class="ring" cx="0" cy="0" r="14"/><circle class="core" cx="0" cy="0" r="6.5"/>'
-       + '<circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>'
-       + '<text class="plabel" x="0" y="-15">'+CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"")+'</text></g>';
+       + '<circle class="ring" cx="0" cy="0" r="14"/>' + core
+       + '<text class="plabel" x="0" y="-15">'+plabel+'</text></g>';
   });
 
   SPOTS.forEach(sp => {
@@ -2145,7 +2259,18 @@ function buildMap(){
     g.addEventListener("click", fn); g.addEventListener("keydown", onKeydown(fn)); g.addEventListener("keyup", onKeyup(fn));
   });
   svg.querySelectorAll(".pin").forEach(g => {
-    const fn = ev => { ev.stopPropagation(); if(!dragMoved) select(g.dataset.id); };
+    const fn = ev => {
+      ev.stopPropagation();
+      if(dragMoved) return;
+      select(g.dataset.id);
+      /* Shelter status indicators (#24): a shelter_bed pin carrying a shelterStatus
+         report also opens the semantic metadata inspector, in addition to the normal
+         Story tab a click on any other pin opens (that tab is still how the tamper
+         affordance is reached, which the inspector's own state.shelterEntry tracks
+         separately and re-renders on — see onVerify/onTamper/onRestore). */
+      const ent = ENTRIES.find(x => x.id === g.dataset.id);
+      if(ent && ent.shelterStatus) openShelterInspector(g.dataset.id);
+    };
     g.addEventListener("click", fn); g.addEventListener("keydown", onKeydown(fn)); g.addEventListener("keyup", onKeyup(fn));
   });
   svg.querySelectorAll(".spot").forEach(g => {
@@ -2194,7 +2319,15 @@ function refreshMarkers(){
     g.classList.toggle("broken", !!(e.prov && !e.prov.ok));
     g.classList.toggle("pending", !!e.pendingReview);
     g.classList.toggle("selected", state.selected === e);
-    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status));
+    /* Bed status and sourceClass never change after buildMap (no code mutates shelterStatus
+       or sourceClass post-seed), but this handler runs immediately after the initial render
+       too (see buildMap's tail call) and overwrites aria-label unconditionally, so both the
+       bed-status wording and the Street Pulse suffix set there must be reproduced here or
+       they are lost before a screen reader ever sees them — see the matching comment on the
+       ENTRIES.forEach render loop above. */
+    const bed = e.ask.category === "shelter_bed" && e.shelterStatus ? e.shelterStatus.bedStatus : null;
+    const witness = e.sourceClass === "self_attested_witness";
+    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(witness?', Street Pulse — unreviewed street report':'')+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status));
   });
   SPOTS.forEach(sp => {
     const g = document.getElementById("sp-"+sp.id);
@@ -2447,6 +2580,57 @@ function openSpot(id){
 }
 
 /* =========================================================
+   10b. SEMANTIC METADATA INSPECTOR (#24)
+   A slide-in drawer, independent of the right detail panel, opened by clicking a
+   shelter_bed pin's diamond status indicator. Everything it shows comes straight off
+   the live in-memory entry (e.shelterStatus, e.prov.ok) — never re-derived — so tamper
+   state (verified via the Story tab's existing "Tamper with this record" affordance)
+   shows up here the instant onVerify() flips e.prov.ok. See the onVerify/onTamper/
+   onRestore hooks below, which call renderShelterInspector() again after each check.
+   ========================================================= */
+function openShelterInspector(id){
+  const e = ENTRIES.find(x => x.id === id);
+  if(!e || !e.shelterStatus) return;
+  state.shelterEntry = e;
+  const el = document.getElementById("shelterinspector");
+  el.hidden = false;
+  renderShelterInspector();
+  requestAnimationFrame(() => el.classList.add("open"));
+  say("Opened shelter status for " + e.id + ".");
+}
+function closeShelterInspector(){
+  const el = document.getElementById("shelterinspector");
+  el.classList.remove("open");
+  state.shelterEntry = null;
+  setTimeout(() => { if(!el.classList.contains("open")) el.hidden = true; }, 340);
+}
+function renderShelterInspector(){
+  const el = document.getElementById("shelterinspector"), e = state.shelterEntry;
+  if(!el || !e || !e.shelterStatus) return;
+  const s = e.shelterStatus, r = s.restrictions;
+  // Same flag markers/list/dashboard already trust (refreshMarkers) — not a separate check.
+  const broken = !(e.prov && e.prov.ok);
+  const h = '<div class="si-head"><h2>Shelter status</h2><button class="pclose" id="siclose" type="button" aria-label="Close">&times;</button></div>'
+    + '<div class="si-body">'
+    + '<div class="eyebrow">'+esc(DISTRICTS[e.zone].label)+' &middot; record '+esc(e.id)+'</div>'
+    + (broken
+        ? '<div class="integrity bad" style="margin:10px 0 14px">&#9888; SEAL BROKEN &mdash; this record no longer verifies. The values below cannot be trusted.</div>'
+        : '<div class="integrity" style="margin:10px 0 14px">&#10003; Seal verified &mdash; read straight from the signed record.</div>')
+    + '<div class="si-fields'+(broken?' untrusted':'')+'">'
+    + '<span class="si-badge bed-'+esc(s.bedStatus)+'">'+esc(BED_STATUS_LABEL[s.bedStatus]||s.bedStatus)+'</span>'
+    + '<div class="si-row"><span class="k">Estimated openings</span><span class="v">'+(s.estimatedOpenings!==undefined && s.estimatedOpenings!==null ? s.estimatedOpenings : '&mdash;')+'</span></div>'
+    + '<div class="si-row"><span class="k">Canines allowed</span><span class="v">'+(r.allowsCanines?"Yes":"No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Weapons storage</span><span class="v">'+(r.allowsWeaponsStorage?"Yes":"No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Clean screen required</span><span class="v">'+(r.requiresCleanScreen?"Yes":"No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Hard curfew</span><span class="v">'+(r.hasHardCurfew ? "Yes, "+esc(r.curfewTime||"") : "No")+'</span></div>'
+    + '<div class="si-row"><span class="k">Storage policy</span><span class="v">'+esc(STORAGE_POLICY_LABEL[s.storagePolicy]||s.storagePolicy)+'</span></div>'
+    + '<div class="si-row"><span class="k">Safety volatility</span><span class="v">'+esc(SAFETY_LEVEL_LABEL[s.safetyVolatility]||s.safetyVolatility)+'</span></div>'
+    + '</div></div>';
+  setSafeHTML(el, h);
+  document.getElementById("siclose").onclick = closeShelterInspector;
+}
+
+/* =========================================================
    11. LISTS
    ========================================================= */
 function renderList(){
@@ -2529,6 +2713,11 @@ function renderStory(){
   const text = state.view === "raw" ? e.story.raw : e.story.shaped;
 
   setSafeHTML(host, '<div class="story">'
+   + (e.sourceClass === "self_attested_witness" ? '<div class="pulsebadge">'+pulseGlyph()
+       + '<span class="txt">Street Pulse &#183; unreviewed street report, not advocate-mediated</span></div>' : '')
+   + (e.sourceClass === "self_attested_witness" && e.domainPayload && e.domainPayload.kind === "self_reported_count" ? '<div class="pulsebadge" style="margin-top:6px">'+pulseGlyph()
+       + '<span class="txt">Self-reported count: '+esc(String(e.domainPayload.data.count))+' people'+(e.domainPayload.data.area?' &#183; '+esc(String(e.domainPayload.data.area)):'')
+       + ' &#183; a corroborating signal, not part of the DSDP/H-Hub survey series on the Trends tab</span></div>' : '')
    + (e.pendingReview ? '<div class="integrity" style="margin-top:0;margin-bottom:12px">&#9678; Filed through the intake chat, awaiting advocate review. '
        + 'Not counted on the Accountability tab until reviewed. <button class="btn btn-restore" id="markreviewed" type="button" style="margin-top:8px;display:block">Mark reviewed (advocate, demo)</button></div>' : '')
    + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
@@ -2596,10 +2785,17 @@ function renderStory(){
   if(oc) oc.onclick = () => {
     const c = CODES[e.id];
     if(!c) return;
-    document.getElementById("access").hidden = false;
+    const accessEl = document.getElementById("access");
+    rememberFocus(accessEl);
+    accessEl.hidden = false;
     document.getElementById("acphrase").value = c.phrase;
     document.getElementById("acpin").value = c.pin;
     renderIssuers(); openByCode();
+    // This is the one dialog-open path that doesn't already set its own initial
+    // focus (show()'s setTimeout->acphrase.focus() and the other three modals'
+    // focusableIn() call all do) — without it, focus stays on the now-covered
+    // "Open it as them" button behind the scrim until the next Tab press.
+    const t = focusableIn(accessEl)[0]; if(t) t.focus();
   };
   document.getElementById("jumpdash").onclick = () => setTab("dash");
   host.querySelectorAll("[data-offer]").forEach(b => b.onclick = () => {
@@ -2610,6 +2806,11 @@ function renderStory(){
 function sealGlyph(broken){
   if(!broken) return '<svg class="glyph" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--ok)" stroke-width="1.4" opacity=".55"/><circle cx="16" cy="16" r="8.5" fill="var(--ok-dim)" stroke="var(--ok)" stroke-width="1"/><path d="M11.6 16.2 L14.8 19.3 L20.6 12.9" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   return '<svg class="glyph" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--broken)" stroke-width="1.4" opacity=".5" stroke-dasharray="4 3"/><path d="M16 3.5 L12.5 12 L18.5 15 L14 28.5" fill="none" stroke="var(--broken)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 9 L26.5 6.5 M25.5 16 L29 16 M6 9 L2.5 6.5" stroke="var(--broken)" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>';
+}
+/* Street Pulse's own icon — a signal-bars glyph, sharing no path data or class with
+   sealGlyph()'s check/X shapes. Used only to mean "contributor report", never provenance. */
+function pulseGlyph(){
+  return '<svg class="picon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--muted)" stroke-width="1.4" opacity=".5"/><path d="M9 20 L9 13 M16 20 L16 8 M23 20 L23 16" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"/></svg>';
 }
 function manifestHTML(e){
   const p = e.prov;
@@ -2656,6 +2857,9 @@ async function onVerify(){
     oldGlyph.replaceWith(glyphHost.firstElementChild);
   }
   refreshMarkers(); renderList(); renderDash();
+  /* Keeps the shelter inspector in sync with e.prov.ok even when it's showing a
+     different entry than state.selected — renderShelterInspector() no-ops otherwise. */
+  if(state.shelterEntry === e) renderShelterInspector();
   say(r.ok ? "Record verified." : "Verification failed. The seal is broken.");
 }
 async function onTamper(){
@@ -2831,6 +3035,20 @@ function downtownDetailHTML(){
   const overlapUnsheltered = overlapMonths.map(m => u.counts[m]);
   const overlapR = overlapMonths.length > 1 ? pearsonR(overlapReports, overlapUnsheltered) : null;
 
+  /* #30: self-reported street counts (domainPayload.kind "self_reported_count"),
+     contributor-signed under sourceClass self_attested_witness. Pulled straight
+     from ENTRIES and rendered in their own barsec below — never folded into
+     uMonths/uVals or any average computed from u.counts above. */
+  const selfReported = ENTRIES.filter(e => e.zone === "Downtown" && e.sourceClass === "self_attested_witness" && e.domainPayload && e.domainPayload.kind === "self_reported_count")
+    .slice().sort((a,b) => (b.domainPayload.data.reportedAtISO || b.consent.timestampISO || "").localeCompare(a.domainPayload.data.reportedAtISO || a.consent.timestampISO || ""));
+  const selfReportedHTML = selfReported.length
+    ? '<div class="barsec" style="margin-top:12px"><h4>Self-reported street counts &#183; Street Pulse, unreviewed</h4>'
+      + selfReported.map(e => '<div class="pulsebadge" style="margin-top:6px"><span class="txt">'
+          + esc(String(e.domainPayload.data.count))+' people'+(e.domainPayload.data.area?' &#183; '+esc(String(e.domainPayload.data.area)):'')
+          + ' &#183; '+esc((e.domainPayload.data.reportedAtISO || e.consent.timestampISO || "").slice(0,10))+'</span></div>').join("")
+      + '<p class="disclaim" style="margin-top:9px">These are individual contributors’ own street-level headcounts, signed under their own pseudonymous contributor key — never the org’s signing key, never advocate-mediated. They are a corroborating signal alongside the DSDP/H-Hub survey below, not audited or deduplicated against it or against each other, and never summed into that series’ totals.</p></div>'
+    : '';
+
   return '<div class="eyebrow" style="margin-top:18px">Downtown, block by block</div>'
     + '<p class="defn">The hackathon’s Downtown Homelessness track asked for finer grain than a citywide view gives. Below: which corridors are getting more or fewer reports than in 2024, how long a report here typically stays open, and what happens to it.</p>'
     + '<div class="barsec"><h4>Most-reported corridors · Jan 2024–Jul 2026 · pace vs 2024</h4>' + corridorRows
@@ -2850,6 +3068,7 @@ function downtownDetailHTML(){
     + '</div>'
     + '<p class="disclaim" style="margin-top:9px">This is a separate, independent measurement from the 311 encampment reports above — DSDP staff and volunteers doing a street count, not residents filing reports — so agreement or disagreement between the two is itself informative. The footprints are close but not identical: DSDP surveys its own seven core Downtown neighborhoods, which do not include Little Italy, while the City’s DOWNTOWN community-plan area used for the 311 corridor list above does — Little Italy streets (State St, Cedar St, India St, Kettner Blvd, among others) show real report volume in the raw 311 data. The two charts’ time windows only partly overlap, too: the corridor list above covers Jan 2024–Jul 2026, this one runs 2014–2025, so the shared comparison window is really just 2024–2025. This is also not deduplicated across months: someone counted in back-to-back months is counted again each time, so read this as an estimate of people present per month, not a running total of unique people. Nine months in this window have no recorded count (dashed segments in the line above mark exactly where) and are skipped rather than shown as zero.</p>'
     + '<p class="footnote">'+esc(u.sourceNote)+'</p></div>'
+    + selfReportedHTML
     + (overlapMonths.length > 1 ? '<div class="barsec" style="margin-top:12px"><h4>Do the two measurements agree? · '+overlapMonths[0].slice(0,4)+'–'+overlapMonths[overlapMonths.length-1].slice(0,4)+', both indexed to their first shared month = 100</h4>'
       + svgDualSparkline(overlapMonths, overlapReports, overlapUnsheltered, {ariaLabel:"311 encampment reports vs. DSDP estimated unsheltered people, both indexed to 100 at the first shared month", labelA:"311 encampment reports", labelB:"DSDP estimated unsheltered people"})
       + '<div class="metrics" style="margin-top:6px">'
@@ -3131,7 +3350,7 @@ function renderUnlocked(){
     + '<p class="disclaim" style="margin-top:12px">Only you can add to this record and only an advocate can change the consent on it. Nobody who offered help sees who you are, and you never see who they are, until an advocate routes it.</p>'
     + '</div></div>';
   document.getElementById("upgo").onclick = addUpdate;
-  document.getElementById("upclose").onclick = () => { document.getElementById("claimmodal").hidden = true; claimHome(); };
+  document.getElementById("upclose").onclick = () => { closeModal(document.getElementById("claimmodal")); claimHome(); };
   document.getElementById("upresolved").onclick = async () => {
     claimUnlocked.status = "answered";
     await addUpdate("Marked answered by the record holder.");
@@ -3495,7 +3714,7 @@ function renderIssuers(){
     '<button class="arow" type="button" data-svc="'+v.id+'"><span style="width:7px;height:7px;border-radius:50%;margin-top:5px;flex:none;background:var(--ok)"></span>'
     + '<span><span class="t">'+esc(v.name)+'</span><span class="d">'+DISTRICTS[v.zone].label+' · '+esc(v.hours)+' · '+esc(v.intake)+'</span></span></button>').join("");
   document.getElementById("acissuers").querySelectorAll("[data-svc]").forEach(b =>
-    b.onclick = () => { document.getElementById("access").hidden = true; openService(b.dataset.svc); });
+    b.onclick = () => { closeModal(document.getElementById("access")); openService(b.dataset.svc); });
 }
 
 async function openByCode(){
@@ -3599,12 +3818,45 @@ function makeDemoCard(){
     + 'This site stores a keyed hash of it and never the words themselves, so nobody here, and nobody who subpoenas this site, can turn it back into you.</div></div>';
 }
 
+/* =========================================================
+   16a2. MODAL FOCUS MANAGEMENT — shared by every role="dialog"
+   aria-modal="true" overlay (claimmodal, access, providermodal, modal).
+   None of the four trapped keyboard focus on their own: a sighted mouse
+   user never notices, but a keyboard user can Tab straight out of an
+   open dialog into the map/panel behind the scrim it visually covers.
+   rememberFocus/closeModal also restore focus to whatever opened the
+   dialog, matching the W3C APG dialog pattern every one of these
+   already declares via aria-modal="true" but didn't implement. */
+function rememberFocus(el){ el._returnFocus = document.activeElement; }
+function focusableIn(el){
+  return Array.from(el.querySelectorAll(
+    'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])'
+  )).filter(x => x.offsetParent !== null);
+}
+function closeModal(el){
+  el.hidden = true;
+  const back = el._returnFocus;
+  el._returnFocus = null;
+  if(back && document.body.contains(back) && typeof back.focus === "function") back.focus();
+}
+function trapModalTab(ev){
+  const openEl = [document.getElementById("claimmodal"), document.getElementById("access"),
+    document.getElementById("providermodal"), document.getElementById("modal")].find(m => m && !m.hidden);
+  if(!openEl) return;
+  const items = focusableIn(openEl);
+  if(!items.length) return;
+  const first = items[0], last = items[items.length - 1];
+  if(ev.shiftKey && document.activeElement === first){ ev.preventDefault(); last.focus(); }
+  else if(!ev.shiftKey && document.activeElement === last){ ev.preventDefault(); first.focus(); }
+  else if(!openEl.contains(document.activeElement)){ ev.preventDefault(); first.focus(); }
+}
+
 function wireAccess(){
   const m = document.getElementById("access");
-  const show = () => { m.hidden = false; renderIssuers(); setTimeout(()=>document.getElementById("acphrase").focus(),40); };
+  const show = () => { rememberFocus(m); m.hidden = false; renderIssuers(); setTimeout(()=>document.getElementById("acphrase").focus(),40); };
   document.getElementById("accessbtn").onclick = show;
-  document.getElementById("acclose").onclick = () => { m.hidden = true; };
-  m.addEventListener("click", ev => { if(ev.target === m) m.hidden = true; });
+  document.getElementById("acclose").onclick = () => { closeModal(m); };
+  m.addEventListener("click", ev => { if(ev.target === m) closeModal(m); });
   document.getElementById("acopen").onclick = openByCode;
   document.getElementById("acgen").onclick = makeDemoCard;
   document.getElementById("acpin").addEventListener("keydown", ev => { if(ev.key === "Enter") openByCode(); });
@@ -3731,6 +3983,19 @@ function renderChat(){
   setSafeHTML(host, chat.log.map(m => '<div class="cmsg '+m.role+'">'+m.html+'</div>').join("") + controls);
   host.scrollTop = host.scrollHeight;
   wireChatControls();
+  /* setSafeHTML above tears down and rebuilds #chatbody's whole subtree on every phase
+     transition, so whatever previously held focus in here is gone and the browser's
+     default is to drop focus back to <body> — invisible on screen (the new buttons are
+     right there to click) but disorienting for a keyboard user, whose next Tab now
+     restarts from the top of the page instead of continuing the conversation. Move
+     focus to the first control of the new phase, same idea as access's own acphrase
+     autofocus on open. Only #cmsg text (never chat.data.rawText/.clean, which the
+     "consent" phase renders straight into `controls` above, not chat.log) is ever
+     read out, so a redacted/unredacted preview never reaches this announcement. */
+  const last = chat.log[chat.log.length - 1];
+  if(last && (last.role === "bot" || last.role === "crisis")) say(last.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+  const focusTarget = host.querySelector("textarea, select, input, button");
+  if(focusTarget) focusTarget.focus({preventScroll: true});
 }
 function wireChatControls(){
   const $ = id => document.getElementById(id);
@@ -3838,7 +4103,12 @@ async function submitIntake(){
   chat.phase = "done"; renderChat();
   say("Record " + id + " filed through the intake chat.");
 }
-function closeChat(){ document.getElementById("chatdock").hidden = true; resetChat(); }
+function closeChat(){
+  document.getElementById("chatdock").hidden = true;
+  resetChat();
+  const b = document.getElementById("chatbtn");
+  if(b) b.focus();
+}
 function wireChat(){
   resetChat();
   document.getElementById("chatbtn").onclick = () => { document.getElementById("chatdock").hidden = false; renderChat(); };
@@ -3960,9 +4230,12 @@ async function openProviderByCode(){
 }
 function wireProvider(){
   const m = document.getElementById("providermodal");
-  document.getElementById("providerbtn").onclick = () => { m.hidden = false; renderProvider(); };
-  document.getElementById("provclose").onclick = () => { m.hidden = true; };
-  m.addEventListener("click", ev => { if(ev.target === m) m.hidden = true; });
+  document.getElementById("providerbtn").onclick = () => {
+    rememberFocus(m); m.hidden = false; renderProvider();
+    const t = focusableIn(m)[0]; if(t) t.focus();
+  };
+  document.getElementById("provclose").onclick = () => { closeModal(m); };
+  m.addEventListener("click", ev => { if(ev.target === m) closeModal(m); });
 }
 
 /* =========================================================
@@ -4032,24 +4305,42 @@ async function boot(){
   });
 
   const claimModal = document.getElementById("claimmodal");
-  document.getElementById("claimbtn").onclick = () => { claimHome(); claimModal.hidden = false; };
-  claimModal.addEventListener("click", ev => { if(ev.target === claimModal) claimModal.hidden = true; });
+  document.getElementById("claimbtn").onclick = () => {
+    rememberFocus(claimModal); claimHome(); claimModal.hidden = false;
+    const t = focusableIn(claimModal)[0]; if(t) t.focus();
+  };
+  claimModal.addEventListener("click", ev => { if(ev.target === claimModal) closeModal(claimModal); });
   const modal = document.getElementById("modal");
-  document.getElementById("moreinfo").onclick = () => { modal.hidden=false; document.getElementById("closemodal").focus(); };
-  document.getElementById("closemodal").onclick = () => { modal.hidden=true; };
-  modal.addEventListener("click", ev => { if(ev.target===modal) modal.hidden=true; });
+  document.getElementById("moreinfo").onclick = () => { rememberFocus(modal); modal.hidden=false; document.getElementById("closemodal").focus(); };
+  document.getElementById("closemodal").onclick = () => { closeModal(modal); };
+  modal.addEventListener("click", ev => { if(ev.target===modal) closeModal(modal); });
   const providerModal = document.getElementById("providermodal");
+  const accessModal = document.getElementById("access");
   document.addEventListener("keydown", ev => {
-    if(ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
+    const inField = ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName);
     if(ev.key === "Escape"){
+      /* chatdock is aria-modal="false" (a docked panel, not one of the four true
+         dialogs below) and its own fields hold in-progress intake text that
+         resetChat() would silently discard on close, so it only responds to Escape
+         when focus isn't mid-entry. The four aria-modal="true" dialogs make the
+         stronger "Escape always closes me" promise (W3C APG dialog pattern) and
+         close unconditionally, even from inside their own inputs — same as every
+         native browser modal, and previously true for none of the four here. */
       const cd = document.getElementById("chatdock");
-      if(!cd.hidden){ closeChat(); return; }
-      if(!claimModal.hidden){ claimModal.hidden=true; return; }
-      if(!providerModal.hidden){ providerModal.hidden=true; return; }
-      if(!modal.hidden){ modal.hidden=true; return; }
+      if(!cd.hidden){ if(!inField) closeChat(); return; }
+      const si = document.getElementById("shelterinspector");
+      if(!si.hidden){ closeShelterInspector(); return; }
+      if(!claimModal.hidden){ closeModal(claimModal); return; }
+      if(!accessModal.hidden){ closeModal(accessModal); return; }
+      if(!providerModal.hidden){ closeModal(providerModal); return; }
+      if(!modal.hidden){ closeModal(modal); return; }
+      if(inField) return;
       if(state.selected || state.spot){ state.selected=null; state.spot=null; renderStory(); renderCG(); refreshMarkers(); renderList(); }
       else if(state.focusedZone) resetView();
+      return;
     }
+    if(ev.key === "Tab"){ trapModalTab(ev); return; }
+    if(inField) return;
     if(ev.key === "+" || ev.key === "=") zoomBy(1.4);
     if(ev.key === "-") zoomBy(1/1.4);
     if(ev.key === "0") resetView();

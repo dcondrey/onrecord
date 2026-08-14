@@ -30,3 +30,8 @@ npm-debug.log*
 # deliberately not committed: the whole point of `on-record withdraw` is that
 # the entry is gone from the public record, not relocated into git history.
 data/withdrawn.json
+
+# SMS gateway review queue — signed but unreviewed contributor submissions
+# (src/gateway/sms.ts). Not committed for the same reason: it holds real
+# story content that has not cleared review, unlike data/entries.json.
+data/pending-review.json

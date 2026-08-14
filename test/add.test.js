@@ -136,3 +136,40 @@ test('a non-refusal transform error still propagates (nothing published)', async
     );
   });
 });
+
+test('self_attested_witness skips the Claude transform entirely (#49) — no call made, no cost incurred', async () => {
+  await withTempCwd(async () => {
+    const unreachableTransform = async () => {
+      throw new Error('transform must not be called for self_attested_witness');
+    };
+    const output = await addEntry(
+      {
+        ...BASE_INPUT,
+        sourceClass: 'self_attested_witness',
+        advocateId: 'contrib_0123456789abcdef',
+      },
+      { transform: unreachableTransform, contributorPseudonym: 'contrib_0123456789abcdef' },
+    );
+    assert.equal(output.entry.story.shaped, output.entry.story.raw);
+    const aiAssertion = output.manifest.assertions.find((a) => a.label === 'org.onrecord.ai-transform');
+    assert.equal(aiAssertion.data.applied, false);
+    assert.doesNotMatch(aiAssertion.data.method, /declined/i);
+    assert.match(aiAssertion.data.method, /self_attested_witness/);
+  });
+});
+
+test('self_attested_personal still gets the Claude transform (shaping is the point there)', async () => {
+  await withTempCwd(async () => {
+    const output = await addEntry(
+      {
+        ...BASE_INPUT,
+        sourceClass: 'self_attested_personal',
+        advocateId: 'contrib_fedcba9876543210',
+      },
+      { transform: stubTransform, contributorPseudonym: 'contrib_fedcba9876543210' },
+    );
+    assert.equal(output.entry.story.shaped, `shaped: ${BASE_INPUT.raw}`);
+    const aiAssertion = output.manifest.assertions.find((a) => a.label === 'org.onrecord.ai-transform');
+    assert.equal(aiAssertion.data.applied, true);
+  });
+});

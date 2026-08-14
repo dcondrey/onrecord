@@ -28,7 +28,7 @@ const ALGORITHM = { name: 'ECDSA', namedCurve: 'P-256' } as const;
 const SIGN_PARAMS = { name: 'ECDSA', hash: 'SHA-256' } as const;
 
 export const CLAIM_GENERATOR = 'on-record/1.0 (ECDSA-P256; hackathon build)';
-export const MANIFEST_VERSION = '1.1';
+export const MANIFEST_VERSION = '1.2';
 
 // --- encoding helpers -------------------------------------------------------
 
