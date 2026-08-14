@@ -190,16 +190,30 @@ export async function addEntry(
   // just triggered by a refusal instead of a sparse raw note. Every other
   // transform() failure (missing key, empty input, network error) still
   // propagates — those mean nothing was written, not that shaping was skipped.
+  // self_attested_witness skips the paid Claude call (#49): the SMS gateway
+  // (src/gateway/sms.ts) emits it for every inbound text, a public, not
+  // advocate-screened path where unbounded spam would otherwise mean an
+  // unbounded API bill, not just junk data — and these entries sit in
+  // pending-review, unpublished, until a human reads them either way.
+  // self_attested_personal still gets shaped (that's the point there); it has
+  // no public gateway yet, so a rate limit for it is deferred (no call site
+  // to build or verify one against).
   opts.onStatus?.('calling Claude to shape the story...');
   let result: TransformResult;
   let aiTransformApplied = true;
-  try {
-    result = await doTransform({ raw, ask, zone });
-  } catch (err) {
-    if (!(err instanceof TransformRefusalError)) throw err;
-    opts.onStatus?.('Claude declined to shape this story; publishing the raw text unchanged.');
+  if (sourceClass === 'self_attested_witness') {
+    opts.onStatus?.('self-attested witness report: publishing as submitted, no shaping step.');
     aiTransformApplied = false;
-    result = { shaped: raw, model: 'none (Claude declined to shape this story)', inputTokens: 0, outputTokens: 0 };
+    result = { shaped: raw, model: 'none (self_attested_witness entries skip the transform)', inputTokens: 0, outputTokens: 0 };
+  } else {
+    try {
+      result = await doTransform({ raw, ask, zone });
+    } catch (err) {
+      if (!(err instanceof TransformRefusalError)) throw err;
+      opts.onStatus?.('Claude declined to shape this story; publishing the raw text unchanged.');
+      aiTransformApplied = false;
+      result = { shaped: raw, model: 'none (Claude declined to shape this story)', inputTokens: 0, outputTokens: 0 };
+    }
   }
 
   const unsigned: UnsignedEntry = {
@@ -249,7 +263,9 @@ export async function addEntry(
       promptSha256: await sha256Hex(SYSTEM_PROMPT),
       method: aiTransformApplied
         ? 'Raw advocate text re-rendered by Claude under a no-fabrication system prompt.'
-        : 'Claude declined to shape this story under the no-fabrication system prompt; the raw text was published unchanged rather than the entry going unwritten.',
+        : sourceClass === 'self_attested_witness'
+          ? 'self_attested_witness entries are published as submitted, with no Claude shaping step, by design.'
+          : 'Claude declined to shape this story under the no-fabrication system prompt; the raw text was published unchanged rather than the entry going unwritten.',
       // Omitted (not zeroed) on a declined transform: a refusal still costs tokens on
       // Claude's side, and we have no way to report that count without a deeper change
       // to transform()'s throw-based contract, so "no usage reported" beats implying 0.

@@ -78,6 +78,21 @@ test('a submission lands in data/pending-review.json, signed under a contributor
   });
 });
 
+test('the Claude transform is never called for an SMS submission (#49): unbounded texts cannot generate unbounded API cost', async () => {
+  await withTempCwd(async () => {
+    const unreachableTransform = async () => {
+      throw new Error('transform must not be called for an SMS (self_attested_witness) submission');
+    };
+    const req = mockReq('Body=Father Joes full, no dogs&From=%2B15551234567');
+    const res = mockRes();
+    await handleSmsWebhook(req, res, { transform: unreachableTransform });
+
+    assert.equal(res.statusCode, 200);
+    const pending = JSON.parse(await readFile(PENDING_REVIEW_PATH, 'utf8'));
+    assert.equal(pending[0].entry.story.shaped, pending[0].entry.story.raw);
+  });
+});
+
 test('repeat submissions from the same From reuse the same contributor key (same signer, same pseudonym)', async () => {
   await withTempCwd(async () => {
     const first = mockReq('Body=first report&From=%2B15551234567');
