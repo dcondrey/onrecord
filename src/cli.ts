@@ -31,11 +31,12 @@ import { didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
 import { addEntry, AddEntryError, type AddEntryInput } from './add.js';
-import { withdrawEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
+import { signWithdrawRequest, withdrawEntry, withdrawSelfAttestedEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
 import { renderIntakeForm, renderIntakeSuccess, parseIntakeFields } from './intake-form.js';
 import { enqueueIntake } from './intake-queue.js';
 import { readBody } from './http-body.js';
 import { handleSmsWebhook, PENDING_REVIEW_PATH } from './gateway/sms.js';
+import { loadOrCreateContributorKeyPair } from './gateway/contributor-identity.js';
 
 // --- output helpers ---------------------------------------------------------
 
@@ -285,12 +286,22 @@ async function cmdAdd(args: Args): Promise<void> {
 
 async function cmdWithdraw(args: Args): Promise<void> {
   const id = args.positional[0];
-  if (!id) die('usage: on-record withdraw <entry-id> [--reason <text>]');
+  if (!id) die('usage: on-record withdraw <entry-id> [--reason <text>] [--handle <contributor-handle>]');
   const reason = str(args, 'reason');
+  const handle = str(args, 'handle');
 
   let result;
   try {
-    result = await withdrawEntry(id, reason);
+    if (handle) {
+      // Self-attested entries (#14/#28) have no advocate mediating, so
+      // withdrawal is gated on a signature from the same contributor key
+      // that signed the entry, not the CLI operator's word alone.
+      const keys = await loadOrCreateContributorKeyPair(handle);
+      const signature = await signWithdrawRequest(id, keys);
+      result = await withdrawSelfAttestedEntry(id, signature, reason);
+    } else {
+      result = await withdrawEntry(id, reason);
+    }
   } catch (err) {
     if (err instanceof WithdrawError) die(err.message);
     throw err;
@@ -632,8 +643,9 @@ ${c.bold('on-record')} — signed, provenance-wrapped entries for the On Record 
                    --confirm-dob <YYYY-MM-DD> --zip <5 digits> --recovery-pin <4 digits>]
                   ${c.dim('raw story is read from stdin when --file is omitted; --confirm-dob only needed if --dob is ambiguous')}
 
-  ${c.bold('on-record withdraw')} <entry-id> [--reason <text>] [--json]
+  ${c.bold('on-record withdraw')} <entry-id> [--reason <text>] [--handle <contributor-handle>] [--json]
                   ${c.dim('remove an entry from the public record for good, at the requester\'s word alone')}
+                  ${c.dim('--handle withdraws a self-attested entry, signed by that same contributor\'s key')}
 
   ${c.bold('on-record verify')} [<file>] [--json]   ${c.dim(`defaults to ${ENTRIES_PATH}`)}
   ${c.bold('on-record c2pa')} <entry-id> --asset <path> --output <path>  ${c.dim('attach a C2PA manifest to a real asset')}
