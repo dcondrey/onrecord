@@ -15,6 +15,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { stat } from 'node:fs/promises';
+import { createInterface } from 'node:readline/promises';
 
 import {
   ValidationError,
@@ -31,6 +32,7 @@ import { didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
 import { addEntry, AddEntryError, type AddEntryInput } from './add.js';
+import { promptInteractiveAdd, promptRawStory, type AskFn } from './interactive-add.js';
 import { signWithdrawRequest, withdrawEntry, withdrawSelfAttestedEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
 import { renderIntakeForm, renderIntakeSuccess, parseIntakeFields } from './intake-form.js';
 import { enqueueIntake } from './intake-queue.js';
@@ -158,44 +160,104 @@ async function readStdin(): Promise<string> {
 
 async function cmdAdd(args: Args): Promise<void> {
   const file = str(args, 'file');
-  const raw = (file ? await readFile(file, 'utf8') : await readStdin()).trim();
 
-  if (!raw) {
-    die(
-      'no raw story provided. Pipe it on stdin or pass --file <path>.\n' +
-        '  example: echo "he lost his ID..." | on-record add --zone "East Village" ...',
-    );
+  // Interactive prompt engine kicks in only when the essentials weren't already
+  // passed as flags and we're actually at a terminal — a piped/scripted
+  // invocation (seed.ts, CI, tests) never has stdin.isTTY true, so this branch
+  // is unreachable from any of those and the flag-only path below stays
+  // byte-identical to before.
+  const missingCore =
+    !str(args, 'zone') || !str(args, 'category') || !str(args, 'advocate') || !str(args, 'consent-method');
+  const interactive = !file && missingCore && process.stdin.isTTY === true;
+
+  let raw: string;
+  let interactiveFields: Awaited<ReturnType<typeof promptInteractiveAdd>> | undefined;
+
+  if (interactive) {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const ask: AskFn = (question) => rl.question(question);
+    try {
+      out();
+      rule(c.bold('ON RECORD — interactive add'));
+      raw = await promptRawStory(ask);
+      if (!raw) die('no raw story provided.');
+      // Any of zone/category/advocate/consent-method already given as a flag
+      // is used as-is and never re-prompted for.
+      interactiveFields = await promptInteractiveAdd(ask, {
+        prefill: {
+          zone: str(args, 'zone'),
+          category: str(args, 'category'),
+          summary: str(args, 'summary'),
+          amount: str(args, 'amount'),
+          advocateId: str(args, 'advocate'),
+          consentMethod: str(args, 'consent-method'),
+        },
+      });
+    } finally {
+      rl.close();
+    }
+  } else {
+    raw = (file ? await readFile(file, 'utf8') : await readStdin()).trim();
+    if (!raw) {
+      die(
+        'no raw story provided. Pipe it on stdin or pass --file <path>.\n' +
+          '  example: echo "he lost his ID..." | on-record add --zone "East Village" ...',
+      );
+    }
   }
 
-  const input: AddEntryInput = {
-    raw,
-    zone: required(args, 'zone', `One of: ${ZONES.join(', ')}`),
-    category: required(args, 'category', `One of: ${CATEGORIES.join(', ')}`),
-    status: str(args, 'status'),
-    summary: str(args, 'summary'),
-    amount: str(args, 'amount'),
-    advocateId: required(
-      args,
-      'advocate',
-      'Entries without a named advocate are refused — consent is not optional.',
-    ),
-    consentMethod: required(
-      args,
-      'consent-method',
-      'Record how consent was given, e.g. --consent-method "verbal, in person, witnessed".',
-    ),
-    consentAt: str(args, 'consent-at'),
-    orgClaimText: str(args, 'org-claim'),
-    orgClaimSource: str(args, 'source'),
-    recoveryPhrase: str(args, 'recovery-phrase'),
-    recoveryPin: str(args, 'recovery-pin'),
-    confirmedDob: str(args, 'confirm-dob'),
-    first3: str(args, 'first3'),
-    last3: str(args, 'last3'),
-    dob: str(args, 'dob'),
-    zip: str(args, 'zip'),
-    id: str(args, 'id'),
-  };
+  const input: AddEntryInput = interactiveFields
+    ? {
+        raw,
+        zone: interactiveFields.zone,
+        category: interactiveFields.category,
+        status: str(args, 'status'),
+        summary: interactiveFields.summary,
+        amount: interactiveFields.amount,
+        advocateId: interactiveFields.advocateId,
+        consentMethod: interactiveFields.consentMethod,
+        consentAt: str(args, 'consent-at'),
+        orgClaimText: str(args, 'org-claim'),
+        orgClaimSource: str(args, 'source'),
+        recoveryPhrase: str(args, 'recovery-phrase'),
+        recoveryPin: str(args, 'recovery-pin'),
+        confirmedDob: str(args, 'confirm-dob'),
+        first3: str(args, 'first3'),
+        last3: str(args, 'last3'),
+        dob: str(args, 'dob'),
+        zip: str(args, 'zip'),
+        id: str(args, 'id'),
+        domainPayload: interactiveFields.domainPayload,
+      }
+    : {
+        raw,
+        zone: required(args, 'zone', `One of: ${ZONES.join(', ')}`),
+        category: required(args, 'category', `One of: ${CATEGORIES.join(', ')}`),
+        status: str(args, 'status'),
+        summary: str(args, 'summary'),
+        amount: str(args, 'amount'),
+        advocateId: required(
+          args,
+          'advocate',
+          'Entries without a named advocate are refused — consent is not optional.',
+        ),
+        consentMethod: required(
+          args,
+          'consent-method',
+          'Record how consent was given, e.g. --consent-method "verbal, in person, witnessed".',
+        ),
+        consentAt: str(args, 'consent-at'),
+        orgClaimText: str(args, 'org-claim'),
+        orgClaimSource: str(args, 'source'),
+        recoveryPhrase: str(args, 'recovery-phrase'),
+        recoveryPin: str(args, 'recovery-pin'),
+        confirmedDob: str(args, 'confirm-dob'),
+        first3: str(args, 'first3'),
+        last3: str(args, 'last3'),
+        dob: str(args, 'dob'),
+        zip: str(args, 'zip'),
+        id: str(args, 'id'),
+      };
 
   let output;
   try {
@@ -646,6 +708,7 @@ ${c.bold('on-record')} — signed, provenance-wrapped entries for the On Record 
                   [--first3 <3 letters> --last3 <3 letters> --dob <flexible date>
                    --confirm-dob <YYYY-MM-DD> --zip <5 digits> --recovery-pin <4 digits>]
                   ${c.dim('raw story is read from stdin when --file is omitted; --confirm-dob only needed if --dob is ambiguous')}
+                  ${c.dim('run at a terminal with --zone/--category/--advocate/--consent-method omitted to prompt for them instead')}
 
   ${c.bold('on-record withdraw')} <entry-id> [--reason <text>] [--handle <contributor-handle>] [--json]
                   ${c.dim('remove an entry from the public record for good, at the requester\'s word alone')}

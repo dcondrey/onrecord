@@ -74,6 +74,11 @@ export interface AddEntryInput {
    *  default advocate_attested tier; only the SMS gateway (src/gateway/sms.ts) sets
    *  this today, always to 'self_attested_witness'. */
   sourceClass?: string;
+  /** Category-specific extra data collected by the interactive add flow
+   *  (src/interactive-add.ts) when a schema is registered for the selected
+   *  category — see src/domain-payloads.ts. Passed through to
+   *  validateUnsigned() unchanged; it owns the generic kind/data shape check. */
+  domainPayload?: { kind: string; data: Record<string, unknown> };
 }
 
 export interface AddEntryOutput {
@@ -234,6 +239,7 @@ export async function addEntry(
           },
         }
       : {}),
+    ...(input.domainPayload ? { domainPayload: input.domainPayload } : {}),
     status,
   };
 
