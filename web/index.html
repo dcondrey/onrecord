@@ -396,6 +396,22 @@ svg.map.dragging{cursor:grabbing}
 .pin.st-answered .core{fill:var(--ok)}
 .pin.st-claimed .core{fill:var(--amber)}
 .pin.st-disputed .core{fill:var(--broken)}
+/* Layered zone visualizer (#23): shelter_bed entries carrying a shelterStatus render
+   this diamond "bed-<status>" indicator (see the ENTRIES.forEach markup below) instead
+   of the round text-bubble core every other category gets. Declared after .pin.st-* so
+   it wins that tie (same specificity, source order decides) — bed availability is the
+   more specific, more actionable signal for this one category. Still loses to
+   .pin.pending below (an unreviewed entry's pending state stays the visible one) and,
+   for .halo/.ripple, to .pin.broken above; .core here can still cover a broken pin's
+   red with green/yellow, but .broken's .ring/.halo stay red regardless, so a tampered
+   shelter entry never reads as clean. */
+.pin.bed-open .core{fill:var(--ok)}
+.pin.bed-open .ring{stroke:var(--ok);opacity:1}
+.pin.bed-full .core,.pin.bed-turning_away .core{fill:var(--broken)}
+.pin.bed-full .ring,.pin.bed-turning_away .ring{stroke:var(--broken);opacity:1}
+.pin.bed-full .halo,.pin.bed-turning_away .halo{fill:url(#glowbad)}
+.pin.bed-unknown .core{fill:var(--amber)}
+.pin.bed-unknown .ring{stroke:var(--amber);opacity:1}
 .pin.pending .ring{stroke:var(--teal);stroke-dasharray:2.5 2.5;opacity:1}
 .pin.pending .core{fill:var(--teal)}
 .pin.pending .halo{opacity:.6}
@@ -1194,6 +1210,10 @@ const CATEGORY_LABEL = {id_documents:"Identity documents", shelter_bed:"Shelter 
   work_docs:"Work documents", phone:"Phone / callback", transit:"Transit", childcare:"Childcare"};
 const CATEGORY_SHORT = {id_documents:"ID docs", shelter_bed:"Shelter", medical:"Medical",
   work_docs:"Work docs", phone:"Phone", transit:"Transit", childcare:"Childcare"};
+/* Labels for shelterStatus.bedStatus — only meaningful on ask.category === "shelter_bed"
+   entries that carry a shelterStatus (src/schema.ts). Drives the layered zone-visualizer
+   status indicator's text and its "bed-<status>" color class below. */
+const BED_STATUS_LABEL = {open:"Open", full:"Full", turning_away:"Turning away", unknown:"Status unknown"};
 
 /* =========================================================
    3. SEED STORIES (composite; no real individuals)
@@ -2104,12 +2124,23 @@ function buildMap(){
        elsewhere) and must never claim "verified": the pin below only ever says "Street
        Pulse", and .pin.witness below shares no class or icon with .pin.broken/.sealchip. */
     const witness = e.sourceClass === "self_attested_witness";
-    const plabel = witness ? "Street Pulse" : CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"");
-    const ariaTail = (witness?', Street Pulse — unreviewed street report':'')+(e.pendingReview?', awaiting review':', '+e.status);
-    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+(witness?" witness":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+ariaTail+'">'
+    /* Layered zone visualizer (#23): a shelter_bed ask that carries a shelterStatus
+       report gets a diamond bed-status indicator (red = full/turning_away, yellow =
+       unknown, green = open — see the .pin.bed-* rules above) in place of the round
+       text-bubble every other category renders. It is positioned at this entry's
+       existing e._x/e._y, itself derived from DISTRICTS[e.zone].cx/cy/w/h in "LAYOUT
+       OF MARKERS" above — the zone's real polygon geometry, not a new coordinate
+       field on the entry. Non-shelter asks (and shelter_bed asks with no reported
+       status) fall through to the unchanged text-bubble rendering. */
+    const bed = e.ask.category === "shelter_bed" && e.shelterStatus ? e.shelterStatus.bedStatus : null;
+    const plabel = witness ? "Street Pulse" : bed ? BED_STATUS_LABEL[bed] : CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"");
+    const ariaTail = (witness?', Street Pulse — unreviewed street report':'')+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status);
+    const core = bed
+      ? '<rect class="core" x="-5.6" y="-5.6" width="11.2" height="11.2" transform="rotate(45)"/>'
+      : '<circle class="core" cx="0" cy="0" r="6.5"/><circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>';
+    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+(witness?" witness":"")+(bed?" bed-"+bed:"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+ariaTail+'">'
        + '<circle class="ripple" cx="0" cy="0" r="9"/><circle class="halo" cx="0" cy="0" r="26"/>'
-       + '<circle class="ring" cx="0" cy="0" r="14"/><circle class="core" cx="0" cy="0" r="6.5"/>'
-       + '<circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>'
+       + '<circle class="ring" cx="0" cy="0" r="14"/>' + core
        + '<text class="plabel" x="0" y="-15">'+plabel+'</text></g>';
   });
 
@@ -2224,7 +2255,13 @@ function refreshMarkers(){
     g.classList.toggle("broken", !!(e.prov && !e.prov.ok));
     g.classList.toggle("pending", !!e.pendingReview);
     g.classList.toggle("selected", state.selected === e);
-    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status));
+    /* Bed status never changes after buildMap (no code mutates shelterStatus post-seed),
+       but this handler runs immediately after the initial render too (see buildMap's
+       tail call) and overwrites aria-label unconditionally, so the bed-status wording
+       set there must be reproduced here or it is lost before a screen reader ever sees
+       it — see the matching comment on the ENTRIES.forEach render loop above. */
+    const bed = e.ask.category === "shelter_bed" && e.shelterStatus ? e.shelterStatus.bedStatus : null;
+    g.setAttribute("aria-label", DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(bed?', bed status: '+BED_STATUS_LABEL[bed].toLowerCase():'')+(e.pendingReview?', awaiting review':', '+e.status));
   });
   SPOTS.forEach(sp => {
     const g = document.getElementById("sp-"+sp.id);
