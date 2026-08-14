@@ -258,7 +258,7 @@ export async function addEntry(
     await mkdir(DATA_DIR, { recursive: true });
     await writeFile(join(DATA_DIR, 'did.json'), JSON.stringify(buildDidDocument(issuer, keys.publicJwk), null, 2) + '\n');
   }
-  const entry = await signEntryCose(unsigned, keys);
+  const entry = await signEntryCose(unsigned, keys, { isOrgKey: !opts.keys });
   entry.provenance.signerTier = opts.keys ? 'contributor' : 'org';
 
   const manifest = await buildManifest({

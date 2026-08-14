@@ -59,6 +59,7 @@ function loadBrowserVerifier() {
     extract('hexBytes', /function hexBytes\(v\)\{[^\n]*\n/),
     extract('v2Unsigned', /function v2Unsigned\(e\)\{[^\n]*\n/),
     extract('B58_ALPHABET', /const B58_ALPHABET="[^"]*";/),
+    extract('TRUST_DOCUMENT', /const TRUST_DOCUMENT = \/\* ONRECORD_TRUST_DOC_START \*\/[\s\S]*?\/\* ONRECORD_TRUST_DOC_END \*\/;/),
     extract('base58', /function base58\(bytes\)\{[^\n]*\n/),
     extract('b64urlBytes', /function b64urlBytes\(value\)\{[^\n]*\n/),
     extract('didKeyFromPublicJwk', /function didKeyFromPublicJwk\(jwk\)\{[^\n]*\n/),
@@ -125,6 +126,23 @@ test('browser COSE verifier rejects an issuer that does not match the embedded p
   tampered.provenance = { ...tampered.provenance, issuer: fakeIssuer, verificationMethod: fakeIssuer + '#key-1' };
   const r = await verifyV2(tampered);
   assert.equal(r.ok, false, 'an issuer that does not derive from the embedded pubKey should break verification');
+});
+
+test('browser COSE verifier rejects a did:web entry whose pubKey does not match the embedded trust document', async () => {
+  // did:web is not self-certifying, so a forger can't just re-derive a fake issuer
+  // from a substituted pubKey the way the did:key check above catches — this proves
+  // the pinned-document check (TRUST_DOCUMENT) is load-bearing, not a no-op. Uses a
+  // real, validly-formatted keypair (not garbage DER) so importKey succeeds and it's
+  // genuinely the pinned-key comparison that fails, not an unrelated parse error.
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const [raw] = loadRealEntries();
+  assert.ok(raw.provenance.issuer.startsWith('did:web:'), 'this test assumes the committed entries are did:web-issued');
+  const otherKeyPair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const otherSpki = await webcrypto.subtle.exportKey('spki', otherKeyPair.publicKey);
+  const tampered = projectV2(raw);
+  tampered.provenance = { ...tampered.provenance, pubKey: toBase64(otherSpki) };
+  const r = await verifyV2(tampered);
+  assert.equal(r.ok, false, 'a did:web entry whose pubKey diverges from the pinned trust document should fail verification');
 });
 
 /**
