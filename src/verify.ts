@@ -26,6 +26,9 @@ export interface EntryReport {
   ok: boolean;
   result: VerifyResult;
   keyFingerprint: string;
+  /** did:key is always self-certifying; did:web needs --did-doc to actually pin
+   *  the issuer's identity rather than just prove content wasn't tampered with. */
+  issuerPinned: boolean;
   /** Populated only on failure, to make the tamper obvious in output. */
   diagnosis?: string;
 }
@@ -102,6 +105,7 @@ export async function verifyFile(path: string, options: { trustDocument?: DidTru
         zone: '-',
         status: '-',
         ok: false,
+        issuerPinned: false,
         keyFingerprint: '-',
         result: {
           hashMatches: false,
@@ -137,12 +141,19 @@ export async function verifyFile(path: string, options: { trustDocument?: DidTru
     if (ok) report.verified++;
     else report.failed++;
 
+    const issuer = entry.provenance.issuer;
+    const issuerPinned =
+      entry.provenance.protocolVersion !== '2.0' ||
+      issuer?.startsWith('did:key:') === true ||
+      (issuer?.startsWith('did:web:') === true && options.trustDocument !== undefined);
+
     report.entries.push({
       index: i,
       id: entry.id,
       zone: entry.zone,
       status: entry.status,
       ok,
+      issuerPinned,
       result,
       keyFingerprint: fp,
       ...(ok ? {} : { diagnosis: locationLeak ? `PRECISE LOCATION FOUND — ${locationLeak}` : diagnose(result) }),

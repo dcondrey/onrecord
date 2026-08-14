@@ -128,11 +128,18 @@ export async function signEntry(unsigned: UnsignedEntry, keys: KeyPairFiles): Pr
  * The legacy provenance shape remains present for readers that only display
  * entries; v2 verifiers select the COSE envelope explicitly.
  */
-export async function signEntryCose(unsigned: UnsignedEntry, keys: KeyPairFiles): Promise<Entry> {
+export async function signEntryCose(
+  unsigned: UnsignedEntry,
+  keys: KeyPairFiles,
+  opts: { isOrgKey?: boolean } = {},
+): Promise<Entry> {
   const payload = encodeCanonical(JSON.parse(canonicalize(unsigned)) as Record<string, unknown>);
   const cose = await signCoseSign1(payload, keys.privateJwk, 'key-1');
   const digest = await subtle.digest('SHA-256', payload);
-  const issuer = process.env['ONRECORD_ISSUER_DID']?.trim() || didKeyFromPublicJwk(keys.publicJwk);
+  // ONRECORD_ISSUER_DID must never apply to a contributor key, or a contributor-signed
+  // entry would falsely claim the org's issuer while signed by a different key entirely.
+  const issuer =
+    (opts.isOrgKey !== false && process.env['ONRECORD_ISSUER_DID']?.trim()) || didKeyFromPublicJwk(keys.publicJwk);
   const provenance: Provenance = {
     alg: 'COSE-ES256', contentHash: toHex(digest), pubKey: keys.pubKey,
     manifestVersion: MANIFEST_VERSION, signedAtISO: new Date().toISOString(), protocolVersion: '2.0',

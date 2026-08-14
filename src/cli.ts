@@ -418,7 +418,8 @@ async function cmdVerify(args: Args): Promise<void> {
   rule(c.bold(`VERIFY ${path}`));
   for (const e of report.entries) {
     if (e.ok) {
-      out(`  ${c.green('OK  ')} ${e.id.padEnd(16)} ${e.zone.padEnd(14)} ${c.dim(e.result.recomputedHash.slice(0, 24))}`);
+      const pin = e.issuerPinned ? '' : c.yellow(' (issuer unpinned — pass --did-doc)');
+      out(`  ${c.green('OK  ')} ${e.id.padEnd(16)} ${e.zone.padEnd(14)} ${c.dim(e.result.recomputedHash.slice(0, 24))}${pin}`);
     } else {
       out(`  ${c.red('FAIL')} ${e.id.padEnd(16)} ${e.zone.padEnd(14)}`);
       out(c.red(`       ${e.diagnosis ?? 'unknown failure'}`));

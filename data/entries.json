@@ -22,12 +22,12 @@
       "contentHash": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.397Z",
+      "signedAtISO": "2026-08-14T23:36:16.357Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAxY2Fza6Nnc3VtbWFyeXdyZXBsYWNlbWVudCBDQSBzdGF0ZSBJRGhjYXRlZ29yeWxpZF9kb2N1bWVudHNpYW1vdW50VXNkGCdkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3kBFFtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gd2FsbGV0IHRha2VuIHdoaWxlIGhlIHNsZXB0LCBiYWNrIGluIG1hcmNoLiBzYXlzIGhlIGNhbnQgZ2V0IHRoZSBJRCB3aXRob3V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBhbmQgY2FudCBnZXQgdGhlIGJpcnRoIGNlcnRpZmljYXRlIHdpdGhvdXQgdGhlIElELiBiZWVuIGluIHRoYXQgbG9vcCA1IG1vbnRocy4gaGVzIHRpcmVkIG9mIGV4cGxhaW5pbmcgaXQgdG8gcGVvcGxlLiB3YXMgYSBsaW5lIGNvb2sgYmVmb3JlLmZzaGFwZWR5AShNeSB3YWxsZXQgd2FzIHRha2VuIHdoaWxlIEkgd2FzIHNsZWVwaW5nIGJhY2sgaW4gTWFyY2guIFRvIHJlcGxhY2UgbXkgSUQgSSBuZWVkIG15IGJpcnRoIGNlcnRpZmljYXRlLCBhbmQgdG8gZ2V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBJIG5lZWQgbXkgSUQuIEkgaGF2ZSBiZWVuIGdvaW5nIGluIHRoYXQgY2lyY2xlIGZvciBmaXZlIG1vbnRocy4gSSB1c2VkIHRvIHdvcmsgYXMgYSBsaW5lIGNvb2suIEkgYW0gdGlyZWQgb2YgZXhwbGFpbmluZyB0aGlzIHRvIHBlb3BsZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNpcmVxdWVzdGVkZ2NvbnNlbnSjZm1ldGhvZHgwdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCBwYXJ0bmVyamFkdm9jYXRlSWRrYWR2X2Vjdl8wMTRsdGltZXN0YW1wSVNPdDIwMjYtMDctMTRUMTg6MjI6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAdFU1D4Nz7RmFS9WREhw60UFP1Dq9HMZ4gBLgYuyEMkfJ39QAmurMTTCIjvYWEgvZkQWF7r45fMhD7WsJ13UmgQ=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnoPWGZFvpQ5h/7cI8aeS8z+dTOEhX07kHsxcAWtKgBnJeIRUrTXcjrZDRJXtlu/WjT2Dt0eRn6InzdJXQx+wJA=="
     }
   },
   {
@@ -52,12 +52,12 @@
       "contentHash": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.398Z",
+      "signedAtISO": "2026-08-14T23:36:16.358Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAyY2Fza6Jnc3VtbWFyeXg3bW9udGhseSB0cmFuc2l0IHBhc3MgdG8gcmVhY2ggYSBqb2Igc2l0ZSBpbiBLZWFybnkgTWVzYWhjYXRlZ29yeWd0cmFuc2l0ZHpvbmVrT2NlYW4gQmVhY2hlc3RvcnmiY3Jhd3kBAltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IGhpcmVkIG9uIGF0IGEgd2FyZWhvdXNlIGluIGtlYXJueSBtZXNhLCBzdGFydHMgaW4gdHdvIHdlZWtzLiB0aGUgY29tbXV0ZSBpcyB0aGUgcHJvYmxlbSDigJQgdHdvIGJ1c2VzIGVhY2ggd2F5IGFuZCBzaGUgY2FudCBjb3ZlciB0aGUgcGFzcyB1bnRpbCB0aGUgZmlyc3QgY2hlY2sgY2xlYXJzLiBzaGUgd2FzIHZlcnkgbWF0dGVyIG9mIGZhY3QgYWJvdXQgaXQsIG5vIGRyYW1hLmZzaGFwZWR40kkgaGF2ZSBiZWVuIGhpcmVkIGF0IGEgd2FyZWhvdXNlIGluIEtlYXJueSBNZXNhIGFuZCBJIHN0YXJ0IGluIHR3byB3ZWVrcy4gVGhlIHByb2JsZW0gaXMgZ2V0dGluZyB0aGVyZTogaXQgaXMgdHdvIGJ1c2VzIGVhY2ggd2F5LCBhbmQgSSBjYW5ub3QgY292ZXIgYSBwYXNzIHVudGlsIG15IGZpcnN0IGNoZWNrIGNsZWFycy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNoYW5zd2VyZWRnY29uc2VudKNmbWV0aG9keBt3cml0dGVuLCBzaWduZWQgaW50YWtlIGZvcm1qYWR2b2NhdGVJZGphZHZfb2JfMDAzbHRpbWVzdGFtcElTT3QyMDI2LTA2LTMwVDE1OjA1OjAwWg==",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhACyBX5Q603qcEVs0lzeElKcIZdmdJQJkiF8xWMnrH39TDYXH9kHwAd776DnHarTZcMM7UAPoeDbe3LpDx8xoTwQ=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAwBqgWPTixKh9L6SAYOxDq3s8R5/yKMxrwDuPN5CoOzOXQLvs8gKICrHthYItSwryq6iFFGI9HDXti/6d3+8uAQ=="
     }
   },
   {
@@ -95,12 +95,12 @@
       "contentHash": "1f5a7923749c7f1a2d9ffc73f3e6f9a6bd1869d31cb5ac3885fc3c344df85bfa",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.399Z",
+      "signedAtISO": "2026-08-14T23:36:16.359Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "p2JpZGpvcl9zZWVkXzAzY2Fza6Jnc3VtbWFyeXglc2hlbHRlciBiZWQsIGdyb3VuZCBmbG9vciBpZiBwb3NzaWJsZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25laERvd250b3duZXN0b3J5omNyYXd5AQFbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIHR1cm5lZCBhd2F5IHR3aWNlIG5vdywgc2F5cyB0aGUgYmVkcyB3ZXJlIGZ1bGwgYm90aCB0aW1lcy4ga25lZSBpcyBiYWQgc28gc3RhaXJzIGFyZSBoYXJkLCBoZXMgYXNraW5nIGZvciBncm91bmQgZmxvb3IgaWYgdGhlcmVzIGFueS4gYmVlbiBzbGVlcGluZyBiZWhpbmQgYSBzdG9yZSBvZmYgYnJvYWR3YXkuIG5vIG9uZSBoYXMgZm9sbG93ZWQgdXAgd2l0aCBoaW0gc2luY2UgbWF5LmZzaGFwZWR5ARlJIGhhdmUgYmVlbiB0dXJuZWQgYXdheSB0d2ljZTsgYm90aCB0aW1lcyBJIHdhcyB0b2xkIHRoZSBiZWRzIHdlcmUgZnVsbC4gTXkga25lZSBpcyBiYWQsIHNvIHN0YWlycyBhcmUgaGFyZCDigJQgSSBhbSBhc2tpbmcgZm9yIGEgZ3JvdW5kIGZsb29yIGJlZCBpZiB0aGVyZSBpcyBvbmUuIEkgaGF2ZSBiZWVuIHNsZWVwaW5nIGJlaGluZCBhIHN0b3JlIG9mZiBCcm9hZHdheS4gTm8gb25lIGhhcyBmb2xsb3dlZCB1cCB3aXRoIG1lIHNpbmNlIE1heS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRrYWR2X2R0bl8wMjdsdGltZXN0YW1wSVNPdDIwMjYtMDUtMTlUMjA6NDE6MDBabXNoZWx0ZXJTdGF0dXOlaWJlZFN0YXR1c2x0dXJuaW5nX2F3YXlscmVzdHJpY3Rpb25zpWpjdXJmZXdUaW1lZTE5OjAwbWFsbG93c0NhbmluZXP0bWhhc0hhcmRDdXJmZXf1c3JlcXVpcmVzQ2xlYW5TY3JlZW71dGFsbG93c1dlYXBvbnNTdG9yYWdl9G1zdG9yYWdlUG9saWN5bWJhY2twYWNrX29ubHlwc2FmZXR5Vm9sYXRpbGl0eWhtb2RlcmF0ZXFlc3RpbWF0ZWRPcGVuaW5ncwA=",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAJhVcNy8c2JK2bO9Gel01Q66Y+EItqrF16BAofjFOVyFtNvH+7wHGDsXhVCbMHHAw4c5Ar3ZfNgdYy21j1gEVdA=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAkJlt19VFx0sEI5MVid4GUAIRDKBceE/swb3T1u8p8USJxQ3e/svih5LBIZj8gadUWDWGDyV6WArr8oqkesbp/w=="
     }
   },
   {
@@ -125,12 +125,12 @@
       "contentHash": "370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.399Z",
+      "signedAtISO": "2026-08-14T23:36:16.359Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA0Y2Fza6Jnc3VtbWFyeXgxcmVmaWxsIG9mIGFuIGV4aXN0aW5nIGJsb29kIHByZXNzdXJlIHByZXNjcmlwdGlvbmhjYXRlZ29yeWdtZWRpY2FsZHpvbmVrQmFsYm9hIFBhcmtlc3RvcnmiY3Jhd3kBKltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gYmxvb2QgcHJlc3N1cmUgbWVkcyByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYmVlbiBnZXR0aW5nIGRpenp5IHN0YW5kaW5nIHVwIGZhc3QuIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGJvdGggdGltZXMgdGhlIHdhaXQgbGlzdCB3YXMgZnVsbCBmb3IgbmV3IHBhdGllbnRzLiBzYXlzIGhlIGp1c3QgbmVlZHMgc29tZW9uZSB0byBzZWUgaGltIG9uY2UgYW5kIHdyaXRlIHRoZSBzYW1lIHByZXNjcmlwdGlvbiBhZ2Fpbi5mc2hhcGVkeQFBTXkgYmxvb2QgcHJlc3N1cmUgbWVkaWNhdGlvbiByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYW5kIEkndmUgYmVlbiBnZXR0aW5nIGRpenp5IHdoZW4gSSBzdGFuZCB1cCBxdWlja2x5LiBJIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGFuZCBib3RoIHRpbWVzIHRoZSBuZXctcGF0aWVudCB3YWl0bGlzdCB3YXMgZnVsbC4gSSBkb24ndCBuZWVkIGFueXRoaW5nIG5ldyDigJQganVzdCBzb21lb25lIHRvIHNlZSBtZSBvbmNlIGFuZCByZWZpbGwgdGhlIHNhbWUgcHJlc2NyaXB0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2xhY2tub3dsZWRnZWRnY29uc2VudKNmbWV0aG9keDZ2ZXJiYWwsIGluIHBlcnNvbiwgd2l0bmVzc2VkIGJ5IGNsaW5pYyBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfYnBfMDA5bHRpbWVzdGFtcElTT3QyMDI2LTA3LTAxVDEwOjE1OjAwWg==",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnrYsX1U1iLbj62ndluVeGSsSmLwFvhWVBMD7NH24agCOonFeYXzFo/obiYje781KAmDYm7j5HUV3ADM8i13Bzw=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAjTPPyOSASmOEDR3+C6T2vUhZ/43obQ0I67WJZQzdgTy0ZIQH7FOqn1xoieaSkNXeaGzHpWtLm59yJ0C01oTzLw=="
     }
   },
   {
@@ -156,12 +156,12 @@
       "contentHash": "cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.400Z",
+      "signedAtISO": "2026-08-14T23:36:16.359Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA1Y2Fza6Nnc3VtbWFyeXgyZm9vZCBoYW5kbGVyIGNhcmQgYmVmb3JlIGEgTW9uZGF5IHJlc3RhdXJhbnQgc2hpZnRoY2F0ZWdvcnlpd29ya19kb2NzaWFtb3VudFVzZAtkem9uZWlIaWxsY3Jlc3Rlc3RvcnmiY3Jhd3kBBVtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IG9mZmVyZWQgYSBqb2IgYXQgYSByZXN0YXVyYW50IG9uIHVuaXZlcnNpdHkgYXZlLCB0aGV5IG5lZWQgYSBmb29kIGhhbmRsZXIgY2FyZCBiZWZvcmUgaGVyIGZpcnN0IHNoaWZ0IG1vbmRheS4gc2F5cyBzaGUgaGFzIHRoZSB0ZW4gZG9sbGFycyBidXQgbm90IGEgd2F5IHRvIGdldCBvbmxpbmUgbG9uZyBlbm91Z2ggdG8gZmluaXNoIHRoZSBjb3Vyc2UgYW5kIHByaW50IHRoZSBjYXJkLmZzaGFwZWR5AQtJIHdhcyBvZmZlcmVkIGEgam9iIGF0IGEgcmVzdGF1cmFudCBvbiBVbml2ZXJzaXR5IEF2ZW51ZSwgYW5kIEkgbmVlZCBhIGZvb2QgaGFuZGxlciBjYXJkIGJlZm9yZSBteSBmaXJzdCBzaGlmdCBvbiBNb25kYXkuIEkgaGF2ZSB0aGUgdGVuIGRvbGxhcnMgZm9yIHRoZSBjb3Vyc2UsIGJ1dCBub3QgcmVsaWFibGUgZW5vdWdoIGludGVybmV0IGFjY2VzcyB0byBmaW5pc2ggaXQgYW5kIHByaW50IHRoZSBjYXJkIGluIHRpbWUuIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4G3dyaXR0ZW4sIHNpZ25lZCBpbnRha2UgZm9ybWphZHZvY2F0ZUlkamFkdl9oY18wNDJsdGltZXN0YW1wSVNPdDIwMjYtMDctMjJUMDk6NDA6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAGIm0pwYJ1GlCwa17oeSwGxWTNCRF7gX2PlXj6HTkG73tu+THDhJwQbL9uIaBLWqdn7SQSxcvAK1RFRUq1dbndQ=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAqFN0Lg1XgfUr09RCFzVcCZDWNrHTNGcMTWPbtd7I8/zZPMMhyi86CBk33LvEnbqxD4hwkmTq6IXb5BZKpUsCXg=="
     }
   },
   {
@@ -186,12 +186,12 @@
       "contentHash": "13c67d22073e54bf9eb09c2bd14f0639a92204b1d10a927fd514264b98ecceba",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.400Z",
+      "signedAtISO": "2026-08-14T23:36:16.360Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA2Y2Fza6Jnc3VtbWFyeXg2YSBwaG9uZSB0byByZWFjaCBhIGNhc2Ugd29ya2VyIGFib3V0IGEgaG91c2luZyB2b3VjaGVyaGNhdGVnb3J5ZXBob25lZHpvbmVrQ2h1bGEgVmlzdGFlc3RvcnmiY3Jhd3jnW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBwaG9uZSBnb3QgdGFrZW4gaW4gYSBmaWdodCBhdCB0aGUgc2hlbHRlciwgY2FudCBjYWxsIHRoZSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIHRoZSBob3VzaW5nIHZvdWNoZXIgYXBwbGljYXRpb24uIHNheXMgaGUgbWlzc2VkIG9uZSBjYWxsYmFjayBhbHJlYWR5IGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBoaW0uZnNoYXBlZHjcTXkgcGhvbmUgd2FzIHRha2VuIGluIGEgZmlnaHQgYXQgdGhlIHNoZWx0ZXIuIEkgY2FuJ3QgY2FsbCBteSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIG15IGhvdXNpbmcgdm91Y2hlciBhcHBsaWNhdGlvbiwgYW5kIEkgYWxyZWFkeSBtaXNzZWQgb25lIGNhbGxiYWNrIGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBtZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4LXZlcmJhbCwgaW4gcGVyc29uLCB3aXRuZXNzZWQgYnkgc2hlbHRlciBzdGFmZmphZHZvY2F0ZUlkamFkdl9jdl8wMThsdGltZXN0YW1wSVNPdDIwMjYtMDYtMTFUMTY6NTA6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAVgthlqtN4cO4Nw8/Y7b44JokTpkmb3F53GMZ9oKqn/GzWEYZbbig62u3YC62qEWheRFJRU19SJ3khQUfqLf9ow=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA5LLv5H+0Ye9lxUoQqINe3fqmJzIvcpH8kckaMWMI/UrJZAEe37k2LF/qnFYoVC2tmZFDU+Q5MgGZesKbVGw3wQ=="
     }
   },
   {
@@ -216,12 +216,12 @@
       "contentHash": "d15c06d9b3039f5173e2ce41901a788e68ee9b879ef5d635ac3f2463d16fe580",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.400Z",
+      "signedAtISO": "2026-08-14T23:36:16.360Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA3Y2Fza6Jnc3VtbWFyeXg2Y2hpbGRjYXJlIGZvciB0aGUgbW9ybmluZyBvZiBhIHdhcmVob3VzZSBqb2IgaW50ZXJ2aWV3aGNhdGVnb3J5aWNoaWxkY2FyZWR6b25laEVsIENham9uZXN0b3J5omNyYXd5AQxbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIGhhcyBhbiBpbnRlcnZpZXcgbGluZWQgdXAgYXQgYSB3YXJlaG91c2UgYnV0IG5vIG9uZSB0byB3YXRjaCBoZXIgdGhyZWUgeWVhciBvbGQgdGhhdCBtb3JuaW5nLCBzYXlzIGhlciBzaXN0ZXIgdXNlZCB0byBoZWxwIGJ1dCBtb3ZlZCB0byBhcml6b25hIGluIHRoZSBzcHJpbmcuIG1pc3NpbmcgdGhlIGludGVydmlldyBtZWFucyB3YWl0aW5nIGFub3RoZXIgbW9udGggZm9yIHRoZSBuZXh0IG9wZW5pbmcuZnNoYXBlZHj+SSBoYXZlIGEgam9iIGludGVydmlldyBsaW5lZCB1cCBhdCBhIHdhcmVob3VzZSwgYnV0IG5vIG9uZSB0byB3YXRjaCBteSB0aHJlZS15ZWFyLW9sZCB0aGF0IG1vcm5pbmcuIE15IHNpc3RlciB1c2VkIHRvIGhlbHAsIGJ1dCBzaGUgbW92ZWQgdG8gQXJpem9uYSB0aGlzIHNwcmluZy4gSWYgSSBtaXNzIHRoZSBpbnRlcnZpZXcsIHRoZSBuZXh0IG9wZW5pbmcgaXNuJ3QgZm9yIGFub3RoZXIgbW9udGguIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRqYWR2X2VjXzAzMWx0aW1lc3RhbXBJU090MjAyNi0wNy0zMFQwODowNTowMFo=",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAwsT2KSdJx2y7OztY2nvljAyXV4SS0rI2UT4mKrrsFFOWzHhPEZicrGgB+fCrnVGpwCxzFFz3W7dykTHO78jSzg=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA5Jftxw6mV+q5PFwpTPjTMgw9rWQam+sFGaN0MDxZyvTYC32H3CVPQ5im6bMlrp6tZwkEKckC6Tn1lfXlxNvtWw=="
     }
   },
   {
@@ -258,12 +258,12 @@
       "contentHash": "544e93139a49d366c154a70235a69a75d6e1b2d40ccd51600ca8021307176b37",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.401Z",
+      "signedAtISO": "2026-08-14T23:36:16.360Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "p2JpZGpvcl9zZWVkXzA4Y2Fza6Jnc3VtbWFyeXgxYW55IGF2YWlsYWJsZSBzaGVsdGVyIGJlZCwgbm8gbG9jYXRpb24gcHJlZmVyZW5jZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25lZ0xhIE1lc2Flc3RvcnmiY3Jhd3jxW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIGZlYnJ1YXJ5LCBrZWVwcyBnZXR0aW5nIHRvbGQgaGVzIGNsb3NlIGJ1dCBub3RoaW5nIG9wZW5zIHVwLiBjb2xkIGF0IG5pZ2h0IG5vdywgc2F5cyBoZSdkIHRha2UgYW55dGhpbmcgd2l0aCBmb3VyIHdhbGxzIGF0IHRoaXMgcG9pbnQsIGRvZXNudCBjYXJlIGFib3V0IGxvY2F0aW9uLmZzaGFwZWR49UkgaGF2ZSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIEZlYnJ1YXJ5LiBJIGtlZXAgZ2V0dGluZyB0b2xkIEknbSBjbG9zZSwgYnV0IG5vdGhpbmcgb3BlbnMgdXAuIEl0J3MgY29sZCBhdCBuaWdodCBub3cg4oCUIEkgd291bGQgdGFrZSBhbnl0aGluZyB3aXRoIGZvdXIgd2FsbHMgYXQgdGhpcyBwb2ludDsgSSBkb24ndCBjYXJlIGFib3V0IGxvY2F0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2p1bmFuc3dlcmVkZ2NvbnNlbnSjZm1ldGhvZHgbd3JpdHRlbiwgc2lnbmVkIGludGFrZSBmb3JtamFkdm9jYXRlSWRqYWR2X2xtXzAwNmx0aW1lc3RhbXBJU090MjAyNi0wNC0yOFQxOTozMDowMFptc2hlbHRlclN0YXR1c6VpYmVkU3RhdHVzZGZ1bGxscmVzdHJpY3Rpb25zpG1hbGxvd3NDYW5pbmVz9G1oYXNIYXJkQ3VyZmV39HNyZXF1aXJlc0NsZWFuU2NyZWVu9HRhbGxvd3NXZWFwb25zU3RvcmFnZfVtc3RvcmFnZVBvbGljeWxjYXJ0X2FsbG93ZWRwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MA",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAG0hSA8tL8gqhQW2rpUZCWShdeeeTSMNkC/vgaSiMBssxAU/qTeq33xylSypHIW8aPGYP4ueD1W0Qer6Tluqwlw=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAxs+6E71ftDmN8YRdwXpL15AWE5ByvH3Vq1N8/AGnWMO93W5VebmZkPYrsG6UbMnRw05QNZCjKT9fOk+2lIML3A=="
     }
   },
   {
@@ -301,12 +301,12 @@
       "contentHash": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
       "manifestVersion": "1.2",
-      "signedAtISO": "2026-08-14T21:00:52.401Z",
+      "signedAtISO": "2026-08-14T23:36:16.361Z",
       "protocolVersion": "2.0",
-      "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
-      "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
+      "issuer": "did:web:writerslogic.github.io:onrecord",
+      "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
       "cborPayload": "p2JpZGpvcl9zZWVkXzA5Y2Fza6Jnc3VtbWFyeXgyYW4gb3BlbiBiZWQgcmVwb3J0ZWQgZm9yIHRvbmlnaHQsIGZpcnN0LWNvbWUgYmFzaXNoY2F0ZWdvcnlrc2hlbHRlcl9iZWRkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3joW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBvdXRyZWFjaCB3b3JrZXIgY2FsbGVkIGFoZWFkIGFuZCBjb25maXJtZWQgdHdvIGJlZHMgb3BlbiB0b25pZ2h0LCBubyB3YWl0bGlzdCByaWdodCBub3cuIHNheXMgdGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDksIGFuZCB0aGV5IGRvIGEgYnJlYXRoYWx5emVyIGF0IHRoZSBkb29yLCBubyBleGNlcHRpb25zLmZzaGFwZWR48EFuIG91dHJlYWNoIHdvcmtlciBjYWxsZWQgYWhlYWQgYW5kIGNvbmZpcm1lZCB0d28gYmVkcyBhcmUgb3BlbiB0b25pZ2h0LCB3aXRoIG5vIHdhaXRsaXN0IHJpZ2h0IG5vdy4gVGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDlwbSwgYW5kIHRoZXJlIGlzIGEgYnJlYXRoYWx5emVyIGNoZWNrIGF0IHRoZSBkb29yIHdpdGggbm8gZXhjZXB0aW9ucy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNsYWNrbm93bGVkZ2VkZ2NvbnNlbnSjZm1ldGhvZHgvdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfZXZfMDUxbHRpbWVzdGFtcElTT3QyMDI2LTA4LTAyVDIxOjEwOjAwWm1zaGVsdGVyU3RhdHVzpWliZWRTdGF0dXNkb3BlbmxyZXN0cmljdGlvbnOlamN1cmZld1RpbWVlMjE6MDBtYWxsb3dzQ2FuaW5lc/RtaGFzSGFyZEN1cmZld/VzcmVxdWlyZXNDbGVhblNjcmVlbvV0YWxsb3dzV2VhcG9uc1N0b3JhZ2X0bXN0b3JhZ2VQb2xpY3luc2VjdXJlX2xvY2tlcnNwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MC",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA5I0LvwnzbEqF2Iw1SDsAolRqC+eyvooWKM91mgsgoB5LbWsmJzn0y4X59ZFhDiWUOPVlJXq+xKjL/QNi8a65Yg=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAzF/60vquyPyOQ/hQy2x+7S1CaU0TiJS9ALCM8FYQKXv8tpuPfeHanZrMP5fP8xuIB1cPr9hd3GN5n2JtpiVtVQ=="
     }
   }
 ]
