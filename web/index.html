@@ -381,6 +381,14 @@ svg.map.dragging{cursor:grabbing}
 .pin.selected .ring,.pin:focus-visible .ring{opacity:1}
 .pin .plabel{font-size:13px;font-weight:650;text-anchor:middle;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3.4;stroke-linejoin:round;pointer-events:none;opacity:0;transition:opacity .3s}
 .map:not([data-level="county"]) .pin .plabel{opacity:1}
+/* Street Pulse (sourceClass:self_attested_witness): a steady, always-visible dotted
+   ring in --muted, never the amber/ok/broken palette a status or seal state uses, so
+   it reads as "unreviewed contributor report" rather than any provenance verdict.
+   Declared before .pin.broken/.pin.pending so a witness pin that is ALSO broken or
+   pending still shows that more urgent state — same specificity, source order decides. */
+.pin.witness .core{fill:var(--muted)}
+.pin.witness .ring{stroke:var(--muted);stroke-dasharray:1.5 2.5;opacity:1}
+.pin.witness .halo{opacity:.5}
 .pin.broken .core{fill:var(--broken)}
 .pin.broken .halo{fill:url(#glowbad)}
 .pin.broken .ripple{fill:var(--broken);opacity:.32;animation-duration:1.1s}
@@ -674,6 +682,12 @@ textarea:focus{outline:none;background:var(--panel-2)}
 .disclaim{margin:11px 0 0;font-size:10.5px;color:var(--faint);line-height:1.6}
 .integrity{margin-top:14px;padding:10px 12px;border-radius:11px;font-size:11.5px;border:1px solid var(--ok);border:1px solid color-mix(in srgb,var(--ok) 34%,transparent);background:var(--ok-dim);color:var(--ok)}
 .integrity.bad{border-color:var(--broken);background:var(--broken-dim);color:var(--broken)}
+/* Street Pulse badge: deliberately its own class, own palette (--muted, never --ok/
+   --broken), own icon (pulseGlyph, not sealGlyph) — shares nothing with .sealchip, the
+   cryptographic-seal indicator, so the two can never be mistaken for one another. */
+.pulsebadge{display:flex;align-items:center;gap:10px;margin-top:0;margin-bottom:12px;padding:9px 12px;border-radius:11px;border:1px solid var(--muted);border-color:color-mix(in srgb,var(--muted) 34%,transparent);background:color-mix(in srgb,var(--muted) 10%,transparent)}
+.pulsebadge .picon{width:24px;height:24px;flex:none}
+.pulsebadge .txt{font-size:11.5px;font-weight:650;color:var(--ink-2)}
 .footnote{margin-top:14px;font-size:10.5px;color:var(--faint);line-height:1.65}
 .footnote b{color:var(--muted)}
 
@@ -1606,8 +1620,13 @@ function projectV2(e){
   return {id:e.id, zone:ZONE_ALIASES[slug] || slug, status:e.status,
     ask:{category:e.ask.category, summary:e.ask.summary, amountUsd:e.ask.amountUsd ?? null},
     story:e.story, facts:[], consent:{advocateId:consent.advocateId, method:consent.method, timestamp:consent.timestampISO},
-    provenance:e.provenance, recovery:e.recovery, shelterStatus:e.shelterStatus, __v2Zone:e.zone, __v2ConsentTimestamp:consent.timestampISO};
+    provenance:e.provenance, recovery:e.recovery, shelterStatus:e.shelterStatus, sourceClass:e.sourceClass,
+    __v2Zone:e.zone, __v2ConsentTimestamp:consent.timestampISO};
 }
+/* sourceClass must survive projectV2: v2Unsigned() (below) conditionally includes it
+   in the bytes that get hashed and verified, keyed off this same projected object —
+   drop it here and a legitimate self_attested_witness entry's re-derived digest would
+   no longer match its signed contentHash, rendering a valid entry as SEAL BROKEN. */
 /* projectV2 tolerates a missing/incomplete consent object (falls back to {}) precisely
    so a bad record can't throw here and blank the whole page — instead it fails
    hasConsent below and is withheld, the same "consent or nothing" gate the SEED branch
@@ -2078,11 +2097,20 @@ function buildMap(){
   }
 
   ENTRIES.forEach(e => {
-    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+(e.pendingReview?', awaiting review':', '+e.status)+'">'
+    /* self_attested_witness is a contributor's own unreviewed report, signed with a
+       pseudonymous contributor key (src/gateway/contributor-identity.ts) — never the
+       advocate-mediated intake this map otherwise shows. It must read as visually
+       distinct from the seal-verified indicator (e.prov.ok, drawn via .broken/sealGlyph
+       elsewhere) and must never claim "verified": the pin below only ever says "Street
+       Pulse", and .pin.witness below shares no class or icon with .pin.broken/.sealchip. */
+    const witness = e.sourceClass === "self_attested_witness";
+    const plabel = witness ? "Street Pulse" : CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"");
+    const ariaTail = (witness?', Street Pulse — unreviewed street report':'')+(e.pendingReview?', awaiting review':', '+e.status);
+    s += '<g class="pin hidden st-'+e.status+(e.pendingReview?" pending":"")+(witness?" witness":"")+'" id="pin-'+e.id+'" data-id="'+e.id+'" data-cs="1" data-px="'+e._x.toFixed(1)+'" data-py="'+e._y.toFixed(1)+'" transform="translate('+e._x.toFixed(1)+','+e._y.toFixed(1)+')" role="button" tabindex="0" aria-label="'+DISTRICTS[e.zone].label+', '+CATEGORY_LABEL[e.ask.category]+ariaTail+'">'
        + '<circle class="ripple" cx="0" cy="0" r="9"/><circle class="halo" cx="0" cy="0" r="26"/>'
        + '<circle class="ring" cx="0" cy="0" r="14"/><circle class="core" cx="0" cy="0" r="6.5"/>'
        + '<circle class="bead" cx="-1.9" cy="-2.1" r="1.7"/>'
-       + '<text class="plabel" x="0" y="-15">'+CATEGORY_SHORT[e.ask.category]+(e.ask.amountUsd?" "+money(e.ask.amountUsd):"")+'</text></g>';
+       + '<text class="plabel" x="0" y="-15">'+plabel+'</text></g>';
   });
 
   SPOTS.forEach(sp => {
@@ -2531,6 +2559,8 @@ function renderStory(){
   const text = state.view === "raw" ? e.story.raw : e.story.shaped;
 
   setSafeHTML(host, '<div class="story">'
+   + (e.sourceClass === "self_attested_witness" ? '<div class="pulsebadge">'+pulseGlyph()
+       + '<span class="txt">Street Pulse &#183; unreviewed street report, not advocate-mediated</span></div>' : '')
    + (e.pendingReview ? '<div class="integrity" style="margin-top:0;margin-bottom:12px">&#9678; Filed through the intake chat, awaiting advocate review. '
        + 'Not counted on the Accountability tab until reviewed. <button class="btn btn-restore" id="markreviewed" type="button" style="margin-top:8px;display:block">Mark reviewed (advocate, demo)</button></div>' : '')
    + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
@@ -2612,6 +2642,11 @@ function renderStory(){
 function sealGlyph(broken){
   if(!broken) return '<svg class="glyph" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--ok)" stroke-width="1.4" opacity=".55"/><circle cx="16" cy="16" r="8.5" fill="var(--ok-dim)" stroke="var(--ok)" stroke-width="1"/><path d="M11.6 16.2 L14.8 19.3 L20.6 12.9" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   return '<svg class="glyph" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--broken)" stroke-width="1.4" opacity=".5" stroke-dasharray="4 3"/><path d="M16 3.5 L12.5 12 L18.5 15 L14 28.5" fill="none" stroke="var(--broken)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 9 L26.5 6.5 M25.5 16 L29 16 M6 9 L2.5 6.5" stroke="var(--broken)" stroke-width="1.2" stroke-linecap="round" opacity=".7"/></svg>';
+}
+/* Street Pulse's own icon — a signal-bars glyph, sharing no path data or class with
+   sealGlyph()'s check/X shapes. Used only to mean "contributor report", never provenance. */
+function pulseGlyph(){
+  return '<svg class="picon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--muted)" stroke-width="1.4" opacity=".5"/><path d="M9 20 L9 13 M16 20 L16 8 M23 20 L23 16" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"/></svg>';
 }
 function manifestHTML(e){
   const p = e.prov;
