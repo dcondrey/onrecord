@@ -110,9 +110,14 @@ export interface Provenance {
  * contributor vouching for their own witnessed account — validateUnsigned()
  * requires consent.advocateId to equal that contributor's own gateway
  * pseudonym in that case, so a contributor can't claim third-party advocate
- * authority they don't have.
+ * authority they don't have. 'self_attested_personal' shares that same
+ * self-consent mechanism but is not a lower-trust crowd signal: it's an
+ * unhoused person publishing their own story/ask under their own
+ * contributor identity, with no advocate mediating, and it renders with
+ * full normal map-marker treatment rather than web/index.html's Street
+ * Pulse tier (which matches only 'self_attested_witness').
  */
-export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness'] as const;
+export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness', 'self_attested_personal'] as const;
 export type SourceClass = (typeof SOURCE_CLASSES)[number];
 
 export interface Entry {
@@ -322,6 +327,17 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
     }
     if (entry.consent.advocateId.trim() !== pseudonym) {
       fail('self_attested_witness entries must have consent.advocateId equal to the contributing pseudonym.');
+    }
+  }
+  // Same self-consent mechanism as self_attested_witness above, but for a person
+  // publishing their own story/ask rather than a third-party witness observation.
+  if (entry.sourceClass === 'self_attested_personal') {
+    const pseudonym = ctx.contributorPseudonym?.trim();
+    if (!pseudonym) {
+      fail('self_attested_personal entries require a contributor pseudonym from the gateway.');
+    }
+    if (entry.consent.advocateId.trim() !== pseudonym) {
+      fail('self_attested_personal entries must have consent.advocateId equal to the contributing pseudonym.');
     }
   }
 

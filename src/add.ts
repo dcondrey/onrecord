@@ -95,8 +95,8 @@ export async function addEntry(
      *  own isolated key (src/gateway/contributor-identity.ts) to sign under their
      *  tier instead — existing call sites omit this and get the org key, unchanged. */
     keys?: KeyPairFiles;
-    /** Required, and checked, only when input.sourceClass is 'self_attested_witness'
-     *  — see validateUnsigned()'s self_attested_witness gate in schema.ts. */
+    /** Required, and checked, only when input.sourceClass is 'self_attested_witness' or
+     *  'self_attested_personal' — see validateUnsigned()'s matching gates in schema.ts. */
     contributorPseudonym?: string;
     /** Skips the data/entries.json + manifest-file write, returning the signed
      *  entry/manifest for the caller to hold elsewhere (e.g. the SMS gateway's

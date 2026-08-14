@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { canonicalize, validateUnsigned, ValidationError } from '../dist/schema.js';
 
 /**
@@ -65,4 +67,55 @@ test('self_attested_witness with consent.advocateId matching the contributor pse
     consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
   assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }));
+});
+
+/**
+ * self_attested_personal (#28, part of #14): a person publishing their own story/ask
+ * under their own contributor identity, distinct from self_attested_witness's
+ * third-party-observation case, but gated by the same self-consent mechanism.
+ */
+
+test('self_attested_personal with no contributorPseudonym in context is rejected', () => {
+  const e = entry({ sourceClass: 'self_attested_personal', consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' } });
+  assert.throws(() => validateUnsigned(e), ValidationError);
+});
+
+test('self_attested_personal with consent.advocateId not matching the contributor pseudonym is rejected', () => {
+  const e = entry({
+    sourceClass: 'self_attested_personal',
+    consent: { advocateId: 'someone_else', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
+  });
+  assert.throws(
+    () => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }),
+    ValidationError,
+    'a contributor must not be able to claim third-party advocate authority they do not have',
+  );
+});
+
+test('self_attested_personal with consent.advocateId matching the contributor pseudonym is accepted', () => {
+  const e = entry({
+    sourceClass: 'self_attested_personal',
+    consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
+  });
+  assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }));
+});
+
+/**
+ * web/index.html's Street Pulse tier (#18) is a deliberately lower-trust rendering
+ * path gated on a strict-equal check against the 'self_attested_witness' literal
+ * (see the comment above `const witness = ...`). self_attested_personal (#28) must
+ * never be pulled into that gate: it renders with standard marker treatment. This
+ * greps the shipped source rather than driving a browser, so a future edit that
+ * widens the gate (e.g. to an array including 'self_attested_personal', or a truthy
+ * `e.sourceClass` check) fails loudly here instead of silently demoting a person's
+ * own published story to the unreviewed-crowd-signal tier.
+ */
+test("web/index.html's sourceClass equality gates match only self_attested_witness, never self_attested_personal", () => {
+  const html = readFileSync(fileURLToPath(new URL('../web/index.html', import.meta.url)), 'utf8');
+  const gates = [...new Set([...html.matchAll(/sourceClass\s*===\s*"([a-z_]+)"/g)].map((m) => m[1]))];
+  assert.deepEqual(
+    gates,
+    ['self_attested_witness'],
+    'a sourceClass equality gate in web/index.html matches something other than self_attested_witness alone',
+  );
 });

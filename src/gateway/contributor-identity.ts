@@ -73,8 +73,8 @@ export async function loadOrCreateContributorKeyPair(
 
 /**
  * Deterministic, one-way public pseudonym for a contributor handle — what
- * self_attested_witness entries publish as consent.advocateId (see
- * validateUnsigned() in ../schema.ts). Same handle always yields the same
+ * self_attested_witness and self_attested_personal entries publish as
+ * consent.advocateId (see validateUnsigned() in ../schema.ts). Same handle always yields the same
  * pseudonym, without the handle itself (e.g. a phone number) ever being
  * written to disk.
  */
