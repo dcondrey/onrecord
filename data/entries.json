@@ -21,13 +21,13 @@
       "alg": "COSE-ES256",
       "contentHash": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.808Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.374Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAxY2Fza6Nnc3VtbWFyeXdyZXBsYWNlbWVudCBDQSBzdGF0ZSBJRGhjYXRlZ29yeWxpZF9kb2N1bWVudHNpYW1vdW50VXNkGCdkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3kBFFtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gd2FsbGV0IHRha2VuIHdoaWxlIGhlIHNsZXB0LCBiYWNrIGluIG1hcmNoLiBzYXlzIGhlIGNhbnQgZ2V0IHRoZSBJRCB3aXRob3V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBhbmQgY2FudCBnZXQgdGhlIGJpcnRoIGNlcnRpZmljYXRlIHdpdGhvdXQgdGhlIElELiBiZWVuIGluIHRoYXQgbG9vcCA1IG1vbnRocy4gaGVzIHRpcmVkIG9mIGV4cGxhaW5pbmcgaXQgdG8gcGVvcGxlLiB3YXMgYSBsaW5lIGNvb2sgYmVmb3JlLmZzaGFwZWR5AShNeSB3YWxsZXQgd2FzIHRha2VuIHdoaWxlIEkgd2FzIHNsZWVwaW5nIGJhY2sgaW4gTWFyY2guIFRvIHJlcGxhY2UgbXkgSUQgSSBuZWVkIG15IGJpcnRoIGNlcnRpZmljYXRlLCBhbmQgdG8gZ2V0IHRoZSBiaXJ0aCBjZXJ0aWZpY2F0ZSBJIG5lZWQgbXkgSUQuIEkgaGF2ZSBiZWVuIGdvaW5nIGluIHRoYXQgY2lyY2xlIGZvciBmaXZlIG1vbnRocy4gSSB1c2VkIHRvIHdvcmsgYXMgYSBsaW5lIGNvb2suIEkgYW0gdGlyZWQgb2YgZXhwbGFpbmluZyB0aGlzIHRvIHBlb3BsZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNpcmVxdWVzdGVkZ2NvbnNlbnSjZm1ldGhvZHgwdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCBwYXJ0bmVyamFkdm9jYXRlSWRrYWR2X2Vjdl8wMTRsdGltZXN0YW1wSVNPdDIwMjYtMDctMTRUMTg6MjI6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAZ+1eFFC7GnMuq+8FhKt2qi8biEMzaM3rZjRQBla4MNcYfP93jT/DQXg8xqB7ihbzK7BcVooXLgbOWaVH2+/myA=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA2+Ob6ig6J+nmEIPv3oDOTgQw6/uyijnMzobzxYanfzsE5BQyz05THWJJbDmhyNTirToPpkvlnKfyRXXxEeBJEA=="
     }
   },
   {
@@ -51,13 +51,13 @@
       "alg": "COSE-ES256",
       "contentHash": "1e161959962262a3442e1bcb6eaa05a08d32e9b5768dae55c75174d849e71858",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.812Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.377Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzAyY2Fza6Jnc3VtbWFyeXg3bW9udGhseSB0cmFuc2l0IHBhc3MgdG8gcmVhY2ggYSBqb2Igc2l0ZSBpbiBLZWFybnkgTWVzYWhjYXRlZ29yeWd0cmFuc2l0ZHpvbmVrT2NlYW4gQmVhY2hlc3RvcnmiY3Jhd3kBAltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IGhpcmVkIG9uIGF0IGEgd2FyZWhvdXNlIGluIGtlYXJueSBtZXNhLCBzdGFydHMgaW4gdHdvIHdlZWtzLiB0aGUgY29tbXV0ZSBpcyB0aGUgcHJvYmxlbSDigJQgdHdvIGJ1c2VzIGVhY2ggd2F5IGFuZCBzaGUgY2FudCBjb3ZlciB0aGUgcGFzcyB1bnRpbCB0aGUgZmlyc3QgY2hlY2sgY2xlYXJzLiBzaGUgd2FzIHZlcnkgbWF0dGVyIG9mIGZhY3QgYWJvdXQgaXQsIG5vIGRyYW1hLmZzaGFwZWR40kkgaGF2ZSBiZWVuIGhpcmVkIGF0IGEgd2FyZWhvdXNlIGluIEtlYXJueSBNZXNhIGFuZCBJIHN0YXJ0IGluIHR3byB3ZWVrcy4gVGhlIHByb2JsZW0gaXMgZ2V0dGluZyB0aGVyZTogaXQgaXMgdHdvIGJ1c2VzIGVhY2ggd2F5LCBhbmQgSSBjYW5ub3QgY292ZXIgYSBwYXNzIHVudGlsIG15IGZpcnN0IGNoZWNrIGNsZWFycy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNoYW5zd2VyZWRnY29uc2VudKNmbWV0aG9keBt3cml0dGVuLCBzaWduZWQgaW50YWtlIGZvcm1qYWR2b2NhdGVJZGphZHZfb2JfMDAzbHRpbWVzdGFtcElTT3QyMDI2LTA2LTMwVDE1OjA1OjAwWg==",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAs2eIRxsA1KkegOHL4GsGfGs5pgeA6SPs6aMzzS1LDWheycbhFbAHgsSoB6uL3YmY8YiSOYOR9vpTHUgIS2Rpbw=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAYqxgXjdi961LZfqqLr78eXe4zEI0rTJU3aymmG85hmUkPoEcJJnWyxaVKqJxSjMWottwVi/7x5Ik7Wn3fXkYSQ=="
     }
   },
   {
@@ -94,13 +94,13 @@
       "alg": "COSE-ES256",
       "contentHash": "1f5a7923749c7f1a2d9ffc73f3e6f9a6bd1869d31cb5ac3885fc3c344df85bfa",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.814Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.377Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "p2JpZGpvcl9zZWVkXzAzY2Fza6Jnc3VtbWFyeXglc2hlbHRlciBiZWQsIGdyb3VuZCBmbG9vciBpZiBwb3NzaWJsZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25laERvd250b3duZXN0b3J5omNyYXd5AQFbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIHR1cm5lZCBhd2F5IHR3aWNlIG5vdywgc2F5cyB0aGUgYmVkcyB3ZXJlIGZ1bGwgYm90aCB0aW1lcy4ga25lZSBpcyBiYWQgc28gc3RhaXJzIGFyZSBoYXJkLCBoZXMgYXNraW5nIGZvciBncm91bmQgZmxvb3IgaWYgdGhlcmVzIGFueS4gYmVlbiBzbGVlcGluZyBiZWhpbmQgYSBzdG9yZSBvZmYgYnJvYWR3YXkuIG5vIG9uZSBoYXMgZm9sbG93ZWQgdXAgd2l0aCBoaW0gc2luY2UgbWF5LmZzaGFwZWR5ARlJIGhhdmUgYmVlbiB0dXJuZWQgYXdheSB0d2ljZTsgYm90aCB0aW1lcyBJIHdhcyB0b2xkIHRoZSBiZWRzIHdlcmUgZnVsbC4gTXkga25lZSBpcyBiYWQsIHNvIHN0YWlycyBhcmUgaGFyZCDigJQgSSBhbSBhc2tpbmcgZm9yIGEgZ3JvdW5kIGZsb29yIGJlZCBpZiB0aGVyZSBpcyBvbmUuIEkgaGF2ZSBiZWVuIHNsZWVwaW5nIGJlaGluZCBhIHN0b3JlIG9mZiBCcm9hZHdheS4gTm8gb25lIGhhcyBmb2xsb3dlZCB1cCB3aXRoIG1lIHNpbmNlIE1heS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRrYWR2X2R0bl8wMjdsdGltZXN0YW1wSVNPdDIwMjYtMDUtMTlUMjA6NDE6MDBabXNoZWx0ZXJTdGF0dXOlaWJlZFN0YXR1c2x0dXJuaW5nX2F3YXlscmVzdHJpY3Rpb25zpWpjdXJmZXdUaW1lZTE5OjAwbWFsbG93c0NhbmluZXP0bWhhc0hhcmRDdXJmZXf1c3JlcXVpcmVzQ2xlYW5TY3JlZW71dGFsbG93c1dlYXBvbnNTdG9yYWdl9G1zdG9yYWdlUG9saWN5bWJhY2twYWNrX29ubHlwc2FmZXR5Vm9sYXRpbGl0eWhtb2RlcmF0ZXFlc3RpbWF0ZWRPcGVuaW5ncwA=",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnGxZougkeUevF2LnCRsU3ctVziB0iPWtfLJ68jLVqikIXfR0poX5MJFV4h2WX800Q0PZygbvtNBpUMzJ8fUsDg=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhADi7B4cjQqUdIsz+JlOOQBJWWpqgZhC+sNO0lDLnUYMfIItt+aNA3mAbi3c6b6x61X0UNdc8ryV3W4ioDfmjymQ=="
     }
   },
   {
@@ -124,13 +124,13 @@
       "alg": "COSE-ES256",
       "contentHash": "370389ae0597c686eb6e155c0b609fd017b60ffc72f5c3c09b12af2c81753a0d",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.815Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.380Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA0Y2Fza6Jnc3VtbWFyeXgxcmVmaWxsIG9mIGFuIGV4aXN0aW5nIGJsb29kIHByZXNzdXJlIHByZXNjcmlwdGlvbmhjYXRlZ29yeWdtZWRpY2FsZHpvbmVrQmFsYm9hIFBhcmtlc3RvcnmiY3Jhd3kBKltDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gYmxvb2QgcHJlc3N1cmUgbWVkcyByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYmVlbiBnZXR0aW5nIGRpenp5IHN0YW5kaW5nIHVwIGZhc3QuIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGJvdGggdGltZXMgdGhlIHdhaXQgbGlzdCB3YXMgZnVsbCBmb3IgbmV3IHBhdGllbnRzLiBzYXlzIGhlIGp1c3QgbmVlZHMgc29tZW9uZSB0byBzZWUgaGltIG9uY2UgYW5kIHdyaXRlIHRoZSBzYW1lIHByZXNjcmlwdGlvbiBhZ2Fpbi5mc2hhcGVkeQFBTXkgYmxvb2QgcHJlc3N1cmUgbWVkaWNhdGlvbiByYW4gb3V0IHRocmVlIHdlZWtzIGFnbywgYW5kIEkndmUgYmVlbiBnZXR0aW5nIGRpenp5IHdoZW4gSSBzdGFuZCB1cCBxdWlja2x5LiBJIHdlbnQgdG8gdGhlIGZyZWUgY2xpbmljIG5lYXIgdGhlIHBhcmsgdHdpY2UsIGFuZCBib3RoIHRpbWVzIHRoZSBuZXctcGF0aWVudCB3YWl0bGlzdCB3YXMgZnVsbC4gSSBkb24ndCBuZWVkIGFueXRoaW5nIG5ldyDigJQganVzdCBzb21lb25lIHRvIHNlZSBtZSBvbmNlIGFuZCByZWZpbGwgdGhlIHNhbWUgcHJlc2NyaXB0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2xhY2tub3dsZWRnZWRnY29uc2VudKNmbWV0aG9keDZ2ZXJiYWwsIGluIHBlcnNvbiwgd2l0bmVzc2VkIGJ5IGNsaW5pYyBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfYnBfMDA5bHRpbWVzdGFtcElTT3QyMDI2LTA3LTAxVDEwOjE1OjAwWg==",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAvPp4ziQZ1vsFWs5syXwaLVDO1g2Ms+qPLdtiKcCZZOT3oiJ9EF5tT9fjL7AvH/OakgSTfp0wVPc8Mco7whUCNQ=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAUuUuKLQHJoRUwf3sjQKFHvqK+GhwBudsI4+8Qkuk0wfusCOV6oTF1QDes+HZ0ZBbfKjhtTqVF7M+SCqdTlyDKg=="
     }
   },
   {
@@ -155,13 +155,13 @@
       "alg": "COSE-ES256",
       "contentHash": "cee48b5937cc54e9750f7c187b4a28510f0d82b2db16d96297b2640ba99a5c2d",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.816Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.381Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA1Y2Fza6Nnc3VtbWFyeXgyZm9vZCBoYW5kbGVyIGNhcmQgYmVmb3JlIGEgTW9uZGF5IHJlc3RhdXJhbnQgc2hpZnRoY2F0ZWdvcnlpd29ya19kb2NzaWFtb3VudFVzZAtkem9uZWlIaWxsY3Jlc3Rlc3RvcnmiY3Jhd3kBBVtDT01QT1NJVEUg4oCUIG5vdCBhIHJlYWwgaW5kaXZpZHVhbF0gZ290IG9mZmVyZWQgYSBqb2IgYXQgYSByZXN0YXVyYW50IG9uIHVuaXZlcnNpdHkgYXZlLCB0aGV5IG5lZWQgYSBmb29kIGhhbmRsZXIgY2FyZCBiZWZvcmUgaGVyIGZpcnN0IHNoaWZ0IG1vbmRheS4gc2F5cyBzaGUgaGFzIHRoZSB0ZW4gZG9sbGFycyBidXQgbm90IGEgd2F5IHRvIGdldCBvbmxpbmUgbG9uZyBlbm91Z2ggdG8gZmluaXNoIHRoZSBjb3Vyc2UgYW5kIHByaW50IHRoZSBjYXJkLmZzaGFwZWR5AQtJIHdhcyBvZmZlcmVkIGEgam9iIGF0IGEgcmVzdGF1cmFudCBvbiBVbml2ZXJzaXR5IEF2ZW51ZSwgYW5kIEkgbmVlZCBhIGZvb2QgaGFuZGxlciBjYXJkIGJlZm9yZSBteSBmaXJzdCBzaGlmdCBvbiBNb25kYXkuIEkgaGF2ZSB0aGUgdGVuIGRvbGxhcnMgZm9yIHRoZSBjb3Vyc2UsIGJ1dCBub3QgcmVsaWFibGUgZW5vdWdoIGludGVybmV0IGFjY2VzcyB0byBmaW5pc2ggaXQgYW5kIHByaW50IHRoZSBjYXJkIGluIHRpbWUuIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4G3dyaXR0ZW4sIHNpZ25lZCBpbnRha2UgZm9ybWphZHZvY2F0ZUlkamFkdl9oY18wNDJsdGltZXN0YW1wSVNPdDIwMjYtMDctMjJUMDk6NDA6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA7aG8Nf4MyU6w6zyyJAsoE/0aFrnUdhVFSHQWT8PfFiRcvbk0rbq2Msg2XQk6Ek1mXMQrYm7hU7CjwIPNApWZIw=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAwfZPirHe2gV0ZavdzRKXNMCL7SgjJqkIXDft7Mlen28ngNn+GOrAt187TQ/ckww5SiY/sKS3jQJ8jg6mvFhl2A=="
     }
   },
   {
@@ -185,13 +185,13 @@
       "alg": "COSE-ES256",
       "contentHash": "13c67d22073e54bf9eb09c2bd14f0639a92204b1d10a927fd514264b98ecceba",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.818Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.382Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA2Y2Fza6Jnc3VtbWFyeXg2YSBwaG9uZSB0byByZWFjaCBhIGNhc2Ugd29ya2VyIGFib3V0IGEgaG91c2luZyB2b3VjaGVyaGNhdGVnb3J5ZXBob25lZHpvbmVrQ2h1bGEgVmlzdGFlc3RvcnmiY3Jhd3jnW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBwaG9uZSBnb3QgdGFrZW4gaW4gYSBmaWdodCBhdCB0aGUgc2hlbHRlciwgY2FudCBjYWxsIHRoZSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIHRoZSBob3VzaW5nIHZvdWNoZXIgYXBwbGljYXRpb24uIHNheXMgaGUgbWlzc2VkIG9uZSBjYWxsYmFjayBhbHJlYWR5IGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBoaW0uZnNoYXBlZHjcTXkgcGhvbmUgd2FzIHRha2VuIGluIGEgZmlnaHQgYXQgdGhlIHNoZWx0ZXIuIEkgY2FuJ3QgY2FsbCBteSBjYXNlIHdvcmtlciBiYWNrIG9yIGNoZWNrIG9uIG15IGhvdXNpbmcgdm91Y2hlciBhcHBsaWNhdGlvbiwgYW5kIEkgYWxyZWFkeSBtaXNzZWQgb25lIGNhbGxiYWNrIGJlY2F1c2UgdGhlcmUgd2FzIG5vIHdheSB0byByZWFjaCBtZS4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNqdW5hbnN3ZXJlZGdjb25zZW50o2ZtZXRob2R4LXZlcmJhbCwgaW4gcGVyc29uLCB3aXRuZXNzZWQgYnkgc2hlbHRlciBzdGFmZmphZHZvY2F0ZUlkamFkdl9jdl8wMThsdGltZXN0YW1wSVNPdDIwMjYtMDYtMTFUMTY6NTA6MDBa",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhASuPR5vVmHw6RtjJuLkh0/hv3CTUnFVUgg+NrAtw0g7zWtT2UbgUigWNZie29d/d0pUJ0Agv2GAmFBgRfadQNMA=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA5W5qm0I5tKajltMZd8IuiORcYjCNDf2wUylnUqzhuaVPQSy0+mlY9XHsQk1ayr3pZUx3A3HFSp5KIDMNUehDQQ=="
     }
   },
   {
@@ -215,13 +215,13 @@
       "alg": "COSE-ES256",
       "contentHash": "d15c06d9b3039f5173e2ce41901a788e68ee9b879ef5d635ac3f2463d16fe580",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.819Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.382Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "pmJpZGpvcl9zZWVkXzA3Y2Fza6Jnc3VtbWFyeXg2Y2hpbGRjYXJlIGZvciB0aGUgbW9ybmluZyBvZiBhIHdhcmVob3VzZSBqb2IgaW50ZXJ2aWV3aGNhdGVnb3J5aWNoaWxkY2FyZWR6b25laEVsIENham9uZXN0b3J5omNyYXd5AQxbQ09NUE9TSVRFIOKAlCBub3QgYSByZWFsIGluZGl2aWR1YWxdIGhhcyBhbiBpbnRlcnZpZXcgbGluZWQgdXAgYXQgYSB3YXJlaG91c2UgYnV0IG5vIG9uZSB0byB3YXRjaCBoZXIgdGhyZWUgeWVhciBvbGQgdGhhdCBtb3JuaW5nLCBzYXlzIGhlciBzaXN0ZXIgdXNlZCB0byBoZWxwIGJ1dCBtb3ZlZCB0byBhcml6b25hIGluIHRoZSBzcHJpbmcuIG1pc3NpbmcgdGhlIGludGVydmlldyBtZWFucyB3YWl0aW5nIGFub3RoZXIgbW9udGggZm9yIHRoZSBuZXh0IG9wZW5pbmcuZnNoYXBlZHj+SSBoYXZlIGEgam9iIGludGVydmlldyBsaW5lZCB1cCBhdCBhIHdhcmVob3VzZSwgYnV0IG5vIG9uZSB0byB3YXRjaCBteSB0aHJlZS15ZWFyLW9sZCB0aGF0IG1vcm5pbmcuIE15IHNpc3RlciB1c2VkIHRvIGhlbHAsIGJ1dCBzaGUgbW92ZWQgdG8gQXJpem9uYSB0aGlzIHNwcmluZy4gSWYgSSBtaXNzIHRoZSBpbnRlcnZpZXcsIHRoZSBuZXh0IG9wZW5pbmcgaXNuJ3QgZm9yIGFub3RoZXIgbW9udGguIChDb21wb3NpdGUgaWxsdXN0cmF0aW9uLilmc3RhdHVzaXJlcXVlc3RlZGdjb25zZW50o2ZtZXRob2R4IHZlcmJhbCwgcmVjb3JkZWQgd2l0aCBwZXJtaXNzaW9uamFkdm9jYXRlSWRqYWR2X2VjXzAzMWx0aW1lc3RhbXBJU090MjAyNi0wNy0zMFQwODowNTowMFo=",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhALACjeX7DC7df+t5QGC/E1g3MI2NQ+7MP+QsKGIly/LHwtlMIUYPfd7yF22AmNjv/zfJFdMyoxIA6Egq8khfsXQ=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAMkQEXJpJAhF7tV9cRw7UHbJcxCAvYr0phfvFWCzd/H/DXoMYm+CqtmjISdX6Lc/R35U3zsKyAZZowVHnfOn9MA=="
     }
   },
   {
@@ -257,13 +257,13 @@
       "alg": "COSE-ES256",
       "contentHash": "544e93139a49d366c154a70235a69a75d6e1b2d40ccd51600ca8021307176b37",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.821Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.383Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "p2JpZGpvcl9zZWVkXzA4Y2Fza6Jnc3VtbWFyeXgxYW55IGF2YWlsYWJsZSBzaGVsdGVyIGJlZCwgbm8gbG9jYXRpb24gcHJlZmVyZW5jZWhjYXRlZ29yeWtzaGVsdGVyX2JlZGR6b25lZ0xhIE1lc2Flc3RvcnmiY3Jhd3jxW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIGZlYnJ1YXJ5LCBrZWVwcyBnZXR0aW5nIHRvbGQgaGVzIGNsb3NlIGJ1dCBub3RoaW5nIG9wZW5zIHVwLiBjb2xkIGF0IG5pZ2h0IG5vdywgc2F5cyBoZSdkIHRha2UgYW55dGhpbmcgd2l0aCBmb3VyIHdhbGxzIGF0IHRoaXMgcG9pbnQsIGRvZXNudCBjYXJlIGFib3V0IGxvY2F0aW9uLmZzaGFwZWR49UkgaGF2ZSBiZWVuIG9uIHRoZSBjb29yZGluYXRlZCBlbnRyeSBsaXN0IHNpbmNlIEZlYnJ1YXJ5LiBJIGtlZXAgZ2V0dGluZyB0b2xkIEknbSBjbG9zZSwgYnV0IG5vdGhpbmcgb3BlbnMgdXAuIEl0J3MgY29sZCBhdCBuaWdodCBub3cg4oCUIEkgd291bGQgdGFrZSBhbnl0aGluZyB3aXRoIGZvdXIgd2FsbHMgYXQgdGhpcyBwb2ludDsgSSBkb24ndCBjYXJlIGFib3V0IGxvY2F0aW9uLiAoQ29tcG9zaXRlIGlsbHVzdHJhdGlvbi4pZnN0YXR1c2p1bmFuc3dlcmVkZ2NvbnNlbnSjZm1ldGhvZHgbd3JpdHRlbiwgc2lnbmVkIGludGFrZSBmb3JtamFkdm9jYXRlSWRqYWR2X2xtXzAwNmx0aW1lc3RhbXBJU090MjAyNi0wNC0yOFQxOTozMDowMFptc2hlbHRlclN0YXR1c6VpYmVkU3RhdHVzZGZ1bGxscmVzdHJpY3Rpb25zpG1hbGxvd3NDYW5pbmVz9G1oYXNIYXJkQ3VyZmV39HNyZXF1aXJlc0NsZWFuU2NyZWVu9HRhbGxvd3NXZWFwb25zU3RvcmFnZfVtc3RvcmFnZVBvbGljeWxjYXJ0X2FsbG93ZWRwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MA",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhA5Djjr8rOlRkujoqUsvkHDDR3ccZyFBG9+39GDeVhTTogpCAX51u2gUOodfE4fnrKB7bdwCf7bGZOIpwp68QmIg=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAJGO7tFRS6foTu1RG395yIvsBiVcF+eAiWeIEeXR/wRSmOGMj7VvQ0yGoKY0L/zh6XgAI+eaTsOpDbS9jmmc2lg=="
     }
   },
   {
@@ -300,13 +300,13 @@
       "alg": "COSE-ES256",
       "contentHash": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14",
       "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-      "manifestVersion": "1.1",
-      "signedAtISO": "2026-08-14T19:41:14.822Z",
+      "manifestVersion": "1.2",
+      "signedAtISO": "2026-08-14T19:51:11.383Z",
       "protocolVersion": "2.0",
       "issuer": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN",
       "verificationMethod": "did:key:z4oJ8cTXLb1Cp5bQK5KNL1ryUaqTUptQHquTMuyG397AKPeYqitssiu6tSitCMHofn2sRVAgWTcgc8YSg8wibW3CUBeUN#key-1",
       "cborPayload": "p2JpZGpvcl9zZWVkXzA5Y2Fza6Jnc3VtbWFyeXgyYW4gb3BlbiBiZWQgcmVwb3J0ZWQgZm9yIHRvbmlnaHQsIGZpcnN0LWNvbWUgYmFzaXNoY2F0ZWdvcnlrc2hlbHRlcl9iZWRkem9uZWxFYXN0IFZpbGxhZ2Vlc3RvcnmiY3Jhd3joW0NPTVBPU0lURSDigJQgbm90IGEgcmVhbCBpbmRpdmlkdWFsXSBvdXRyZWFjaCB3b3JrZXIgY2FsbGVkIGFoZWFkIGFuZCBjb25maXJtZWQgdHdvIGJlZHMgb3BlbiB0b25pZ2h0LCBubyB3YWl0bGlzdCByaWdodCBub3cuIHNheXMgdGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDksIGFuZCB0aGV5IGRvIGEgYnJlYXRoYWx5emVyIGF0IHRoZSBkb29yLCBubyBleGNlcHRpb25zLmZzaGFwZWR48EFuIG91dHJlYWNoIHdvcmtlciBjYWxsZWQgYWhlYWQgYW5kIGNvbmZpcm1lZCB0d28gYmVkcyBhcmUgb3BlbiB0b25pZ2h0LCB3aXRoIG5vIHdhaXRsaXN0IHJpZ2h0IG5vdy4gVGhlIGZyb250IGRlc2sgc3RvcHMgdGFraW5nIG5ldyBpbnRha2VzIGF0IDlwbSwgYW5kIHRoZXJlIGlzIGEgYnJlYXRoYWx5emVyIGNoZWNrIGF0IHRoZSBkb29yIHdpdGggbm8gZXhjZXB0aW9ucy4gKENvbXBvc2l0ZSBpbGx1c3RyYXRpb24uKWZzdGF0dXNsYWNrbm93bGVkZ2VkZ2NvbnNlbnSjZm1ldGhvZHgvdmVyYmFsLCBpbiBwZXJzb24sIHdpdG5lc3NlZCBieSBvdXRyZWFjaCB3b3JrZXJqYWR2b2NhdGVJZGphZHZfZXZfMDUxbHRpbWVzdGFtcElTT3QyMDI2LTA4LTAyVDIxOjEwOjAwWm1zaGVsdGVyU3RhdHVzpWliZWRTdGF0dXNkb3BlbmxyZXN0cmljdGlvbnOlamN1cmZld1RpbWVlMjE6MDBtYWxsb3dzQ2FuaW5lc/RtaGFzSGFyZEN1cmZld/VzcmVxdWlyZXNDbGVhblNjcmVlbvV0YWxsb3dzV2VhcG9uc1N0b3JhZ2X0bXN0b3JhZ2VQb2xpY3luc2VjdXJlX2xvY2tlcnNwc2FmZXR5Vm9sYXRpbGl0eWNsb3dxZXN0aW1hdGVkT3BlbmluZ3MC",
-      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAFOJWN0jsnchHPpAhdg7aZ/OsEgN33MWTohyucw6O/PwbdDTVxh7pQNLZMPammfXiCAnupxfV+VbFI2ItpK9KeA=="
+      "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAXdmx/s2ZWh6MNY1QSI884yINUtMddw5P2BL2U4im6WX/MYhgxYRGz2EWwvikhJroTI/Yw4HJBRYsBTbu/Pf+wQ=="
     }
   }
 ]

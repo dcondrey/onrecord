@@ -25,6 +25,7 @@ const FIXTURE = {
   ask: { category: 'shelter_bed', summary: 'a bed for tonight', amountUsd: 12 },
   story: { raw: 'raw text', shaped: 'shaped text' },
   consent: { advocateId: 'adv_1', method: 'verbal', timestampISO: '2026-01-01T00:00:00.000Z' },
+  sourceClass: 'advocate_attested',
   recovery: { scheme: 'claim-card/v1', verifierTag: 'deadbeef' },
   shelterStatus: {
     bedStatus: 'open',
@@ -42,9 +43,9 @@ const FIXTURE = {
   status: 'requested',
 };
 
-const EXPECTED_MANIFEST_VERSION = '1.1';
+const EXPECTED_MANIFEST_VERSION = '1.2';
 const EXPECTED_CANONICAL_JSON =
-  '{"id":"or_fixture_01","zone":"Downtown","ask":{"category":"shelter_bed","summary":"a bed for tonight","amountUsd":12},"story":{"raw":"raw text","shaped":"shaped text"},"consent":{"advocateId":"adv_1","method":"verbal","timestampISO":"2026-01-01T00:00:00.000Z"},"recovery":{"scheme":"claim-card/v1","verifierTag":"deadbeef"},"shelterStatus":{"bedStatus":"open","estimatedOpenings":2,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":false,"requiresCleanScreen":true,"hasHardCurfew":true,"curfewTime":"21:00"},"storagePolicy":"secure_lockers","safetyVolatility":"low"},"status":"requested"}';
+  '{"id":"or_fixture_01","zone":"Downtown","ask":{"category":"shelter_bed","summary":"a bed for tonight","amountUsd":12},"story":{"raw":"raw text","shaped":"shaped text"},"consent":{"advocateId":"adv_1","method":"verbal","timestampISO":"2026-01-01T00:00:00.000Z"},"sourceClass":"advocate_attested","recovery":{"scheme":"claim-card/v1","verifierTag":"deadbeef"},"shelterStatus":{"bedStatus":"open","estimatedOpenings":2,"restrictions":{"allowsCanines":false,"allowsWeaponsStorage":false,"requiresCleanScreen":true,"hasHardCurfew":true,"curfewTime":"21:00"},"storagePolicy":"secure_lockers","safetyVolatility":"low"},"status":"requested"}';
 
 test('canonicalize()\'s field set/key order matches the version it was last signed under', () => {
   assert.equal(

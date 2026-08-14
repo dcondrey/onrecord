@@ -91,7 +91,7 @@ export interface Provenance {
   /** Legacy v1 raw P-1363 signature. Absent for protocol v2. */
   signature?: string;
   pubKey: string;
-  manifestVersion: '1.0' | '1.1';
+  manifestVersion: '1.0' | '1.1' | '1.2';
   signedAtISO: string;
   /** Standards envelope, present on protocol v2 entries. */
   protocolVersion?: '1.0' | '2.0';
@@ -103,12 +103,25 @@ export interface Provenance {
   signerTier?: 'org' | 'contributor';
 }
 
+/**
+ * Who is asserting this entry's contents. 'advocate_attested' (the default,
+ * implicit when absent) is the CLI's original trust model: a named advocate
+ * vouching for someone else's account. 'self_attested_witness' is a
+ * contributor vouching for their own witnessed account — validateUnsigned()
+ * requires consent.advocateId to equal that contributor's own gateway
+ * pseudonym in that case, so a contributor can't claim third-party advocate
+ * authority they don't have.
+ */
+export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness'] as const;
+export type SourceClass = (typeof SOURCE_CLASSES)[number];
+
 export interface Entry {
   id: string;
   zone: Zone;
   ask: Ask;
   story: Story;
   consent: Consent;
+  sourceClass?: SourceClass;
   recovery?: Recovery;
   shelterStatus?: ShelterStatus;
   status: Status;
@@ -152,6 +165,7 @@ export function canonicalize(entry: UnsignedEntry): string {
       method: entry.consent.method,
       timestampISO: entry.consent.timestampISO,
     },
+    ...(entry.sourceClass ? { sourceClass: entry.sourceClass } : {}),
     ...(entry.recovery ? { recovery: { scheme: entry.recovery.scheme, verifierTag: entry.recovery.verifierTag } } : {}),
     ...(entry.shelterStatus
       ? {
@@ -244,12 +258,22 @@ export function isSafetyLevel(v: string): v is SafetyLevel {
   return (SAFETY_LEVELS as readonly string[]).includes(v);
 }
 
+export function isSourceClass(v: string): v is SourceClass {
+  return (SOURCE_CLASSES as readonly string[]).includes(v);
+}
+
+export interface ValidateUnsignedContext {
+  /** The submitting contributor's own gateway pseudonym, when known — checked against
+   *  consent.advocateId for sourceClass: 'self_attested_witness' entries below. */
+  contributorPseudonym?: string;
+}
+
 /**
  * Validates an unsigned entry. Consent is the hard gate: an entry with no
  * advocate, no stated consent method, or no consent timestamp is refused
  * outright rather than written with a placeholder.
  */
-export function validateUnsigned(entry: UnsignedEntry): void {
+export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedContext = {}): void {
   assertNoPreciseLocation(entry);
 
   if (!entry.id || typeof entry.id !== 'string') fail('id is required');
@@ -284,6 +308,21 @@ export function validateUnsigned(entry: UnsignedEntry): void {
   }
   if (!entry.consent.timestampISO || Number.isNaN(Date.parse(entry.consent.timestampISO))) {
     fail('CONSENT REQUIRED: consent.timestampISO must be a valid ISO 8601 timestamp.');
+  }
+
+  if (entry.sourceClass !== undefined && !isSourceClass(entry.sourceClass)) {
+    fail(`sourceClass must be one of: ${SOURCE_CLASSES.join(', ')}`);
+  }
+  // A contributor vouching for their own witnessed account can't also claim to be
+  // vouching for someone else — consent.advocateId must be their own pseudonym.
+  if (entry.sourceClass === 'self_attested_witness') {
+    const pseudonym = ctx.contributorPseudonym?.trim();
+    if (!pseudonym) {
+      fail('self_attested_witness entries require a contributor pseudonym from the gateway.');
+    }
+    if (entry.consent.advocateId.trim() !== pseudonym) {
+      fail('self_attested_witness entries must have consent.advocateId equal to the contributing pseudonym.');
+    }
   }
 
   if (entry.shelterStatus) {
