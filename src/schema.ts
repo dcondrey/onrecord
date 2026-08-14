@@ -99,6 +99,8 @@ export interface Provenance {
   verificationMethod?: string;
   cborPayload?: string;
   coseSign1?: string;
+  /** Org key vs. isolated per-handle contributor key (src/gateway/contributor-identity.ts). Provenance is outside canonicalize()'s input, so this carries no key-order constraint. */
+  signerTier?: 'org' | 'contributor';
 }
 
 export interface Entry {
