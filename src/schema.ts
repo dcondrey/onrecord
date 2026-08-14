@@ -120,6 +120,13 @@ export interface Provenance {
 export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness', 'self_attested_personal'] as const;
 export type SourceClass = (typeof SOURCE_CLASSES)[number];
 
+/** Escape hatch for future domain payloads that don't warrant their own typed
+ *  field the way shelterStatus does — canonicalize() treats it opaquely. */
+export interface DomainPayload {
+  kind: string;
+  data: Record<string, unknown>;
+}
+
 export interface Entry {
   id: string;
   zone: Zone;
@@ -129,6 +136,7 @@ export interface Entry {
   sourceClass?: SourceClass;
   recovery?: Recovery;
   shelterStatus?: ShelterStatus;
+  domainPayload?: DomainPayload;
   status: Status;
   provenance: Provenance;
 }
@@ -192,6 +200,9 @@ export function canonicalize(entry: UnsignedEntry): string {
             safetyVolatility: entry.shelterStatus.safetyVolatility,
           },
         }
+      : {}),
+    ...(entry.domainPayload
+      ? { domainPayload: { kind: entry.domainPayload.kind, data: entry.domainPayload.data } }
       : {}),
     status: entry.status,
   };
@@ -360,6 +371,13 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
     }
     if (s.restrictions.curfewTime !== undefined && !s.restrictions.hasHardCurfew) {
       fail('shelterStatus.restrictions.curfewTime may only be set when hasHardCurfew is true');
+    }
+  }
+
+  if (entry.domainPayload) {
+    if (!entry.domainPayload.kind?.trim()) fail('domainPayload.kind is required');
+    if (entry.domainPayload.data === null || typeof entry.domainPayload.data !== 'object' || Array.isArray(entry.domainPayload.data)) {
+      fail('domainPayload.data must be an object');
     }
   }
 }
