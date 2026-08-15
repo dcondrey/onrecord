@@ -32,6 +32,7 @@ import { didKeyFromPublicJwk, verificationMethodForDid } from './did.js';
 import { signC2paAsset } from './c2pa.js';
 import { exportRecordBundle } from './export.js';
 import { addEntry, AddEntryError, type AddEntryInput } from './add.js';
+import { reportSpending } from './report-spending.js';
 import { promptInteractiveAdd, promptRawStory, type AskFn } from './interactive-add.js';
 import { signWithdrawRequest, withdrawEntry, withdrawSelfAttestedEntry, WithdrawError, WITHDRAWN_LOG_PATH } from './withdraw.js';
 import { renderIntakeForm, renderIntakeSuccess, parseIntakeFields } from './intake-form.js';
@@ -390,6 +391,56 @@ async function cmdWithdraw(args: Args): Promise<void> {
   out();
 }
 
+// --- command: report-spending ------------------------------------------------
+
+async function cmdReportSpending(args: Args): Promise<void> {
+  const input = {
+    orgName: required(args, 'org-name', 'The disclosing organization\'s name, published verbatim.'),
+    zone: required(args, 'zone', `One of: ${ZONES.join(', ')}`),
+    category: required(args, 'category', `One of: ${CATEGORIES.join(', ')}`),
+    amount: required(args, 'amount', 'The disclosed spending amount in USD.'),
+    period: required(args, 'period', 'The reporting period, e.g. "2026-Q3".'),
+    disclosureText: (str(args, 'file') ? await readFile(str(args, 'file')!, 'utf8') : await readStdin()).trim(),
+    summary: str(args, 'summary'),
+    reportedAt: str(args, 'reported-at'),
+    id: str(args, 'id'),
+  };
+  if (!input.disclosureText) {
+    die('no disclosure text provided. Pipe it on stdin or pass --file <path>.');
+  }
+
+  let output;
+  try {
+    output = await reportSpending(input, {
+      onStatus: (msg) => {
+        if (!bool(args, 'json')) process.stderr.write(c.dim(`${msg}\n`));
+      },
+    });
+  } catch (err) {
+    if (err instanceof AddEntryError || err instanceof ValidationError) die(err.message);
+    throw err;
+  }
+
+  const { entry, manifestPath } = output;
+
+  if (bool(args, 'json')) {
+    out(JSON.stringify(entry, null, 2));
+    return;
+  }
+
+  const fp = await keyFingerprint(entry.provenance.pubKey);
+  out();
+  rule(c.bold('ORG DISCLOSURE PUBLISHED'));
+  out(`  ${c.bold(entry.id)}   ${entry.zone}   ${entry.ask.category}   ${entry.consent.advocateId}`);
+  out(`  ${entry.ask.summary}${entry.ask.amountUsd !== undefined ? c.cyan(`  ($${entry.ask.amountUsd})`) : ''}`);
+  out();
+  out(`  org key      ${fp}  ${c.dim('(SHA-256 of SPKI, first 8 bytes — isolated from the platform signing key)')}`);
+  out();
+  out(c.green(`  wrote ${ENTRIES_PATH}`));
+  out(c.green(`  wrote ${manifestPath}`));
+  out();
+}
+
 // --- command: verify --------------------------------------------------------
 
 async function cmdVerify(args: Args): Promise<void> {
@@ -715,6 +766,12 @@ ${c.bold('on-record')} — signed, provenance-wrapped entries for the On Record 
                   ${c.dim('remove an entry from the public record for good, at the requester\'s word alone')}
                   ${c.dim('--handle withdraws a self-attested entry, signed by that same contributor\'s key')}
 
+  ${c.bold('on-record report-spending')} --org-name <name> --zone <zone> --category <cat>
+                  --amount <usd> --period <e.g. 2026-Q3> [--file <path>] [--summary <text>]
+                  [--reported-at <iso>] [--id <id>] [--json]
+                  ${c.dim('publish an org\'s own spending disclosure, signed under an isolated org identity key')}
+                  ${c.dim('disclosure text is read from stdin when --file is omitted')}
+
   ${c.bold('on-record verify')} [<file>] [--json]   ${c.dim(`defaults to ${ENTRIES_PATH}`)}
   ${c.bold('on-record c2pa')} <entry-id> --asset <path> --output <path>  ${c.dim('attach a C2PA manifest to a real asset')}
   ${c.bold('on-record export')} <entry-id> --output <path.zip>         ${c.dim('export an offline-verifiable record bundle')}
@@ -744,6 +801,9 @@ async function main(): Promise<void> {
       break;
     case 'withdraw':
       await cmdWithdraw(args);
+      break;
+    case 'report-spending':
+      await cmdReportSpending(args);
       break;
     case 'verify':
       await cmdVerify(args);

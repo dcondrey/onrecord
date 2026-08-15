@@ -2,23 +2,23 @@
   "format": "org.onrecord.c2pa-bridge/1",
   "manifestVersion": "1.2",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
-  "instanceId": "urn:onrecord:entry:or_seed_09",
-  "createdISO": "2026-08-15T11:53:58.472Z",
+  "instanceId": "urn:onrecord:entry:or_org_seed_03",
+  "createdISO": "2026-08-15T11:53:58.487Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
       "data": {
-        "advocateId": "adv_ev_051",
-        "method": "verbal, in person, witnessed by outreach worker",
-        "timestampISO": "2026-08-02T21:10:00Z",
+        "advocateId": "Bayview Housing Collective",
+        "method": "org self-disclosure",
+        "timestampISO": "2026-08-01T09:00:00Z",
         "recordedBeforePublication": true
       }
     },
     {
       "label": "org.onrecord.story.hash",
       "data": {
-        "rawSha256": "ba9d3644946ae968996b2310b4767f871d68c917f9b2b91cb1aa3b000a474b31",
-        "shapedSha256": "71dbf57f79db73e964a62629f2b9b89d15079dfcc1e7c30f18df38d46881805f",
+        "rawSha256": "e66035a24b9318af9f51b8a73e169d71b8b8dbc9109f9fdca4abcc99aef7df9d",
+        "shapedSha256": "89ed107937d97682f25dcb525722db3ae71fc4eca2c131f18b4d1a697792c91d",
         "bothPublished": true
       }
     },
@@ -30,7 +30,7 @@
             "action": "c2pa.created",
             "softwareAgent": "on-record/1.0 (ECDSA-P256; hackathon build)",
             "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture",
-            "description": "Shaped text was written by hand for the seed set; no model call was made."
+            "description": "org_attested entries are published as submitted, with no Claude shaping step, by design."
           }
         ]
       }
@@ -41,7 +41,7 @@
         "applied": false,
         "model": "claude-opus-4-8 (not invoked)",
         "systemPromptSha256": "d7116b97a3c99541458d811dad54eb7cf130d358078a7bb03cb7ff28c20908fc",
-        "method": "Shaped text was written by hand for the seed set; no model call was made.",
+        "method": "org_attested entries are published as submitted, with no Claude shaping step, by design.",
         "constraint": "Prompt forbids introducing any fact absent from the raw text, softening the account, or adding claims about any organization.",
         "rawTextRetained": true
       }
@@ -64,22 +64,22 @@
   ],
   "signature": {
     "alg": "COSE-ES256",
-    "contentHash": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhrM1crJJGjMUUnc0wtGQXQaHwQ4wS7BT12mkSM3akNtHkSlIEzFZvagczlnLId1kFA/bGVcs0Ho1N1ntvfgF8A==",
-    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-    "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-15T11:53:58.472Z",
+    "contentHash": "304f13c1ef3c8200d502cc7c335cae2227eb91b7d8f93de718d57fdf360f7bca",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAP/cm/6Up1RAmrSbHhKMXWH9WbB+v4h2aFcc1Xuu9svvkkdLV273/sddos/GxnsE2IGbMoCPu4Avvv9z0LJIn+Q==",
+    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9qmOnX+UUBZLzOkN8ATomniZZagC07D/niKj1Hnd277l5FgXWzb7aQjdUxbuEClAPX39zS+Rj+x0IEGHB/luow==",
+    "keyFingerprint": "5c5692ef7e95e98b",
+    "signedAtISO": "2026-08-15T11:53:58.487Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
-    "issuer": "did:web:writerslogic.github.io:onrecord",
-    "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhrM1crJJGjMUUnc0wtGQXQaHwQ4wS7BT12mkSM3akNtHkSlIEzFZvagczlnLId1kFA/bGVcs0Ho1N1ntvfgF8A=="
+    "issuer": "did:key:z4oJ8eiCWZZzuzhkX3Tw6jxUKBDq79VgibGs3yLjyFyNpJgy5BZwdhDa19hVSdj6NGiuTXFP2Ld2i3ypq9e5hggmp5ncJ",
+    "verificationMethod": "did:key:z4oJ8eiCWZZzuzhkX3Tw6jxUKBDq79VgibGs3yLjyFyNpJgy5BZwdhDa19hVSdj6NGiuTXFP2Ld2i3ypq9e5hggmp5ncJ#key-1",
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAP/cm/6Up1RAmrSbHhKMXWH9WbB+v4h2aFcc1Xuu9svvkkdLV273/sddos/GxnsE2IGbMoCPu4Avvv9z0LJIn+Q=="
   },
   "claim": {
-    "instanceId": "urn:onrecord:entry:or_seed_09",
+    "instanceId": "urn:onrecord:entry:or_org_seed_03",
     "asset": {
       "mediaType": "application/json",
-      "cborSha256": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14"
+      "cborSha256": "304f13c1ef3c8200d502cc7c335cae2227eb91b7d8f93de718d57fdf360f7bca"
     },
     "assertions": [
       "org.onrecord.consent",

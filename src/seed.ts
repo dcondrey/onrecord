@@ -14,22 +14,25 @@
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { SEEDS, type SeedRecord } from './seeds.data.js';
+import { SEEDS, ORG_SPENDING_SEEDS, type SeedRecord } from './seeds.data.js';
 import {
   isBedStatus,
   isCategory,
   isSafetyLevel,
+  isSourceClass,
   isStatus,
   isStoragePolicy,
   isZone,
   validateUnsigned,
   ValidationError,
   type Entry,
+  type SourceClass,
   type UnsignedEntry,
 } from './schema.js';
 import { buildManifest, loadOrCreateKeyPair, sha256Hex, signEntryCose } from './sign.js';
 import { SYSTEM_PROMPT, modelId, transform } from './transform.js';
 import { buildDidDocument, didKeyFromPublicJwk } from './did.js';
+import { loadOrCreateOrgKeyPair } from './gateway/org-identity.js';
 
 export const DATA_DIR = 'data';
 export const ENTRIES_PATH = join(DATA_DIR, 'entries.json');
@@ -66,6 +69,10 @@ function toUnsigned(seed: SeedRecord): UnsignedEntry {
     };
   }
 
+  if (seed.sourceClass !== undefined && !isSourceClass(seed.sourceClass)) {
+    throw new ValidationError(`seed ${seed.id}: bad sourceClass "${seed.sourceClass}"`);
+  }
+
   return {
     id: seed.id,
     zone: seed.zone,
@@ -76,7 +83,9 @@ function toUnsigned(seed: SeedRecord): UnsignedEntry {
       method: seed.consent.method,
       timestampISO: seed.consent.timestampISO,
     },
+    ...(seed.sourceClass ? { sourceClass: seed.sourceClass as SourceClass } : {}),
     ...(shelterStatus ? { shelterStatus } : {}),
+    ...(seed.domainPayload ? { domainPayload: seed.domainPayload } : {}),
     status: seed.status,
   };
 }
@@ -104,8 +113,9 @@ export async function runSeed(options: SeedOptions): Promise<SeedOutcome> {
 
   const entries: Entry[] = [];
 
-  for (const seed of SEEDS) {
+  for (const seed of [...SEEDS, ...ORG_SPENDING_SEEDS]) {
     const unsigned = toUnsigned(seed);
+    const isOrgAttested = unsigned.sourceClass === 'org_attested';
 
     // Every seed story must announce itself as composite in the published text,
     // not only in metadata a reader might never open.
@@ -118,17 +128,26 @@ export async function runSeed(options: SeedOptions): Promise<SeedOutcome> {
     let method = 'Shaped text was written by hand for the seed set; no model call was made.';
     let usage: { inputTokens: number; outputTokens: number } | undefined;
 
-    if (options.useAi) {
+    // org_attested skips shaping entirely (src/add.ts does the same for live
+    // submissions): the org's own disclosure text is the shaped text.
+    if (options.useAi && !isOrgAttested) {
       const result = await transform({ raw: unsigned.story.raw, ask: unsigned.ask, zone: unsigned.zone });
       unsigned.story.shaped = result.shaped;
       aiApplied = true;
       model = result.model;
       method = 'Raw advocate text re-rendered by Claude under a no-fabrication system prompt.';
       usage = { inputTokens: result.inputTokens, outputTokens: result.outputTokens };
+    } else if (isOrgAttested) {
+      method = 'org_attested entries are published as submitted, with no Claude shaping step, by design.';
     }
 
-    validateUnsigned(unsigned);
-    const entry = await signEntryCose(unsigned, keys);
+    // org_attested seeds sign under #56's isolated, non-pseudonymous org identity
+    // key — never the platform key every other seed uses — the same isolation
+    // guarantee a live org-spending-report submission gets via report-spending.ts.
+    validateUnsigned(unsigned, isOrgAttested ? { assertingIdentity: unsigned.consent.advocateId } : {});
+    const signingKeys = isOrgAttested ? await loadOrCreateOrgKeyPair(unsigned.consent.advocateId, baseDir) : keys;
+    const entry = await signEntryCose(unsigned, signingKeys, { isOrgKey: !isOrgAttested });
+    if (isOrgAttested) entry.provenance.signerTier = 'org_identity';
     entries.push(entry);
 
     const manifest = await buildManifest({

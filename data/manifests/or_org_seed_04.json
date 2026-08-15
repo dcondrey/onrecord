@@ -2,23 +2,23 @@
   "format": "org.onrecord.c2pa-bridge/1",
   "manifestVersion": "1.2",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
-  "instanceId": "urn:onrecord:entry:or_seed_09",
-  "createdISO": "2026-08-15T11:53:58.472Z",
+  "instanceId": "urn:onrecord:entry:or_org_seed_04",
+  "createdISO": "2026-08-15T11:53:58.488Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
       "data": {
-        "advocateId": "adv_ev_051",
-        "method": "verbal, in person, witnessed by outreach worker",
-        "timestampISO": "2026-08-02T21:10:00Z",
+        "advocateId": "Coastal Transit Access Fund",
+        "method": "org self-disclosure",
+        "timestampISO": "2026-08-05T09:00:00Z",
         "recordedBeforePublication": true
       }
     },
     {
       "label": "org.onrecord.story.hash",
       "data": {
-        "rawSha256": "ba9d3644946ae968996b2310b4767f871d68c917f9b2b91cb1aa3b000a474b31",
-        "shapedSha256": "71dbf57f79db73e964a62629f2b9b89d15079dfcc1e7c30f18df38d46881805f",
+        "rawSha256": "5863ab1067d774d1ef073631368ef34a81c6506d3f8895b52a373a813695a3e6",
+        "shapedSha256": "0a252594c0274567186a30a7241df5280b04f6a401f038ebff9a49192cfd0ac1",
         "bothPublished": true
       }
     },
@@ -30,7 +30,7 @@
             "action": "c2pa.created",
             "softwareAgent": "on-record/1.0 (ECDSA-P256; hackathon build)",
             "digitalSourceType": "http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture",
-            "description": "Shaped text was written by hand for the seed set; no model call was made."
+            "description": "org_attested entries are published as submitted, with no Claude shaping step, by design."
           }
         ]
       }
@@ -41,7 +41,7 @@
         "applied": false,
         "model": "claude-opus-4-8 (not invoked)",
         "systemPromptSha256": "d7116b97a3c99541458d811dad54eb7cf130d358078a7bb03cb7ff28c20908fc",
-        "method": "Shaped text was written by hand for the seed set; no model call was made.",
+        "method": "org_attested entries are published as submitted, with no Claude shaping step, by design.",
         "constraint": "Prompt forbids introducing any fact absent from the raw text, softening the account, or adding claims about any organization.",
         "rawTextRetained": true
       }
@@ -50,7 +50,7 @@
       "label": "org.onrecord.location-precision",
       "data": {
         "granularity": "zone",
-        "zone": "East Village",
+        "zone": "Ocean Beach",
         "note": "Zone only. No coordinates, addresses, or shelter names are collected or stored."
       }
     },
@@ -64,22 +64,22 @@
   ],
   "signature": {
     "alg": "COSE-ES256",
-    "contentHash": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhrM1crJJGjMUUnc0wtGQXQaHwQ4wS7BT12mkSM3akNtHkSlIEzFZvagczlnLId1kFA/bGVcs0Ho1N1ntvfgF8A==",
-    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
-    "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-15T11:53:58.472Z",
+    "contentHash": "b0170d71570099abed3077bab070a761afd426d7204c3e21a20651c3f1efefa3",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhACOlDXZfTlMH6967VGYGAu6D5CbTGTGtMXNB8L1A/ofZfg0J2G4qAg+gfVWVaXoaAev1VHH0A3xUJEuueYT7q3Q==",
+    "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEpTNa+Fk2SGbay6ajbibjUVBOpAHd3AM9+PUjvS+4cqNlb8pd7wmludjP+dQzrtzlHS2U3Jq51BdI2yFf33yZrw==",
+    "keyFingerprint": "a9218fe14f159efd",
+    "signedAtISO": "2026-08-15T11:53:58.488Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
-    "issuer": "did:web:writerslogic.github.io:onrecord",
-    "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAhrM1crJJGjMUUnc0wtGQXQaHwQ4wS7BT12mkSM3akNtHkSlIEzFZvagczlnLId1kFA/bGVcs0Ho1N1ntvfgF8A=="
+    "issuer": "did:key:z4oJ8d5jdPg88En4KVAXtJHrtczajSNNwhhgmQkbHszJjSxs1GAJdKbRTsjfKBuwpoFQzUF7rtCmPR4Y488KqTUFWYbMx",
+    "verificationMethod": "did:key:z4oJ8d5jdPg88En4KVAXtJHrtczajSNNwhhgmQkbHszJjSxs1GAJdKbRTsjfKBuwpoFQzUF7rtCmPR4Y488KqTUFWYbMx#key-1",
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhACOlDXZfTlMH6967VGYGAu6D5CbTGTGtMXNB8L1A/ofZfg0J2G4qAg+gfVWVaXoaAev1VHH0A3xUJEuueYT7q3Q=="
   },
   "claim": {
-    "instanceId": "urn:onrecord:entry:or_seed_09",
+    "instanceId": "urn:onrecord:entry:or_org_seed_04",
     "asset": {
       "mediaType": "application/json",
-      "cborSha256": "41b133f7fbaca9372da1fce62be0a4f2558a03c7ad6b6425221e077c6a642e14"
+      "cborSha256": "b0170d71570099abed3077bab070a761afd426d7204c3e21a20651c3f1efefa3"
     },
     "assertions": [
       "org.onrecord.consent",

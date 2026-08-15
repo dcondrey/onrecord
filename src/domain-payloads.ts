@@ -73,6 +73,22 @@ const SELF_REPORTED_COUNT_SCHEMA: DomainPayloadSchema = {
   ],
 };
 
+// #57: an org's disclosed spending can be in any Category, so it can't be registered
+// in DOMAIN_PAYLOAD_SCHEMAS below (one schema per Category; shelter_bed/work_docs/
+// transit each already own a different one). src/report-spending.ts builds this
+// shape directly from its own flag-based intake instead of collectDomainPayload().
+export const ORG_SPENDING_REPORT_SCHEMA: DomainPayloadSchema = {
+  kind: 'org_spending_report',
+  fields: [
+    { name: 'orgName', label: 'Organization name', type: 'string', required: true },
+    { name: 'zone', label: 'Zone the spending was disclosed for', type: 'string', required: true },
+    { name: 'category', label: 'Spending category', type: 'string', required: true },
+    { name: 'amountUsd', label: 'Amount disclosed (USD)', type: 'number', required: true },
+    { name: 'period', label: 'Reporting period (e.g. "2026-Q3")', type: 'string', required: true },
+    { name: 'reportedAtISO', label: 'Date disclosed (ISO 8601)', type: 'string', required: true },
+  ],
+};
+
 /** Category -> registered schema. */
 export const DOMAIN_PAYLOAD_SCHEMAS: Partial<Record<Category, DomainPayloadSchema>> = {
   work_docs: RENTAL_LISTING_SCHEMA,
