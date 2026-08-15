@@ -44,7 +44,7 @@ test('a bogus sourceClass value is rejected, not silently accepted', () => {
   assert.throws(() => validateUnsigned(e), ValidationError);
 });
 
-test('self_attested_witness with no contributorPseudonym in context is rejected', () => {
+test('self_attested_witness with no assertingIdentity in context is rejected', () => {
   const e = entry({ sourceClass: 'self_attested_witness', consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' } });
   assert.throws(() => validateUnsigned(e), ValidationError);
 });
@@ -55,7 +55,7 @@ test('self_attested_witness with consent.advocateId not matching the contributor
     consent: { advocateId: 'someone_else', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
   assert.throws(
-    () => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }),
+    () => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }),
     ValidationError,
     'a contributor must not be able to claim third-party advocate authority they do not have',
   );
@@ -66,7 +66,7 @@ test('self_attested_witness with consent.advocateId matching the contributor pse
     sourceClass: 'self_attested_witness',
     consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
-  assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }));
+  assert.doesNotThrow(() => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }));
 });
 
 /**
@@ -75,7 +75,7 @@ test('self_attested_witness with consent.advocateId matching the contributor pse
  * third-party-observation case, but gated by the same self-consent mechanism.
  */
 
-test('self_attested_personal with no contributorPseudonym in context is rejected', () => {
+test('self_attested_personal with no assertingIdentity in context is rejected', () => {
   const e = entry({ sourceClass: 'self_attested_personal', consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' } });
   assert.throws(() => validateUnsigned(e), ValidationError);
 });
@@ -86,7 +86,7 @@ test('self_attested_personal with consent.advocateId not matching the contributo
     consent: { advocateId: 'someone_else', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
   assert.throws(
-    () => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }),
+    () => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }),
     ValidationError,
     'a contributor must not be able to claim third-party advocate authority they do not have',
   );
@@ -97,7 +97,7 @@ test('self_attested_personal with consent.advocateId matching the contributor ps
     sourceClass: 'self_attested_personal',
     consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
-  assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }));
+  assert.doesNotThrow(() => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }));
 });
 
 /**
@@ -117,7 +117,7 @@ test('org_attested with consent.advocateId not matching the signing org identity
     consent: { advocateId: 'Some Other Org', method: 'org self-disclosure', timestampISO: '2026-01-01T00:00:00Z' },
   });
   assert.throws(
-    () => validateUnsigned(e, { contributorPseudonym: 'Example Shelter Fund' }),
+    () => validateUnsigned(e, { assertingIdentity: 'Example Shelter Fund' }),
     ValidationError,
     'an org must not be able to publish a disclosure under a different org\'s name than the one that signed it',
   );
@@ -128,7 +128,7 @@ test('org_attested with consent.advocateId matching the signing org identity is 
     sourceClass: 'org_attested',
     consent: { advocateId: 'Example Shelter Fund', method: 'org self-disclosure', timestampISO: '2026-01-01T00:00:00Z' },
   });
-  assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'Example Shelter Fund' }));
+  assert.doesNotThrow(() => validateUnsigned(e, { assertingIdentity: 'Example Shelter Fund' }));
 });
 
 /**

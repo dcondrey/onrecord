@@ -308,7 +308,7 @@ async function signedSelfReportedCountFixture(dataOverride) {
     status: 'requested',
   };
   assert.doesNotThrow(
-    () => validateUnsigned(unsigned, { contributorPseudonym: 'contrib_test01' }),
+    () => validateUnsigned(unsigned, { assertingIdentity: 'contrib_test01' }),
     'a well-formed self_reported_count domainPayload on a self_attested_witness entry should pass validateUnsigned',
   );
   return signEntryCose(unsigned, keys);

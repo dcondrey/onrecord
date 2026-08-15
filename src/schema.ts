@@ -295,8 +295,10 @@ export function isSourceClass(v: string): v is SourceClass {
 export interface ValidateUnsignedContext {
   /** The submitting identity's own name, when known — checked against consent.advocateId
    *  for sourceClass 'self_attested_witness'/'self_attested_personal' (a pseudonym) and
-   *  'org_attested' (the org's own plaintext name, #56) below. */
-  contributorPseudonym?: string;
+   *  'org_attested' (the org's own plaintext name, #56) below. Deliberately not named
+   *  "...Pseudonym": for org_attested this value is never pseudonymized (#56's whole
+   *  point), so a pseudonym-specific name here would mislead a future reader. */
+  assertingIdentity?: string;
 }
 
 /**
@@ -347,7 +349,7 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
   // A contributor vouching for their own witnessed account can't also claim to be
   // vouching for someone else — consent.advocateId must be their own pseudonym.
   if (entry.sourceClass === 'self_attested_witness') {
-    const pseudonym = ctx.contributorPseudonym?.trim();
+    const pseudonym = ctx.assertingIdentity?.trim();
     if (!pseudonym) {
       fail('self_attested_witness entries require a contributor pseudonym from the gateway.');
     }
@@ -358,7 +360,7 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
   // Same self-consent mechanism as self_attested_witness above, but for a person
   // publishing their own story/ask rather than a third-party witness observation.
   if (entry.sourceClass === 'self_attested_personal') {
-    const pseudonym = ctx.contributorPseudonym?.trim();
+    const pseudonym = ctx.assertingIdentity?.trim();
     if (!pseudonym) {
       fail('self_attested_personal entries require a contributor pseudonym from the gateway.');
     }
@@ -366,13 +368,13 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
       fail('self_attested_personal entries must have consent.advocateId equal to the contributing pseudonym.');
     }
   }
-  // Same self-consent mechanism, but the "contributor identity" here is #56's
+  // Same self-consent mechanism, but the "own identity" here is #56's
   // non-pseudonymous org identity: consent.advocateId is the org's own plaintext
-  // name (never a pseudonym), and ctx.contributorPseudonym doubles as that name
-  // for this sourceClass — reusing the field rather than adding a parallel one,
-  // since both express "the signing identity's own name" to this same gate.
+  // name (never a pseudonym), and ctx.assertingIdentity doubles as that name for
+  // this sourceClass — reusing the field rather than adding a parallel one, since
+  // both express "the signing identity's own name" to this same gate.
   if (entry.sourceClass === 'org_attested') {
-    const orgName = ctx.contributorPseudonym?.trim();
+    const orgName = ctx.assertingIdentity?.trim();
     if (!orgName) {
       fail('org_attested entries require the signing org identity from the gateway.');
     }

@@ -126,7 +126,7 @@ async function addSelfAttestedEntry(handle, overrides = {}) {
       sourceClass: 'self_attested_witness',
       ...overrides,
     },
-    { transform: stubTransform, keys, contributorPseudonym: pseudonym },
+    { transform: stubTransform, keys, assertingIdentity: pseudonym },
   );
   return entry;
 }
@@ -196,7 +196,7 @@ test('withdrawSelfAttestedEntry refuses an entry with sourceClass self-attested 
         consentMethod: 'self-attested via SMS',
         sourceClass: 'self_attested_witness',
       },
-      { transform: stubTransform, contributorPseudonym: pseudonym },
+      { transform: stubTransform, assertingIdentity: pseudonym },
     );
     assert.equal(entry.provenance.signerTier, 'org');
 

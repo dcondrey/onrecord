@@ -102,7 +102,7 @@ export async function addEntry(
     keys?: KeyPairFiles;
     /** Required, and checked, only when input.sourceClass is 'self_attested_witness' or
      *  'self_attested_personal' — see validateUnsigned()'s matching gates in schema.ts. */
-    contributorPseudonym?: string;
+    assertingIdentity?: string;
     /** Skips the data/entries.json + manifest-file write, returning the signed
      *  entry/manifest for the caller to hold elsewhere (e.g. the SMS gateway's
      *  data/pending-review.json sidecar) instead of publishing it immediately.
@@ -253,7 +253,7 @@ export async function addEntry(
   };
 
   try {
-    validateUnsigned(unsigned, { contributorPseudonym: opts.contributorPseudonym });
+    validateUnsigned(unsigned, { assertingIdentity: opts.assertingIdentity });
   } catch (err) {
     if (err instanceof ValidationError) fail(err.message);
     throw err;
@@ -272,7 +272,12 @@ export async function addEntry(
   // contributor key structurally, but it must never record as signerTier
   // 'contributor' — that value elsewhere means "pseudonymous per-handle key," and
   // withdrawSelfAttestedEntry() (withdraw.ts) gates specifically on it to find
-  // self-attested-by-a-person entries. A third tier keeps that gate accurate.
+  // self-attested-by-a-person entries. A third tier keeps that gate accurate, and
+  // deliberately leaves org_attested entries outside that self-service withdrawal
+  // path entirely — falling through to withdrawEntry()'s CLI-operator trust
+  // boundary, the same as every advocate_attested entry. A public spending
+  // disclosure being harder for its own subject to unilaterally retract than a
+  // person's own street report is the intended asymmetry, not a gap to close.
   entry.provenance.signerTier = !opts.keys ? 'org' : sourceClass === 'org_attested' ? 'org_identity' : 'contributor';
 
   const manifest = await buildManifest({
