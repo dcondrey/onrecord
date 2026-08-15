@@ -741,6 +741,13 @@ textarea:focus{outline:none;background:var(--panel-2)}
 .pulsebadge{display:flex;align-items:center;gap:10px;margin-top:0;margin-bottom:12px;padding:9px 12px;border-radius:11px;border:1px solid var(--muted);border-color:color-mix(in srgb,var(--muted) 34%,transparent);background:color-mix(in srgb,var(--muted) 10%,transparent)}
 .pulsebadge .picon{width:24px;height:24px;flex:none}
 .pulsebadge .txt{font-size:11.5px;font-weight:650;color:var(--ink-2)}
+/* Org Disclosure badge (#55): its own class and palette (--teal, matching the funding
+   choropleth's color, #58), sharing no markup with .pulsebadge — the Street Pulse
+   framing ("unreviewed street report") is the wrong claim for a named org's financial
+   disclosure, and this must never claim "verified" beyond what .sealchip already means. */
+.orgbadge{display:flex;align-items:center;gap:10px;margin-top:0;margin-bottom:12px;padding:9px 12px;border-radius:11px;border:1px solid var(--teal);border-color:color-mix(in srgb,var(--teal) 34%,transparent);background:color-mix(in srgb,var(--teal) 10%,transparent)}
+.orgbadge .picon{width:24px;height:24px;flex:none}
+.orgbadge .txt{font-size:11.5px;font-weight:650;color:var(--ink-2)}
 .footnote{margin-top:14px;font-size:10.5px;color:var(--faint);line-height:1.65}
 .footnote b{color:var(--muted)}
 
@@ -2731,6 +2738,8 @@ function renderStory(){
    + (e.sourceClass === "self_attested_witness" && e.domainPayload && e.domainPayload.kind === "self_reported_count" ? '<div class="pulsebadge" style="margin-top:6px">'+pulseGlyph()
        + '<span class="txt">Self-reported count: '+esc(String(e.domainPayload.data.count))+' people'+(e.domainPayload.data.area?' &#183; '+esc(String(e.domainPayload.data.area)):'')
        + ' &#183; a corroborating signal, not part of the DSDP/H-Hub survey series on the Trends tab</span></div>' : '')
+   + (e.sourceClass === "org_attested" ? '<div class="orgbadge">'+orgGlyph()
+       + '<span class="txt">Org Disclosure &#183; self-reported by '+esc(e.consent.advocateId)+', not independently audited</span></div>' : '')
    + (e.pendingReview ? '<div class="integrity" style="margin-top:0;margin-bottom:12px">&#9678; Filed through the intake chat, awaiting advocate review. '
        + 'Not counted on the Accountability tab until reviewed. <button class="btn btn-restore" id="markreviewed" type="button" style="margin-top:8px;display:block">Mark reviewed (advocate, demo)</button></div>' : '')
    + '<div class="story-top"><div><h2 class="zone-name">'+DISTRICTS[e.zone].label+'</h2>'
@@ -2824,6 +2833,11 @@ function sealGlyph(broken){
    sealGlyph()'s check/X shapes. Used only to mean "contributor report", never provenance. */
 function pulseGlyph(){
   return '<svg class="picon" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12.5" fill="none" stroke="var(--muted)" stroke-width="1.4" opacity=".5"/><path d="M9 20 L9 13 M16 20 L16 8 M23 20 L23 16" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"/></svg>';
+}
+/* Org Disclosure's own icon — a document glyph, sharing no path data or class with
+   pulseGlyph()/sealGlyph(). Used only to mean "org-attested disclosure", never provenance. */
+function orgGlyph(){
+  return '<svg class="picon" viewBox="0 0 32 32" aria-hidden="true"><rect x="8" y="6" width="16" height="20" rx="1.5" fill="none" stroke="var(--teal)" stroke-width="1.6"/><path d="M12 13 L20 13 M12 17 L20 17 M12 21 L17 21" fill="none" stroke="var(--teal)" stroke-width="1.6" stroke-linecap="round"/></svg>';
 }
 function manifestHTML(e){
   const p = e.prov;

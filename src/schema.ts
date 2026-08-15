@@ -99,8 +99,13 @@ export interface Provenance {
   verificationMethod?: string;
   cborPayload?: string;
   coseSign1?: string;
-  /** Org key vs. isolated per-handle contributor key (src/gateway/contributor-identity.ts). Provenance is outside canonicalize()'s input, so this carries no key-order constraint. */
-  signerTier?: 'org' | 'contributor';
+  /** Which key tier signed this entry: the platform org key, an isolated per-handle
+   *  pseudonymous contributor key (src/gateway/contributor-identity.ts), or an isolated
+   *  non-pseudonymous org identity key (src/gateway/org-identity.ts, #56) — a third,
+   *  distinct tier from 'org', never conflated with the platform key even though both
+   *  represent an organization. Provenance is outside canonicalize()'s input, so this
+   *  carries no key-order constraint. */
+  signerTier?: 'org' | 'contributor' | 'org_identity';
 }
 
 /**
@@ -116,8 +121,17 @@ export interface Provenance {
  * contributor identity, with no advocate mediating, and it renders with
  * full normal map-marker treatment rather than web/index.html's Street
  * Pulse tier (which matches only 'self_attested_witness').
+ *
+ * 'org_attested' (#55, part of #54) is a fourth, structurally distinct tier: an
+ * organization vouching for its own disclosure (see 'org_spending_report' in
+ * domain-payloads.ts), never a third party's account. validateUnsigned()'s gate
+ * for it mirrors self_attested_witness exactly (consent.advocateId must equal
+ * the signing identity's own name) — it earns its own enum value rather than
+ * reusing self_attested_witness only because web/index.html renders it under a
+ * distinct 'Org Disclosure' badge, not the Street Pulse 'unreviewed street
+ * report' framing, which is the wrong claim for a financial disclosure.
  */
-export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness', 'self_attested_personal'] as const;
+export const SOURCE_CLASSES = ['advocate_attested', 'self_attested_witness', 'self_attested_personal', 'org_attested'] as const;
 export type SourceClass = (typeof SOURCE_CLASSES)[number];
 
 /** Escape hatch for future domain payloads that don't warrant their own typed
@@ -279,8 +293,9 @@ export function isSourceClass(v: string): v is SourceClass {
 }
 
 export interface ValidateUnsignedContext {
-  /** The submitting contributor's own gateway pseudonym, when known — checked against
-   *  consent.advocateId for sourceClass: 'self_attested_witness' entries below. */
+  /** The submitting identity's own name, when known — checked against consent.advocateId
+   *  for sourceClass 'self_attested_witness'/'self_attested_personal' (a pseudonym) and
+   *  'org_attested' (the org's own plaintext name, #56) below. */
   contributorPseudonym?: string;
 }
 
@@ -351,6 +366,20 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
       fail('self_attested_personal entries must have consent.advocateId equal to the contributing pseudonym.');
     }
   }
+  // Same self-consent mechanism, but the "contributor identity" here is #56's
+  // non-pseudonymous org identity: consent.advocateId is the org's own plaintext
+  // name (never a pseudonym), and ctx.contributorPseudonym doubles as that name
+  // for this sourceClass — reusing the field rather than adding a parallel one,
+  // since both express "the signing identity's own name" to this same gate.
+  if (entry.sourceClass === 'org_attested') {
+    const orgName = ctx.contributorPseudonym?.trim();
+    if (!orgName) {
+      fail('org_attested entries require the signing org identity from the gateway.');
+    }
+    if (entry.consent.advocateId.trim() !== orgName) {
+      fail('org_attested entries must have consent.advocateId equal to the signing org identity.');
+    }
+  }
 
   if (entry.shelterStatus) {
     if (entry.ask.category !== 'shelter_bed') {
@@ -378,6 +407,22 @@ export function validateUnsigned(entry: UnsignedEntry, ctx: ValidateUnsignedCont
     if (!entry.domainPayload.kind?.trim()) fail('domainPayload.kind is required');
     if (entry.domainPayload.data === null || typeof entry.domainPayload.data !== 'object' || Array.isArray(entry.domainPayload.data)) {
       fail('domainPayload.data must be an object');
+    }
+    // org_spending_report (#57) duplicates zone/category inside domainPayload.data
+    // rather than only carrying entry-level zone/ask.category, unlike rental_listing's
+    // deliberately-independent zone (a listing can sit in a different zone than the
+    // ask reporting it). An org disclosure has no separate ask to diverge from its own
+    // zone/category, so the two copies are never allowed to disagree — otherwise #58's
+    // choropleth (reads domainPayload.data.zone) and any consumer reading entry.zone
+    // could silently attribute the same disclosure to two different places.
+    if (entry.domainPayload.kind === 'org_spending_report') {
+      const data = entry.domainPayload.data;
+      if (data['zone'] !== entry.zone) {
+        fail('org_spending_report domainPayload.data.zone must match the entry zone');
+      }
+      if (data['category'] !== entry.ask.category) {
+        fail('org_spending_report domainPayload.data.category must match ask.category');
+      }
     }
   }
 }

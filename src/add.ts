@@ -203,6 +203,11 @@ export async function addEntry(
   // self_attested_personal still gets shaped (that's the point there); it has
   // no public gateway yet, so a rate limit for it is deferred (no call site
   // to build or verify one against).
+  // org_attested (#55/#57) also skips shaping: an org disclosing its own spending
+  // is inherently "a claim about an organization," which SYSTEM_PROMPT's
+  // no-fabrication rule forbids introducing — running it through the transform
+  // at all would put every org disclosure one refusal away from a Claude call it
+  // was never meant to need. The org's own disclosure text is the shaped text.
   opts.onStatus?.('calling Claude to shape the story...');
   let result: TransformResult;
   let aiTransformApplied = true;
@@ -210,6 +215,10 @@ export async function addEntry(
     opts.onStatus?.('self-attested witness report: publishing as submitted, no shaping step.');
     aiTransformApplied = false;
     result = { shaped: raw, model: 'none (self_attested_witness entries skip the transform)', inputTokens: 0, outputTokens: 0 };
+  } else if (sourceClass === 'org_attested') {
+    opts.onStatus?.('org disclosure: publishing as submitted, no shaping step.');
+    aiTransformApplied = false;
+    result = { shaped: raw, model: 'none (org_attested entries skip the transform)', inputTokens: 0, outputTokens: 0 };
   } else {
     try {
       result = await doTransform({ raw, ask, zone });
@@ -259,7 +268,12 @@ export async function addEntry(
     await writeFile(join(DATA_DIR, 'did.json'), JSON.stringify(buildDidDocument(issuer, keys.publicJwk), null, 2) + '\n');
   }
   const entry = await signEntryCose(unsigned, keys, { isOrgKey: !opts.keys });
-  entry.provenance.signerTier = opts.keys ? 'contributor' : 'org';
+  // org_attested carries its own org identity key (#56) as opts.keys, same as a
+  // contributor key structurally, but it must never record as signerTier
+  // 'contributor' — that value elsewhere means "pseudonymous per-handle key," and
+  // withdrawSelfAttestedEntry() (withdraw.ts) gates specifically on it to find
+  // self-attested-by-a-person entries. A third tier keeps that gate accurate.
+  entry.provenance.signerTier = !opts.keys ? 'org' : sourceClass === 'org_attested' ? 'org_identity' : 'contributor';
 
   const manifest = await buildManifest({
     entry,
@@ -271,7 +285,9 @@ export async function addEntry(
         ? 'Raw advocate text re-rendered by Claude under a no-fabrication system prompt.'
         : sourceClass === 'self_attested_witness'
           ? 'self_attested_witness entries are published as submitted, with no Claude shaping step, by design.'
-          : 'Claude declined to shape this story under the no-fabrication system prompt; the raw text was published unchanged rather than the entry going unwritten.',
+          : sourceClass === 'org_attested'
+            ? 'org_attested entries are published as submitted, with no Claude shaping step, by design — the org is disclosing its own spending, not shaping another party\'s account.'
+            : 'Claude declined to shape this story under the no-fabrication system prompt; the raw text was published unchanged rather than the entry going unwritten.',
       // Omitted (not zeroed) on a declined transform: a refusal still costs tokens on
       // Claude's side, and we have no way to report that count without a deeper change
       // to transform()'s throw-based contract, so "no usage reported" beats implying 0.
