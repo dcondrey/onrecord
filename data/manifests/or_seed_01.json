@@ -3,7 +3,7 @@
   "manifestVersion": "1.2",
   "claimGenerator": "on-record/1.0 (ECDSA-P256; hackathon build)",
   "instanceId": "urn:onrecord:entry:or_seed_01",
-  "createdISO": "2026-08-14T23:36:16.358Z",
+  "createdISO": "2026-08-15T11:53:58.466Z",
   "assertions": [
     {
       "label": "org.onrecord.consent",
@@ -65,15 +65,15 @@
   "signature": {
     "alg": "COSE-ES256",
     "contentHash": "b6dc820cde86d22dd346b15c94f9f425bd16719bc95694a3265d2df7c42a391b",
-    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnoPWGZFvpQ5h/7cI8aeS8z+dTOEhX07kHsxcAWtKgBnJeIRUrTXcjrZDRJXtlu/WjT2Dt0eRn6InzdJXQx+wJA==",
+    "signature": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAHNyzySPovN3Ta4p7D45SRkSQc1LuAh6tBu8DS3JpTxFytKP7KShIG5F2sRB62OOYQP6KA4mfieQDz1DWuwN+6w==",
     "pubKey": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEhfkMa0pyJlCiVAAWTtXTUs3Yd22WWFt8ZkdgwdbxFScztzr4hriiglFgXLwJ5Vt4FJY/sAGRJRCQ7sKlL4zJhw==",
     "keyFingerprint": "571fc6d0edab0675",
-    "signedAtISO": "2026-08-14T23:36:16.357Z",
+    "signedAtISO": "2026-08-15T11:53:58.465Z",
     "scope": "Detached COSE_Sign1 ES256 over the deterministic-CBOR encoding of all entry fields except `provenance`; contentHash is SHA-256 of those CBOR bytes.",
     "protocolVersion": "2.0",
     "issuer": "did:web:writerslogic.github.io:onrecord",
     "verificationMethod": "did:web:writerslogic.github.io:onrecord#key-1",
-    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAnoPWGZFvpQ5h/7cI8aeS8z+dTOEhX07kHsxcAWtKgBnJeIRUrTXcjrZDRJXtlu/WjT2Dt0eRn6InzdJXQx+wJA=="
+    "coseSign1": "0oRYHKMBJgNwYXBwbGljYXRpb24vY2JvcgRFa2V5LTGg9lhAHNyzySPovN3Ta4p7D45SRkSQc1LuAh6tBu8DS3JpTxFytKP7KShIG5F2sRB62OOYQP6KA4mfieQDz1DWuwN+6w=="
   },
   "claim": {
     "instanceId": "urn:onrecord:entry:or_seed_01",

@@ -12,6 +12,8 @@
  * in metadata a reader might never open.
  */
 
+import type { DomainPayload } from './schema.js';
+
 export interface SeedRecord {
   id: string;
   zone: string;
@@ -32,7 +34,87 @@ export interface SeedRecord {
     storagePolicy: string;
     safetyVolatility: string;
   };
+  /** #55: only 'org_attested' seeds use this — runSeed() (seed.ts) signs those under
+   *  an isolated org identity key (#56) instead of the platform key. */
+  sourceClass?: string;
+  /** #57: org_spending_report fixtures. zone/category here must match the record's
+   *  own zone/ask.category — validateUnsigned() enforces it. */
+  domainPayload?: DomainPayload;
 }
+
+/**
+ * #57/#58/#59 fixtures: org spending disclosures. Deliberately uneven across
+ * zones/categories/amounts/periods and deliberately leaving Downtown, Balboa Park,
+ * Chula Vista, and El Cajon with zero disclosed spending despite carrying asks
+ * above — #59's needs-vs-spending dashboard has nothing to surface a gap with
+ * otherwise, and #58's choropleth needs a real intensity spread to render.
+ */
+export const ORG_SPENDING_SEEDS: SeedRecord[] = [
+  {
+    id: 'or_org_seed_01',
+    zone: 'La Mesa',
+    ask: { category: 'shelter_bed', summary: '2026-Q2 shelter_bed spending disclosure', amountUsd: 180000 },
+    story: {
+      raw: 'Example Shelter Fund disclosed $180,000 in shelter_bed spending in La Mesa for 2026-Q2, covering bed nights and intake staffing at two partner sites.',
+      shaped: 'Example Shelter Fund disclosed $180,000 in shelter_bed spending in La Mesa for 2026-Q2, covering bed nights and intake staffing at two partner sites. (Composite illustration.)',
+    },
+    consent: { advocateId: 'Example Shelter Fund', method: 'org self-disclosure', timestampISO: '2026-07-01T09:00:00Z' },
+    status: 'answered',
+    sourceClass: 'org_attested',
+    domainPayload: {
+      kind: 'org_spending_report',
+      data: { orgName: 'Example Shelter Fund', zone: 'La Mesa', category: 'shelter_bed', amountUsd: 180000, period: '2026-Q2', reportedAtISO: '2026-07-01T09:00:00Z' },
+    },
+  },
+  {
+    id: 'or_org_seed_02',
+    zone: 'La Mesa',
+    ask: { category: 'shelter_bed', summary: '2026-Q1 shelter_bed spending disclosure', amountUsd: 30000 },
+    story: {
+      raw: 'Example Shelter Fund disclosed $30,000 in shelter_bed spending in La Mesa for 2026-Q1, a partial-quarter figure ahead of the Q2 program ramp-up.',
+      shaped: 'Example Shelter Fund disclosed $30,000 in shelter_bed spending in La Mesa for 2026-Q1, a partial-quarter figure ahead of the Q2 program ramp-up. (Composite illustration.)',
+    },
+    consent: { advocateId: 'Example Shelter Fund', method: 'org self-disclosure', timestampISO: '2026-04-02T09:00:00Z' },
+    status: 'answered',
+    sourceClass: 'org_attested',
+    domainPayload: {
+      kind: 'org_spending_report',
+      data: { orgName: 'Example Shelter Fund', zone: 'La Mesa', category: 'shelter_bed', amountUsd: 30000, period: '2026-Q1', reportedAtISO: '2026-04-02T09:00:00Z' },
+    },
+  },
+  {
+    id: 'or_org_seed_03',
+    zone: 'East Village',
+    ask: { category: 'id_documents', summary: '2026-Q3 id_documents spending disclosure', amountUsd: 4200 },
+    story: {
+      raw: 'Bayview Housing Collective disclosed $4,200 in id_documents spending in East Village for 2026-Q3, covering birth certificate and state ID fee waivers referred through partner intake.',
+      shaped: 'Bayview Housing Collective disclosed $4,200 in id_documents spending in East Village for 2026-Q3, covering birth certificate and state ID fee waivers referred through partner intake. (Composite illustration.)',
+    },
+    consent: { advocateId: 'Bayview Housing Collective', method: 'org self-disclosure', timestampISO: '2026-08-01T09:00:00Z' },
+    status: 'answered',
+    sourceClass: 'org_attested',
+    domainPayload: {
+      kind: 'org_spending_report',
+      data: { orgName: 'Bayview Housing Collective', zone: 'East Village', category: 'id_documents', amountUsd: 4200, period: '2026-Q3', reportedAtISO: '2026-08-01T09:00:00Z' },
+    },
+  },
+  {
+    id: 'or_org_seed_04',
+    zone: 'Ocean Beach',
+    ask: { category: 'transit', summary: '2026-Q3 transit spending disclosure', amountUsd: 9500 },
+    story: {
+      raw: 'Coastal Transit Access Fund disclosed $9,500 in transit spending in Ocean Beach for 2026-Q3, funding monthly regional transit passes for referred riders.',
+      shaped: 'Coastal Transit Access Fund disclosed $9,500 in transit spending in Ocean Beach for 2026-Q3, funding monthly regional transit passes for referred riders. (Composite illustration.)',
+    },
+    consent: { advocateId: 'Coastal Transit Access Fund', method: 'org self-disclosure', timestampISO: '2026-08-05T09:00:00Z' },
+    status: 'answered',
+    sourceClass: 'org_attested',
+    domainPayload: {
+      kind: 'org_spending_report',
+      data: { orgName: 'Coastal Transit Access Fund', zone: 'Ocean Beach', category: 'transit', amountUsd: 9500, period: '2026-Q3', reportedAtISO: '2026-08-05T09:00:00Z' },
+    },
+  },
+];
 
 export const SEEDS: SeedRecord[] = [
   {

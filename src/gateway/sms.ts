@@ -110,7 +110,7 @@ export async function handleSmsWebhook(
 
     const output = await addEntry(input, {
       keys: contributorKeys,
-      contributorPseudonym: pseudonym,
+      assertingIdentity: pseudonym,
       holdForReview: true,
       ...(deps.transform ? { transform: deps.transform } : {}),
     });

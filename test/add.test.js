@@ -148,7 +148,7 @@ test('self_attested_witness skips the Claude transform entirely (#49) — no cal
         sourceClass: 'self_attested_witness',
         advocateId: 'contrib_0123456789abcdef',
       },
-      { transform: unreachableTransform, contributorPseudonym: 'contrib_0123456789abcdef' },
+      { transform: unreachableTransform, assertingIdentity: 'contrib_0123456789abcdef' },
     );
     assert.equal(output.entry.story.shaped, output.entry.story.raw);
     const aiAssertion = output.manifest.assertions.find((a) => a.label === 'org.onrecord.ai-transform');
@@ -166,7 +166,7 @@ test('self_attested_personal still gets the Claude transform (shaping is the poi
         sourceClass: 'self_attested_personal',
         advocateId: 'contrib_fedcba9876543210',
       },
-      { transform: stubTransform, contributorPseudonym: 'contrib_fedcba9876543210' },
+      { transform: stubTransform, assertingIdentity: 'contrib_fedcba9876543210' },
     );
     assert.equal(output.entry.story.shaped, `shaped: ${BASE_INPUT.raw}`);
     const aiAssertion = output.manifest.assertions.find((a) => a.label === 'org.onrecord.ai-transform');

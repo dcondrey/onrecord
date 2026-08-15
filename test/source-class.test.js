@@ -44,7 +44,7 @@ test('a bogus sourceClass value is rejected, not silently accepted', () => {
   assert.throws(() => validateUnsigned(e), ValidationError);
 });
 
-test('self_attested_witness with no contributorPseudonym in context is rejected', () => {
+test('self_attested_witness with no assertingIdentity in context is rejected', () => {
   const e = entry({ sourceClass: 'self_attested_witness', consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' } });
   assert.throws(() => validateUnsigned(e), ValidationError);
 });
@@ -55,7 +55,7 @@ test('self_attested_witness with consent.advocateId not matching the contributor
     consent: { advocateId: 'someone_else', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
   assert.throws(
-    () => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }),
+    () => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }),
     ValidationError,
     'a contributor must not be able to claim third-party advocate authority they do not have',
   );
@@ -66,7 +66,7 @@ test('self_attested_witness with consent.advocateId matching the contributor pse
     sourceClass: 'self_attested_witness',
     consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
-  assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }));
+  assert.doesNotThrow(() => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }));
 });
 
 /**
@@ -75,7 +75,7 @@ test('self_attested_witness with consent.advocateId matching the contributor pse
  * third-party-observation case, but gated by the same self-consent mechanism.
  */
 
-test('self_attested_personal with no contributorPseudonym in context is rejected', () => {
+test('self_attested_personal with no assertingIdentity in context is rejected', () => {
   const e = entry({ sourceClass: 'self_attested_personal', consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' } });
   assert.throws(() => validateUnsigned(e), ValidationError);
 });
@@ -86,7 +86,7 @@ test('self_attested_personal with consent.advocateId not matching the contributo
     consent: { advocateId: 'someone_else', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
   assert.throws(
-    () => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }),
+    () => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }),
     ValidationError,
     'a contributor must not be able to claim third-party advocate authority they do not have',
   );
@@ -97,26 +97,65 @@ test('self_attested_personal with consent.advocateId matching the contributor ps
     sourceClass: 'self_attested_personal',
     consent: { advocateId: 'contrib_abc', method: 'self-report', timestampISO: '2026-01-01T00:00:00Z' },
   });
-  assert.doesNotThrow(() => validateUnsigned(e, { contributorPseudonym: 'contrib_abc' }));
+  assert.doesNotThrow(() => validateUnsigned(e, { assertingIdentity: 'contrib_abc' }));
+});
+
+/**
+ * org_attested (#55, part of #54): an org vouching for its own spending disclosure,
+ * gated the same self-consent way as self_attested_witness/personal, but the "own
+ * name" here is #56's plaintext org identity, never a pseudonym.
+ */
+
+test('org_attested with no org identity in context is rejected', () => {
+  const e = entry({ sourceClass: 'org_attested', consent: { advocateId: 'Example Shelter Fund', method: 'org self-disclosure', timestampISO: '2026-01-01T00:00:00Z' } });
+  assert.throws(() => validateUnsigned(e), ValidationError);
+});
+
+test('org_attested with consent.advocateId not matching the signing org identity is rejected', () => {
+  const e = entry({
+    sourceClass: 'org_attested',
+    consent: { advocateId: 'Some Other Org', method: 'org self-disclosure', timestampISO: '2026-01-01T00:00:00Z' },
+  });
+  assert.throws(
+    () => validateUnsigned(e, { assertingIdentity: 'Example Shelter Fund' }),
+    ValidationError,
+    'an org must not be able to publish a disclosure under a different org\'s name than the one that signed it',
+  );
+});
+
+test('org_attested with consent.advocateId matching the signing org identity is accepted', () => {
+  const e = entry({
+    sourceClass: 'org_attested',
+    consent: { advocateId: 'Example Shelter Fund', method: 'org self-disclosure', timestampISO: '2026-01-01T00:00:00Z' },
+  });
+  assert.doesNotThrow(() => validateUnsigned(e, { assertingIdentity: 'Example Shelter Fund' }));
 });
 
 /**
  * web/index.html's Street Pulse tier (#18) is a deliberately lower-trust rendering
  * path gated on a strict-equal check against the 'self_attested_witness' literal
  * (see the comment above `const witness = ...`). self_attested_personal (#28) must
- * never be pulled into that gate: it renders with standard marker treatment. This
- * greps the shipped source rather than driving a browser, so a future edit that
- * widens the gate (e.g. to an array including 'self_attested_personal', or a truthy
- * `e.sourceClass` check) fails loudly here instead of silently demoting a person's
- * own published story to the unreviewed-crowd-signal tier.
+ * never be pulled into that gate: it renders with standard marker treatment. Nor
+ * must org_attested (#55), which gets its own distinct 'Org Disclosure' badge
+ * (.orgbadge), never the Street Pulse framing. This greps the shipped source rather
+ * than driving a browser, so a future edit that widens the gate (e.g. to an array
+ * including 'self_attested_personal'/'org_attested', or a truthy `e.sourceClass`
+ * check) fails loudly here instead of silently demoting a person's own published
+ * story, or an org's financial disclosure, to the unreviewed-crowd-signal tier.
  */
-test("web/index.html's sourceClass equality gates match only self_attested_witness, never self_attested_personal", () => {
+test("web/index.html's sourceClass equality gates match only self_attested_witness and org_attested, and Street Pulse never gates on org_attested", () => {
   const html = readFileSync(fileURLToPath(new URL('../web/index.html', import.meta.url)), 'utf8');
   const gates = [...new Set([...html.matchAll(/sourceClass\s*===\s*"([a-z_]+)"/g)].map((m) => m[1]))];
   assert.deepEqual(
-    gates,
-    ['self_attested_witness'],
-    'a sourceClass equality gate in web/index.html matches something other than self_attested_witness alone',
+    gates.slice().sort(),
+    ['org_attested', 'self_attested_witness'],
+    'a sourceClass equality gate in web/index.html matches something other than self_attested_witness/org_attested',
+  );
+  const pulsebadgeLines = html.split('\n').filter((line) => line.includes('pulsebadge'));
+  assert.deepEqual(
+    pulsebadgeLines.filter((line) => line.includes('org_attested')),
+    [],
+    'Street Pulse (.pulsebadge) must never render for org_attested — that badge is .orgbadge, a distinct class',
   );
 });
 

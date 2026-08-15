@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { webcrypto } from 'node:crypto';
 import { signEntryCose } from '../dist/sign.js';
-import { validateUnsigned, canonicalize } from '../dist/schema.js';
+import { validateUnsigned, canonicalize, ValidationError } from '../dist/schema.js';
 import { toBase64 } from '../dist/encoding.js';
 import { verifyFile } from '../dist/verify.js';
 
@@ -308,7 +308,7 @@ async function signedSelfReportedCountFixture(dataOverride) {
     status: 'requested',
   };
   assert.doesNotThrow(
-    () => validateUnsigned(unsigned, { contributorPseudonym: 'contrib_test01' }),
+    () => validateUnsigned(unsigned, { assertingIdentity: 'contrib_test01' }),
     'a well-formed self_reported_count domainPayload on a self_attested_witness entry should pass validateUnsigned',
   );
   return signEntryCose(unsigned, keys);
@@ -359,4 +359,97 @@ test('tampering self_reported_count.count breaks both verifiers', async () => {
   const { verifyV2, projectV2 } = loadBrowserVerifier();
   const r = await verifyV2(projectV2(tampered));
   assert.equal(r.ok, false, 'browser verifier should reject a tampered self_reported_count entry');
+});
+
+async function signedOrgSpendingReportFixture(dataOverride) {
+  const pair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const privateJwk = await webcrypto.subtle.exportKey('jwk', pair.privateKey);
+  const publicJwk = await webcrypto.subtle.exportKey('jwk', pair.publicKey);
+  const pubKey = toBase64(await webcrypto.subtle.exportKey('spki', pair.publicKey));
+  const keys = { privateJwk, publicJwk, pubKey, createdISO: new Date().toISOString() };
+  const unsigned = {
+    id: 'or_test_org_spending_report',
+    zone: 'Downtown',
+    ask: { category: 'shelter_bed', summary: '2026-Q3 shelter_bed spending disclosure', amountUsd: 5000 },
+    story: { raw: 'Test Org disclosed $5,000 in shelter_bed spending in Downtown for 2026-Q3.', shaped: 'Test Org disclosed $5,000 in shelter_bed spending in Downtown for 2026-Q3.' },
+    consent: { advocateId: 'Test Org', method: 'org self-disclosure', timestampISO: '2026-08-01T00:00:00Z' },
+    sourceClass: 'org_attested',
+    domainPayload: {
+      kind: 'org_spending_report',
+      data: dataOverride ?? { orgName: 'Test Org', zone: 'Downtown', category: 'shelter_bed', amountUsd: 5000, period: '2026-Q3', reportedAtISO: '2026-08-01T00:00:00Z' },
+    },
+    status: 'answered',
+  };
+  assert.doesNotThrow(
+    () => validateUnsigned(unsigned, { assertingIdentity: 'Test Org' }),
+    'a well-formed org_spending_report domainPayload on an org_attested entry should pass validateUnsigned',
+  );
+  return signEntryCose(unsigned, keys, { isOrgKey: false });
+}
+
+/**
+ * #57: org spending disclosure registers a concrete `kind: 'org_spending_report'`
+ * shape, submitted org-identity-signed under sourceClass 'org_attested' (#55) —
+ * the same round-trip guarantee as rental_listing/self_reported_count above.
+ */
+test('an org_spending_report domainPayload verifies through src/verify.ts and the browser verifyV2()', async () => {
+  const fixture = await signedOrgSpendingReportFixture();
+
+  const dir = await mkdtemp(join(tmpdir(), 'onrecord-org-spending-report-'));
+  try {
+    const path = join(dir, 'entries.json');
+    await writeFile(path, JSON.stringify([fixture]));
+    const report = await verifyFile(path);
+    assert.equal(report.entries[0].ok, true, `CLI verifier rejected a clean org_spending_report entry: ${JSON.stringify(report.entries[0])}`);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const projected = projectV2(fixture);
+  assert.deepEqual(projected.domainPayload, fixture.domainPayload, 'projectV2 must carry the org_spending_report payload through unchanged');
+  assert.equal(projected.sourceClass, 'org_attested', 'projectV2 must carry sourceClass through unchanged');
+  const r = await verifyV2(projected);
+  assert.equal(r.ok, true, `browser verifier rejected a clean org_spending_report entry: ${JSON.stringify(r)}`);
+});
+
+test('tampering org_spending_report.amountUsd breaks both verifiers', async () => {
+  const fixture = await signedOrgSpendingReportFixture();
+  const tampered = structuredClone(fixture);
+  tampered.domainPayload.data.amountUsd = 999999;
+
+  const dir = await mkdtemp(join(tmpdir(), 'onrecord-org-spending-report-tamper-'));
+  try {
+    const path = join(dir, 'entries.json');
+    await writeFile(path, JSON.stringify([tampered]));
+    const report = await verifyFile(path);
+    assert.equal(report.entries[0].ok, false, 'CLI verifier should reject a tampered org_spending_report entry');
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+
+  const { verifyV2, projectV2 } = loadBrowserVerifier();
+  const r = await verifyV2(projectV2(tampered));
+  assert.equal(r.ok, false, 'browser verifier should reject a tampered org_spending_report entry');
+});
+
+test('org_spending_report domainPayload.data.zone/category diverging from the entry rejects at validateUnsigned', () => {
+  const unsigned = {
+    id: 'or_test_org_spending_mismatch',
+    zone: 'Downtown',
+    ask: { category: 'shelter_bed', summary: 'mismatch test' },
+    story: { raw: 'raw', shaped: 'raw' },
+    consent: { advocateId: 'Test Org', method: 'org self-disclosure', timestampISO: '2026-08-01T00:00:00Z' },
+    sourceClass: 'org_attested',
+    domainPayload: {
+      kind: 'org_spending_report',
+      data: { orgName: 'Test Org', zone: 'La Mesa', category: 'shelter_bed', amountUsd: 100, period: '2026-Q3', reportedAtISO: '2026-08-01T00:00:00Z' },
+    },
+    status: 'answered',
+  };
+  assert.throws(
+    () => validateUnsigned(unsigned, { assertingIdentity: 'Test Org' }),
+    ValidationError,
+    'domainPayload.data.zone ("La Mesa") diverging from entry.zone ("Downtown") must be rejected',
+  );
 });
