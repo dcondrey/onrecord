@@ -1000,6 +1000,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
         <button class="tab tl" role="tab" id="tab-cg" aria-selected="false" aria-controls="panel-cg" tabindex="-1" type="button">Common ground</button>
         <button class="tab" role="tab" id="tab-dash" aria-selected="false" aria-controls="panel-dash" tabindex="-1" type="button">Accountability</button>
         <button class="tab" role="tab" id="tab-trends" aria-selected="true" aria-controls="panel-trends" type="button">Trends</button>
+        <button class="tab" role="tab" id="tab-fundgap" aria-selected="false" aria-controls="panel-fundgap" tabindex="-1" type="button">Funding gap</button>
       </div>
       <button class="pclose" id="closepanel" type="button" aria-label="Hide panel">&times;</button>
     </div>
@@ -1009,6 +1010,7 @@ input[type="text"]:focus{outline:none;border-color:var(--amber)}
       <div id="panel-cg" role="tabpanel" aria-labelledby="tab-cg" tabindex="0" hidden></div>
       <div id="panel-dash" role="tabpanel" aria-labelledby="tab-dash" tabindex="0" hidden></div>
       <div id="panel-trends" role="tabpanel" aria-labelledby="tab-trends" tabindex="0"></div>
+      <div id="panel-fundgap" role="tabpanel" aria-labelledby="tab-fundgap" tabindex="0" hidden></div>
     </div>
   </aside>
 
@@ -3601,6 +3603,63 @@ function barRow(label, open, total, max, drill, key){
 }
 
 /* =========================================================
+   16a2. FUNDING GAP TAB (#59) — asks vs. disclosed spending, by zone/category
+   only, never attributed to a single named org in this aggregate view.
+   Attribution (domainPayload.data.orgName, consent.advocateId) exists only
+   in the signed payload itself; no view in this map renders it per-org —
+   #58's own choropleth is zone-aggregated the same way this is. Explicitly a
+   gap-surfacing tool, not a scorecard: no ranking of zones or organizations,
+   matching docs/limitations.md's non-goal against a punitive provider score.
+   ========================================================= */
+function renderFundingGap(){
+  const host = document.getElementById("panel-fundgap");
+  const live = ASK_ENTRIES.filter(e => !e.withdrawn && !e.pendingReview);
+  const verified = live.filter(e => e.prov && e.prov.ok);
+  const pool = verified.length ? verified : live;
+  // Same verified-signature requirement as the ask side (pool above) — the
+  // disclaimer below claims every figure here is signature-verified, so the
+  // disclosure side must actually be filtered that way, not merely happen to
+  // be clean today.
+  const disclosures = ORG_SPENDING_ENTRIES.filter(e => e.prov && e.prov.ok && !e.withdrawn && !e.pendingReview);
+
+  const cells = {};
+  const cell = (zone, category) => (cells[zone+"|"+category] = cells[zone+"|"+category] || { zone, category, askCount: 0, askTotal: 0, spending: 0 });
+  pool.forEach(e => { const c = cell(e.zone, e.ask.category); c.askCount++; c.askTotal += (e.ask.amountUsd || 0); });
+  disclosures.forEach(e => { cell(e.zone, e.ask.category).spending += (e.ask.amountUsd || 0); });
+
+  const rows = Object.values(cells).sort((a,b) =>
+    (DISTRICTS[a.zone] ? DISTRICTS[a.zone].label : a.zone).localeCompare(DISTRICTS[b.zone] ? DISTRICTS[b.zone].label : b.zone)
+    || CATEGORY_LABEL[a.category].localeCompare(CATEGORY_LABEL[b.category]));
+
+  host.innerHTML = '<div class="dash">'
+   + '<div class="headline"><div class="eyebrow">Asks vs. disclosed spending</div>'
+   + '<p>For each neighbourhood and need category: how many asks were recorded there, against how much org spending was disclosed there — summed across every reported period, not one snapshot. This surfaces where asks exist alongside little or no disclosed spending, or the reverse. It is a gap-surfacing view, not a ranking: spending below is never attributed to a single organization, only summed per zone/category — see the map’s Funding disclosed layer for the per-entry, per-org figures.</p></div>'
+   + (rows.length ? rows.map(fundGapRow).join("") : '<p class="disclaim">No asks or disclosures recorded yet.</p>')
+   + '<p class="disclaim">Figures are computed only from signature-verified records. A zone/category with no row here has neither an ask nor a disclosure on record.</p>'
+   + '</div>';
+}
+/* Not named gapRow(): the Trends tab (below) already declares a same-named
+   helper — "gap" + "Row" — for its own bed-ratio table. Two identically named
+   function declarations in this scope silently collide (the later one in
+   source order wins), so calling the wrong one here would crash on a missing
+   .ratio property. Named distinctly instead of reordering declarations, so
+   this can never regress if the Trends section moves again. */
+function fundGapRow(c){
+  const zoneLabel = DISTRICTS[c.zone] ? DISTRICTS[c.zone].label : c.zone;
+  const gapNote = c.askCount > 0 && c.spending === 0
+    ? '<p class="disclaim" style="margin-top:9px;color:var(--muted)">Asks recorded here; no disclosed spending against this category.</p>'
+    : c.spending > 0 && c.askCount === 0
+      ? '<p class="disclaim" style="margin-top:9px;color:var(--muted)">Spending disclosed here; no matching asks recorded.</p>'
+      : '';
+  return '<div class="barsec"><h4>'+esc(zoneLabel)+' &#183; '+esc(CATEGORY_LABEL[c.category])+'</h4>'
+   + '<div class="metrics" style="margin-top:0">'
+   + '<div class="metric"><div class="v">'+c.askCount+'</div><div class="l">asks recorded</div></div>'
+   + '<div class="metric"><div class="v">'+money(c.askTotal)+'</div><div class="l">total requested</div></div>'
+   + '<div class="metric"><div class="v" style="color:var(--fund)">'+money(c.spending)+'</div><div class="l">disclosed, all reported periods</div></div></div>'
+   + gapNote + '</div>';
+}
+
+/* =========================================================
    16b. TRENDS TAB — real data, forecast + rent overlay + gap table
    ========================================================= */
 const MONTH_ABBR = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -3767,7 +3826,7 @@ function wireTablist(el){
 
 function setTab(name, quiet){
   state.tab = name;
-  ["area","story","cg","dash","trends"].forEach(t => {
+  ["area","story","cg","dash","trends","fundgap"].forEach(t => {
     selectTab(document.getElementById("tab-"+t), t===name);
     document.getElementById("panel-"+t).hidden = (t !== name);
   });
@@ -3776,6 +3835,7 @@ function setTab(name, quiet){
   if(name === "story") renderStory();
   if(name === "area") renderArea();
   if(name === "trends"){ renderTrends(); if(!quiet) say("Downtown trends."); }
+  if(name === "fundgap"){ renderFundingGap(); if(!quiet) say("Needs versus disclosed spending."); }
 }
 function setLeftTab(name){
   state.leftTab = name;
@@ -4379,6 +4439,7 @@ async function boot(){
   document.getElementById("tab-cg").onclick = () => setTab("cg");
   document.getElementById("tab-dash").onclick = () => setTab("dash");
   document.getElementById("tab-trends").onclick = () => setTab("trends");
+  document.getElementById("tab-fundgap").onclick = () => setTab("fundgap");
   [["lay-asks","asks"],["lay-spots","spots"],["lay-heat","heat"],["lay-svc","svc"],["lay-funding","funding"]].forEach(([id,key]) => {
     document.getElementById(id).onclick = function(){
       state.layers[key] = !state.layers[key];
