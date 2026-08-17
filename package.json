@@ -45,7 +45,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.115.0",
+    "@anthropic-ai/sdk": "^0.117.1",
     "@contentauth/c2pa-node": "^0.8.3",
     "cborg": "^6.1.1",
     "fflate": "^0.8.3",
