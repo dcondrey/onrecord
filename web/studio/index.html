@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnRecord Studio</title>
+<meta name="description" content="A macOS workspace for public records investigations. Collect from portals, parse what agencies actually send, evaluate California Public Records Act deadlines, and export a signed evidence package. Everything runs locally.">
+<meta name="theme-color" content="#05090f">
+<link rel="canonical" href="https://dcondrey.github.io/onrecord/studio/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2305090f'/%3E%3Ccircle cx='16' cy='16' r='8' fill='none' stroke='%23f2a93b' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%2369b9c9'/%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="On Record">
+<meta property="og:title" content="OnRecord Studio">
+<meta property="og:description" content="A macOS workspace for public records investigations. Collect from portals, parse what agencies actually send, evaluate California Public Records Act deadlines, and export a signed evidence package. Everything runs locally.">
+<meta property="og:url" content="https://dcondrey.github.io/onrecord/studio/">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav aria-label="Primary"><a href="../">On Record</a><a href="./" aria-current="page">Studio</a><a href="support.html">Support</a><a href="privacy.html">Privacy</a></nav>
+<main id="main">
+<h1>OnRecord Studio</h1>
+<p class="lede">A macOS workspace for people who live inside public records requests. It turns a pile
+of portal responses into a corpus you can query, audit, and hand to someone else with the evidence
+attached.</p>
+
+<div class="card">
+<p>Everything runs on your Mac. No account, no server, no analytics service. Your corpus is a
+local database file that never leaves the machine.</p>
+<p>Sold on the Mac App Store as a one-time purchase. No subscription, and no license key to
+enter.</p>
+</div>
+
+<h2>Collect</h2>
+<ul>
+  <li>Ingest from public records portals, from local files, or from pasted content.</li>
+  <li>One rate limiter per host, so a multi-year sweep stays polite to every agency it touches.</li>
+  <li>An interrupted run resumes from a durable work frontier instead of starting over.</li>
+  <li>Redirects are returned to the caller and re-validated, never followed blindly.</li>
+  <li>The client identifies itself as <code>OnRecord-Studio/1.0 public-records-audit-client</code>. It does not impersonate a browser.</li>
+</ul>
+
+<h2>Read what they actually send</h2>
+<p>PDF, spreadsheets, Outlook <code>.msg</code>, archives, RTF, HTML, Office packages, and plain
+text, with a salvage path for damaged files. Nested containers unpack under depth and size bounds.
+Databases you supply open strictly read-only.</p>
+
+<h2>Analyze</h2>
+<ul>
+  <li>Timeline anomalies across a request's recorded lifecycle.</li>
+  <li>Departmental outlier ranking by z-score against the rest of your corpus.</li>
+  <li>Redaction density over extracted text.</li>
+  <li>Keyword clustering and density maps, computed locally.</li>
+  <li>An arbitrary-closure index for requests closed unusually fast.</li>
+</ul>
+
+<h2>California statutory evaluation</h2>
+<p>Deadline evaluation implements the California Public Records Act: the ten-day determination
+window, the fourteen-day extension, and the twenty-four-day extended maximum, cited to Government
+Code section 7922.535. That is the one statute the app counts against. Everything else it reports is
+a comparison against peers, and it is labeled that way. A slower-than-average agency is not a
+violation, and the app will not call it one.</p>
+
+<h2>Evidence integrity</h2>
+<ul>
+  <li>C2PA manifests read live from the asset, with an explicit confidence ladder.</li>
+  <li>Redaction integrity checks and a residual-evidence audit, for when a released document still carries recoverable content underneath.</li>
+  <li>Document version history carved from the file where the format preserves it.</li>
+  <li>SHA-256 digests recorded for raw files and for extracted text.</li>
+  <li>A verification log recording what was checked, when, and against what.</li>
+</ul>
+
+<h2>Export something defensible</h2>
+<p>Produce a brief with its source documents, the legal authorities you imported, the findings, and
+a manifest, signed with Ed25519 so a recipient can tell whether the package changed after you made
+it. Personally identifying text is masked on the way out.</p>
+
+<h2>Requirements</h2>
+<ul>
+  <li>macOS 13 Ventura or later.</li>
+  <li>A universal build: native on Apple silicon and on Intel.</li>
+  <li>Runs in the macOS App Sandbox. It reads the files and folders you hand it, and nothing else.</li>
+</ul>
+
+<h2>Limits, stated plainly</h2>
+<ul class="limits">
+  <li>Statutory deadline counting covers California only. Collection, parsing, and evidence handling are region-neutral, but no other state or federal statute is implemented.</li>
+  <li>Search requires every term you type. There is no stemming, relevance ranking, phrase matching, or boolean operators.</li>
+  <li>An absence is displayed as an absence, never as a zero. A field the app did not measure does not get a default.</li>
+  <li>It is analysis tooling. It does not give legal advice and does not decide whether an agency broke the law.</li>
+</ul>
+
+<footer>&copy; 2026 David Condrey. <a href="support.html">Support</a> &middot; <a href="privacy.html">Privacy</a></footer>
+</main>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "OnRecord Studio",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "macOS 13.0 or later",
+  "url": "https://dcondrey.github.io/onrecord/studio/",
+  "author": { "@type": "Person", "name": "David Condrey" },
+  "description": "A macOS workspace for public records investigations: portal ingestion, document parsing, California Public Records Act deadline evaluation, provenance verification, and signed evidence export. Runs entirely on the local machine."
+}
+</script>
+</body>
+</html>
