@@ -1,0 +1,55 @@
+/* Palette lifted from web/index.html so the Studio pages read as the same project. */
+:root {
+  --bg: #05090f;
+  --panel: #11141c;
+  --ink: #f1ece2;
+  --muted: #9a9384;
+  --faint: #8a8374;
+  --line: rgba(255, 255, 255, .10);
+  --line-strong: rgba(255, 255, 255, .18);
+  --teal: #69b9c9;
+  --amber: #f2a93b;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.7 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+a { color: var(--teal); }
+nav {
+  border-bottom: 1px solid var(--line);
+  padding: 1rem 1.5rem;
+  font-size: .85rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+nav a { color: var(--muted); text-decoration: none; margin-right: 1.5rem; }
+nav a:hover { color: var(--ink); }
+main { max-width: 44rem; margin: 0 auto; padding: 3.5rem 1.5rem 5rem; }
+h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); line-height: 1.15; letter-spacing: -.02em; margin: 0 0 .75rem; }
+h2 { font-size: 1.05rem; letter-spacing: .06em; text-transform: uppercase; color: var(--amber); margin: 3rem 0 .75rem; }
+h3 { font-size: 1rem; margin: 1.75rem 0 .35rem; }
+.lede { color: var(--muted); font-size: 1.15rem; line-height: 1.6; margin: 0 0 2rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; }
+ul { padding-left: 1.15rem; }
+li { margin: .4rem 0; }
+li::marker { color: var(--faint); }
+code { font-size: .9em; color: var(--teal); }
+.limits li { color: var(--muted); }
+footer { border-top: 1px solid var(--line); margin-top: 4rem; padding-top: 1.5rem; color: var(--faint); font-size: .85rem; }
+
+/* Keyboard access: the nav and in-page links must show where focus is on this palette. */
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 3px; }
+.skip {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--panel); color: var(--ink);
+  padding: .75rem 1rem; border: 1px solid var(--line-strong); border-radius: 0 0 8px 0;
+}
+.skip:focus { left: 0; z-index: 10; }
+nav a[aria-current="page"] { color: var(--ink); }
+.meta { color: var(--faint); font-size: .9rem; margin-top: 2.5rem; }
+.card p + p { margin-bottom: 0; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
