@@ -1,29 +1,8 @@
-<!-- repo-header:start -->
-<img src="https://github.com/dcondrey.png?size=160" alt="On Record logo" width="120" align="left">
+### On Record
 
-<h1>On Record</h1>
+A consented, de-identified request ledger with checkable provenance. Every entry is signed and every AI transform is disclosed; the page verifies itself in your browser, offline, with zero network requests.
 
-<p><strong>Promises are cheap. Proof is checkable. A map of San Diego where each request carries a cryptographic seal you can break yourself.</strong></p>
-
-<br clear="left">
-
-[![CI](https://img.shields.io/github/actions/workflow/status/dcondrey/onrecord/ci.yml?style=flat-square&labelColor=20232a&branch=main&label=CI)](https://github.com/dcondrey/onrecord/actions/workflows/ci.yml) [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/dcondrey/onrecord?style=flat-square&labelColor=20232a&label=OpenSSF)](https://securityscorecards.dev/viewer/?uri=github.com/dcondrey/onrecord) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14246/badge)](https://www.bestpractices.dev/projects/14246) [![License](https://img.shields.io/github/license/dcondrey/onrecord?style=flat-square&labelColor=20232a&color=007ec6&label=license)](https://github.com/dcondrey/onrecord/blob/main/LICENSE) [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-Contributor%20Covenant%202.1-6a4c93?style=flat-square&labelColor=20232a)](https://github.com/dcondrey/onrecord/blob/main/CODE_OF_CONDUCT.md) [![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Sponsor-EA4AAA?style=flat-square&labelColor=20232a)](https://github.com/sponsors/dcondrey)
-<!-- repo-header:end -->
-
-### A consented, de-identified request ledger with checkable provenance
-
-Every entry is signed. Every AI transform is disclosed. The page verifies<br>
-itself in your browser — offline, with zero network requests.
-
-<p align="center">
-  <img alt="Claude Impact Labs first-place project, August 6 2026" src="https://img.shields.io/badge/Claude%20Impact%20Labs-1st%20Place%20%7C%20Aug%206%2C%202026-d99a2b?labelColor=20232a&style=flat-square">
-  <a href="https://github.com/writerslogic/onrecord/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/writerslogic/onrecord/ci.yml?style=flat-square&labelColor=20232a&branch=main"></a>
-  <a href="https://github.com/writerslogic/onrecord/actions/workflows/pages.yml"><img alt="Pages" src="https://img.shields.io/github/actions/workflow/status/writerslogic/onrecord/pages.yml?style=flat-square&labelColor=20232a&branch=main"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/writerslogic/onrecord"><img alt="OpenSSF Scorecard" src="https://img.shields.io/ossf-scorecard/github.com/writerslogic/onrecord?style=flat-square&labelColor=20232a"></a>
-  <a href="https://www.typescriptlang.org"><img alt="TypeScript" src="https://img.shields.io/badge/typescript-5.7-blue.svg?style=flat-square&labelColor=20232a"></a>
-  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square&labelColor=20232a&color=007ec6"></a>
-  <a href="https://orcid.org/0009-0003-1849-2963"><img alt="ORCID" src="https://img.shields.io/badge/ORCID-0009--0003--1849--2963-green.svg?style=flat-square&labelColor=20232a&color=A6CE39"></a>
-</p>
+[![CI](https://img.shields.io/github/actions/workflow/status/dcondrey/onrecord/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/dcondrey/onrecord/actions/workflows/ci.yml) [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/dcondrey/onrecord?style=flat-square&label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/dcondrey/onrecord) [![License](https://img.shields.io/github/license/dcondrey/onrecord?style=flat-square)](https://github.com/dcondrey/onrecord/blob/main/LICENSE)
 
 <p align="center">
   <b>Promises are cheap. Proof is checkable.</b><br>
