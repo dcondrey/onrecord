@@ -31,6 +31,32 @@ the result with ECDSA P-256, and writes a C2PA-style provenance manifest alongsi
 The point is a system where the claim and the evidence for the claim travel together. An entry that
 has been altered says so. An entry shaped by a model says that too, in the record, permanently.
 
+## San Diego homelessness accountability report
+
+[How Help Is Offered Matters: San Diego Homelessness Accountability](https://doi.org/10.5281/zenodo.23405739) is David L. Condrey’s independent, self-funded documentary accountability report, published October 15, 2026. The published 24-page edition and supporting evidence are preserved on [Zenodo](https://zenodo.org/records/23405739) and in the [GitHub report release](https://github.com/dcondrey/onrecord/releases/tag/sd-accountability-2026-10-15). Its sourced analysis is separate from the prototype’s composite demonstration data.
+
+**DOI:** [10.5281/zenodo.23405739](https://doi.org/10.5281/zenodo.23405739)
+
+**Suggested reference:**
+
+> Condrey, D. L. (2026). *How help is offered matters: San Diego homelessness accountability* (Version 1.2; Report No. SDHA-2026-01). Zenodo. https://doi.org/10.5281/zenodo.23405739
+
+```bibtex
+@techreport{condrey2026sandiego,
+  author      = {Condrey, David L.},
+  title       = {How Help Is Offered Matters: San Diego Homelessness Accountability},
+  year        = {2026},
+  month       = oct,
+  institution = {David L. Condrey},
+  number      = {SDHA-2026-01},
+  version     = {1.2},
+  doi         = {10.5281/zenodo.23405739},
+  url         = {https://doi.org/10.5281/zenodo.23405739}
+}
+```
+
+The report’s original contributions are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); cited third-party materials retain their own rights and status. The repository’s software license is listed below. Cite the edition DOI above for this published edition; [10.5281/zenodo.23405738](https://doi.org/10.5281/zenodo.23405738) identifies the report’s version series. Further revisions are in progress.
+
 ## Quick start
 
 ```sh
